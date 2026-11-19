@@ -1,0 +1,12 @@
+
+
+#pragma once
+#include <cstddef>
+#include <cstdint>
+#include <vector>
+
+
+
+
+
+size_t xbg_spirv_forward_temps(const uint32_t *words, size_t count, std::vector<uint32_t> &out);

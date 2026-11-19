@@ -1,0 +1,46 @@
+using Ryujinx.Graphics.Shader.Decoders;
+using Ryujinx.Graphics.Shader.Translation;
+
+namespace Ryujinx.Graphics.Shader.Instructions
+{
+    static partial class InstEmit
+    {
+        public static void Bar(EmitterContext context)
+        {
+            InstBar op = context.GetOp<InstBar>();
+
+
+            if (op.BarOp == BarOp.Sync)
+            {
+                context.Barrier();
+            }
+            else
+            {
+                context.TranslatorContext.GpuAccessor.Log($"Invalid barrier mode: {op.BarOp}.");
+            }
+        }
+
+        public static void Depbar(EmitterContext context)
+        {
+#pragma warning disable IDE0059
+            InstDepbar op = context.GetOp<InstDepbar>();
+#pragma warning restore IDE0059
+
+
+        }
+
+        public static void Membar(EmitterContext context)
+        {
+            InstMembar op = context.GetOp<InstMembar>();
+
+            if (op.Membar == Decoders.Membar.Cta)
+            {
+                context.GroupMemoryBarrier();
+            }
+            else
+            {
+                context.MemoryBarrier();
+            }
+        }
+    }
+}

@@ -1,0 +1,43 @@
+# Shared cases of the allocation rule: check_builds.py next_step and BuildPlan.java must both reach expect. Skill ids are arbitrary numbers, unrelated to the game.
+# steps = lvl:skill:to[:s] (s = save)，逗号分隔 | comma separated; base / reasons = skill=n，逗号分隔，空 = - | empty = -
+# reasons: 0 能学 | learnable, 2 等级 | level, 3 前置 | prerequisite, 5 卡在上限 | cap-locked, 6 已满 | maxed, 7 数据错 | data error
+# expect = 状态 下标 [等级]（等级 0 不写） | state index [level] (a level of 0 is left out)
+# table（可选）= 往后看的技能表 skill:req:max[:pre/pre]，逗号分隔；没有这一列 = 不往后看 | table (optional) = the skill table for the look ahead, skill:req:max[:pre/pre], comma separated; no column = no look ahead
+# name	level	points	steps	base	reasons	expect	table
+empty	1	0	-	-	-	DONE -1
+first	2	1	1:10:1	-	-	NEXT 0
+no-points	2	0	1:10:1	-	-	UPCOMING 0
+skip-done	6	1	1:10:1,6:11:1	10=1	-	NEXT 1
+future	5	1	1:10:1,6:11:1	10=1	11=2	SAVE 1 6
+future-learnable	5	1	1:10:1,6:11:1	10=1	-	NEXT 1
+future-no-points	5	0	1:10:1,6:11:1	10=1	-	WAIT 1
+save	18	3	1:10:4,18:12:1:s,18:11:5	10=4	12=2	SAVE 1
+save-no-points	18	0	1:10:4,18:12:1:s,18:11:5	10=4	12=2	WAIT 1
+no-save-skips	18	3	1:10:4,18:12:1,18:11:5	10=4	12=2	NEXT 2
+permanent	18	3	1:10:4,18:12:1,18:11:5	10=4	12=6	BLOCKED 1
+cap-lock	40	1	1:10:20	10=19	10=5	BLOCKED 0
+data-error	3	1	1:10:1	-	10=7	BLOCKED 0
+all-waiting	12	2	1:10:2,6:11:1	10=1	10=2,11=3	SAVE 0
+all-waiting-no-points	12	0	1:10:2,6:11:1	10=1	10=2,11=3	WAIT 0
+first-doable	3	2	1:10:2,1:11:1	-	-	NEXT 0
+prereq-skip	12	1	12:13:1,12:10:3	10=1	13=3	NEXT 1
+done	30	0	1:10:1,6:11:1	10=1,11=1	-	DONE -1
+partial-target	20	1	1:10:5,10:10:12	10=7	-	NEXT 1
+save-before-later	7	2	1:10:1,8:12:1:s	10=1	12=2	SAVE 1 8
+later-save	17	2	2:10:4,7:11:10,18:12:1:s,18:12:6,18:11:13	10=4,11=10	12=2	SAVE 2 18	10:1:20,11:6:20,12:18:20
+later-no-points	17	0	2:10:4,7:11:10,18:12:1:s,18:12:6,18:11:13	10=4,11=10	12=2	WAIT 2	10:1:20,11:6:20,12:18:20
+later-wait-level	15	0	2:10:4,7:11:10,18:12:1:s,18:12:6	10=4,11=10	12=2	WAIT 2 18	10:1:20,11:6:20,12:18:20
+later-surplus	17	4	2:10:4,7:11:10,18:12:1:s,18:12:6,18:11:13	10=4,11=10	12=2	NEXT 4	10:1:20,11:6:20,12:18:20
+later-keep-exact	17	3	2:10:4,7:11:10,18:12:1:s,18:12:6,18:11:13	10=4,11=10	12=2	SAVE 2 18	10:1:20,11:6:20,12:18:20
+later-nothing-learnable	17	4	2:10:4,7:11:10,18:12:1:s,18:12:6	10=4,11=10	12=2	SAVE 2 18	10:1:20,11:6:20,12:18:20
+later-two-levels	15	1	2:10:4,7:11:10,18:12:1:s,18:12:6,18:11:13	10=4,11=10	12=2	SAVE 2 18	10:1:20,11:6:20,12:18:20
+later-prereq-table	17	5	18:12:1:s,18:13:1,18:11:3	-	12=2,13=3	NEXT 2	12:18:20,13:1:20:12,11:6:20
+first-open-before-later	10	0	7:11:10,18:12:1:s	11=5	11=2,12=2	WAIT 0	11:6:20,12:18:20
+first-open-waits-levels	10	0	7:11:10,18:12:1:s	11=5	11=2,12=2	WAIT 0 13	11:8:20,12:18:20
+first-open-keeps-for-later	10	1	7:11:10,18:12:1:s,18:11:13	11=5	11=2,12=2	SAVE 1 18	11:6:20,12:18:20
+step-i-learnable-now	8	1	6:133:1:s,7:133:6,12:126:6	133=3,126=1	133=2	NEXT 2	126:1:20,133:6:20:126
+step-i-learnable-no-points	8	0	6:133:1:s,7:133:6,12:126:6	133=3,126=1	133=2	WAIT 1	126:1:20,133:6:20:126
+step-i-needed-before	10	1	1:10:5,1:11:5,15:12:3	10=4,11=4	10=2,11=2	SAVE 2 15	10:7:20,11:7:20,12:1:20
+short-after-at	17	2	18:12:1:s,18:14:1,21:13:4	-	12=2	SAVE 0 18	12:18:20,14:1:20,13:18:20
+short-after-at-surplus	17	3	18:12:1:s,18:14:1,21:13:4	-	12=2	NEXT 1	12:18:20,14:1:20,13:18:20
+late-step-not-pulled	5	2	6:20:1,18:21:4	-	20=2	SAVE 0 6	20:6:20,21:1:20

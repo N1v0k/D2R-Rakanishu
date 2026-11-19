@@ -1,0 +1,11 @@
+host/dmhost
+host/dmhost_m3
+host/*.dSYM/
+*.bin
+*.pkl
+__pycache__/
+
+gfx/tools/dmsh_xlate/obj/
+gfx/tools/dmsh_xlate/bin/
+third_party/ryujinx/**/obj/
+third_party/ryujinx/**/bin/

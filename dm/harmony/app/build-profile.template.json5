@@ -1,0 +1,56 @@
+
+
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "debug",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "<path to your debug .cer>",
+          "keyAlias": "debugKey",
+          "keyPassword": "",
+          "profile": "<path to your debug .p7b>",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "<path to your debug .p12>",
+          "storePassword": ""
+        }
+      }
+,
+      {
+        "name": "release",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "<path to your release .cer>",
+          "keyAlias": "<your key alias>",
+          "keyPassword": "",
+          "profile": "<path to your release .p7b>",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "<path to your release .p12>",
+          "storePassword": ""
+        }
+      }
+    ],
+    "products": [
+      { "name": "default", "signingConfig": "debug", "targetSdkVersion": "26.0.0", "compatibleSdkVersion": "26.0.0", "runtimeOS": "HarmonyOS" },
+      { "name": "release", "signingConfig": "release", "bundleName": "com.xiao.boluo", "targetSdkVersion": "26.0.0", "compatibleSdkVersion": "26.0.0", "runtimeOS": "HarmonyOS" },
+
+      { "name": "selfuse", "signingConfig": "release", "bundleName": "com.xiao.boluo", "targetSdkVersion": "26.0.0", "compatibleSdkVersion": "26.0.0", "runtimeOS": "HarmonyOS" }
+    ],
+    "buildModeSet": [ { "name": "debug" }, { "name": "release" } ]
+  },
+  "modules": [ { "name": "entry", "srcPath": "./entry", "targets": [
+        {
+          "name": "default",
+          "applyToProducts": ["default"]
+        },
+        {
+          "name": "release",
+          "applyToProducts": ["release"]
+        },
+        {
+          "name": "selfuse",
+          "applyToProducts": ["selfuse"]
+        }
+      ] } ]
+}

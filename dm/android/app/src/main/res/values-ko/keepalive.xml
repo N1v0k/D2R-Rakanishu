@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">실행 중인 게임</string>
+    <string name="dmAndroidKeepChannelInfo">앱이 백그라운드에 있는 동안 일시 정지된 게임을 메모리에 유지합니다.</string>
+    <string name="dmAndroidKeepRunning">게임 실행 중</string>
+    <string name="dmAndroidKeepStays">백그라운드에서도 유지됩니다</string>
+    <string name="dmAndroidKeepPaused">게임 일시 정지됨</string>
+    <string name="dmAndroidKeepBackground">백그라운드의 게임</string>
+    <string name="dmAndroidKeepTap">탭하여 계속 플레이</string>
+    <string name="dmAndroidKeepQuit">저장 및 종료</string>
+    <string name="dmAndroidKeepOk">백그라운드 보호 켜짐</string>
+    <string name="dmAndroidKeepNoNotify">백그라운드 보호 켜짐 · 알림 꺼짐</string>
+    <string name="dmAndroidKeepBattery">배터리 최적화 켜짐: 보호 제한됨</string>
+    <string name="dmAndroidKeepAllow">지금 허용</string>
+    <string name="dmAndroidKeepRestricted">백그라운드 사용 제한됨: 보호 제한됨</string>
+    <string name="dmAndroidKeepFailed">백그라운드 보호 꺼짐: Android가 거부함</string>
+</resources>

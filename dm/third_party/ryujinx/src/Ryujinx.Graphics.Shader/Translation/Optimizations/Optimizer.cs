@@ -1,0 +1,458 @@
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+namespace Ryujinx.Graphics.Shader.Translation.Optimizations
+{
+    static class Optimizer
+    {
+        public static void RunPass(TransformContext context)
+        {
+            for (int blkIndex = 0; blkIndex < context.Blocks.Length; blkIndex++)
+            {
+                XmadOptimizer.RunPass(context.Blocks[blkIndex]);
+            }
+
+            RunOptimizationPasses(context.Blocks, context.ResourceManager);
+
+
+
+            GlobalToStorage.RunPass(context.Hfm, context.Blocks, context.ResourceManager, context.GpuAccessor, context.TargetLanguage);
+
+            bool hostSupportsShaderFloat64 = context.GpuAccessor.QueryHostSupportsShaderFloat64();
+
+
+            for (int blkIndex = 0; blkIndex < context.Blocks.Length; blkIndex++)
+            {
+                if (context.TargetApi == TargetApi.OpenGL)
+                {
+                    BindlessToArray.RunPassOgl(context.Blocks[blkIndex], context.ResourceManager);
+                }
+                else
+                {
+                    BindlessToArray.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
+                }
+
+                BindlessElimination.RunPass(context.Blocks[blkIndex], context.ResourceManager, context.GpuAccessor);
+
+
+                if (context.Stage == ShaderStage.Fragment)
+                {
+                    EliminateMultiplyByFragmentCoordW(context.Blocks[blkIndex]);
+                }
+
+
+                if (!hostSupportsShaderFloat64)
+                {
+                    DoubleToFloat.RunPass(context.Hfm, context.Blocks[blkIndex]);
+                }
+            }
+
+
+            RunOptimizationPasses(context.Blocks, context.ResourceManager);
+        }
+
+        private static void RunOptimizationPasses(BasicBlock[] blocks, ResourceManager resourceManager)
+        {
+            bool modified;
+
+            do
+            {
+                modified = false;
+
+                for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
+                {
+                    BasicBlock block = blocks[blkIndex];
+
+                    LinkedListNode<INode> node = block.Operations.First;
+
+                    while (node != null)
+                    {
+                        LinkedListNode<INode> nextNode = node.Next;
+
+                        bool isUnused = IsUnused(node.Value);
+
+                        if (node.Value is not Operation operation || isUnused)
+                        {
+                            if (node.Value is PhiNode phi && !isUnused)
+                            {
+                                isUnused = PropagatePhi(phi);
+                            }
+
+                            if (isUnused)
+                            {
+                                RemoveNode(block, node);
+
+                                modified = true;
+                            }
+
+                            node = nextNode;
+
+                            continue;
+                        }
+
+                        ConstantFolding.RunPass(resourceManager, operation);
+                        Simplification.RunPass(operation);
+
+                        if (DestIsLocalVar(operation))
+                        {
+                            if (operation.Inst == Instruction.Copy)
+                            {
+                                PropagateCopy(operation);
+
+                                RemoveNode(block, node);
+
+                                modified = true;
+                            }
+                            else if ((operation.Inst == Instruction.PackHalf2x16 && PropagatePack(operation)) ||
+                                     (operation.Inst == Instruction.ShuffleXor && MatchDdxOrDdy(operation)))
+                            {
+                                if (DestHasNoUses(operation))
+                                {
+                                    RemoveNode(block, node);
+                                }
+
+                                modified = true;
+                            }
+                        }
+
+                        node = nextNode;
+                    }
+
+                    if (BranchElimination.RunPass(block))
+                    {
+                        RemoveNode(block, block.Operations.Last);
+
+                        modified = true;
+                    }
+                }
+            }
+            while (modified);
+        }
+
+        private static void PropagateCopy(Operation copyOp)
+        {
+
+
+
+            Operand dest = copyOp.Dest;
+            Operand src = copyOp.GetSource(0);
+
+            INode[] uses = dest.UseOps.ToArray();
+
+            foreach (INode useNode in uses)
+            {
+                for (int index = 0; index < useNode.SourcesCount; index++)
+                {
+                    if (useNode.GetSource(index) == dest)
+                    {
+                        useNode.SetSource(index, src);
+                    }
+                }
+            }
+        }
+
+        private static bool PropagatePhi(PhiNode phi)
+        {
+
+
+            if (!Utils.AreAllSourcesTheSameOperand(phi))
+            {
+                return false;
+            }
+
+
+
+            Operand firstSrc = phi.GetSource(0);
+            Operand dest = phi.Dest;
+
+            INode[] uses = dest.UseOps.ToArray();
+
+            foreach (INode useNode in uses)
+            {
+                for (int index = 0; index < useNode.SourcesCount; index++)
+                {
+                    if (useNode.GetSource(index) == dest)
+                    {
+                        useNode.SetSource(index, firstSrc);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool PropagatePack(Operation packOp)
+        {
+
+
+            bool modified = false;
+
+            Operand dest = packOp.Dest;
+            Operand src0 = packOp.GetSource(0);
+            Operand src1 = packOp.GetSource(1);
+
+            INode[] uses = dest.UseOps.ToArray();
+
+            foreach (INode useNode in uses)
+            {
+                if (useNode is not Operation operation || operation.Inst != Instruction.UnpackHalf2x16)
+                {
+                    continue;
+                }
+
+                if (operation.GetSource(0) == dest)
+                {
+                    operation.TurnIntoCopy(operation.Index == 1 ? src1 : src0);
+
+                    modified = true;
+                }
+            }
+
+            return modified;
+        }
+
+        public static bool MatchDdxOrDdy(Operation operation)
+        {
+
+
+            Debug.Assert(operation.Inst == Instruction.ShuffleXor);
+
+            bool modified = false;
+
+            Operand src2 = operation.GetSource(1);
+            Operand src3 = operation.GetSource(2);
+
+            if (src2.Type != OperandType.Constant || (src2.Value != 1 && src2.Value != 2))
+            {
+                return false;
+            }
+
+            if (src3.Type != OperandType.Constant || src3.Value != 0x1c03)
+            {
+                return false;
+            }
+
+            bool isDdy = src2.Value == 2;
+            bool isDdx = !isDdy;
+
+
+
+
+
+
+            INode[] uses = operation.Dest.UseOps.ToArray();
+
+            foreach (INode use in uses)
+            {
+                if (use is not Operation test)
+                {
+                    continue;
+                }
+
+                if (use is not Operation useOp || useOp.Inst != Instruction.SwizzleAdd)
+                {
+                    continue;
+                }
+
+                Operand fswzaddSrc1 = useOp.GetSource(0);
+                Operand fswzaddSrc2 = useOp.GetSource(1);
+                Operand fswzaddSrc3 = useOp.GetSource(2);
+
+                if (fswzaddSrc1 != operation.Dest)
+                {
+                    continue;
+                }
+
+                if (fswzaddSrc2 != operation.GetSource(0))
+                {
+                    continue;
+                }
+
+                if (fswzaddSrc3.Type != OperandType.Constant)
+                {
+                    continue;
+                }
+
+                int mask = fswzaddSrc3.Value;
+
+                if ((isDdx && mask != 0b10011001) ||
+                    (isDdy && mask != 0b10100101))
+                {
+                    continue;
+                }
+
+                useOp.TurnInto(isDdx ? Instruction.Ddx : Instruction.Ddy, fswzaddSrc2);
+
+                modified = true;
+            }
+
+            return modified;
+        }
+
+        private static void EliminateMultiplyByFragmentCoordW(BasicBlock block)
+        {
+            foreach (INode node in block.Operations)
+            {
+                if (node is Operation operation)
+                {
+                    EliminateMultiplyByFragmentCoordW(operation);
+                }
+            }
+        }
+
+        private static void EliminateMultiplyByFragmentCoordW(Operation operation)
+        {
+
+
+
+
+
+
+
+
+            if (operation.Inst != (Instruction.FP32 | Instruction.Multiply))
+            {
+                return;
+            }
+
+            Operand lhs = operation.GetSource(0);
+            Operand rhs = operation.GetSource(1);
+
+
+            if (lhs.AsgOp is not Operation attrMulOp || attrMulOp.Inst != (Instruction.FP32 | Instruction.Multiply))
+            {
+                return;
+            }
+
+            Operand attrMulLhs = attrMulOp.GetSource(0);
+            Operand attrMulRhs = attrMulOp.GetSource(1);
+
+
+            if (!Utils.IsInputLoad(attrMulLhs.AsgOp) || !Utils.IsInputLoad(attrMulRhs.AsgOp, IoVariable.FragmentCoord, 3))
+            {
+                return;
+            }
+
+
+            if (rhs.AsgOp is not Operation reciprocalOp || reciprocalOp.Inst != (Instruction.FP32 | Instruction.Divide))
+            {
+                return;
+            }
+
+            Operand reciprocalLhs = reciprocalOp.GetSource(0);
+            Operand reciprocalRhs = reciprocalOp.GetSource(1);
+
+
+            if (reciprocalLhs.Type != OperandType.Constant || reciprocalLhs.AsFloat() != 1.0f)
+            {
+                return;
+            }
+
+
+            if (!Utils.IsInputLoad(reciprocalRhs.AsgOp, IoVariable.FragmentCoord, 3))
+            {
+                return;
+            }
+
+
+            operation.TurnIntoCopy(attrMulLhs);
+        }
+
+        public static void RemoveNode(BasicBlock block, LinkedListNode<INode> llNode)
+        {
+
+
+            block.Operations.Remove(llNode);
+
+            Queue<INode> nodes = new();
+
+            nodes.Enqueue(llNode.Value);
+
+            while (nodes.TryDequeue(out INode node))
+            {
+                for (int index = 0; index < node.SourcesCount; index++)
+                {
+                    Operand src = node.GetSource(index);
+
+                    if (src.Type != OperandType.LocalVariable)
+                    {
+                        continue;
+                    }
+
+                    if (src.UseOps.Remove(node) && src.UseOps.Count == 0)
+                    {
+                        Debug.Assert(src.AsgOp != null);
+                        nodes.Enqueue(src.AsgOp);
+                    }
+                }
+            }
+        }
+
+        private static bool IsUnused(INode node)
+        {
+            return !HasSideEffects(node) && DestIsLocalVar(node) && DestHasNoUses(node);
+        }
+
+        private static bool HasSideEffects(INode node)
+        {
+            if (node is Operation operation)
+            {
+                switch (operation.Inst & Instruction.Mask)
+                {
+                    case Instruction.AtomicAdd:
+                    case Instruction.AtomicAnd:
+                    case Instruction.AtomicCompareAndSwap:
+                    case Instruction.AtomicMaxS32:
+                    case Instruction.AtomicMaxU32:
+                    case Instruction.AtomicMinS32:
+                    case Instruction.AtomicMinU32:
+                    case Instruction.AtomicOr:
+                    case Instruction.AtomicSwap:
+                    case Instruction.AtomicXor:
+                    case Instruction.Call:
+                    case Instruction.ImageAtomic:
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool DestIsLocalVar(INode node)
+        {
+            if (node.DestsCount == 0)
+            {
+                return false;
+            }
+
+            for (int index = 0; index < node.DestsCount; index++)
+            {
+                Operand dest = node.GetDest(index);
+
+                if (dest != null && dest.Type != OperandType.LocalVariable)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool DestHasNoUses(INode node)
+        {
+            for (int index = 0; index < node.DestsCount; index++)
+            {
+                Operand dest = node.GetDest(index);
+
+                if (dest != null && dest.UseOps.Count != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+}

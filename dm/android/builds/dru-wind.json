@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "id": "dru-wind",
+  "version": 2,
+  "class": "dru",
+  "classIndex": 5,
+  "title": {"de": "Wind-Druide", "en": "Wind Druid"},
+  "summary": {
+    "de": "Elementar-Baum: Tornado (physisch) und Hurrikan (Kälte) decken fast jede Immunität ab, Zyklonrüstung schluckt Elementarschaden. Leveln mit Feuer, mit 38 umskillen; Eichbaumweiser und Grizzly schützen, Rätsel bringt Teleport.",
+    "en": "Elemental tree: Tornado (physical) and Hurricane (cold) cover nearly every immunity, Cyclone Armor soaks elemental damage. Level with fire, respec at 38; Oak Sage and the Grizzly protect you, Enigma adds Teleport."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Zwei Schadensarten (physisch und Kälte): kaum ein Gebiet ist gesperrt", "Sehr robust: Zyklonrüstung, Eichbaumweiser und Begleiter als Schutzschild", "Vielseitig für Magic Find; mit Rätsel auf Gegnergruppen teleportieren"],
+      "en": ["Two damage types (physical and cold): hardly any area is off limits", "Very tanky: Cyclone Armor, Oak Sage and summons as a shield", "Versatile magic finder; with Enigma, teleport onto packs"]
+    },
+    "weaknesses": {
+      "de": ["Tornado zieht halb zufällige Bahnen und ist schwer zu zielen", "Hängt an Rätsel, räumt eher langsam; Bestausrüstung ist sehr selten", "Hohe Zauber-Stufen: 99 %, besser 163 % (die Liste hier reicht für 99 %)"],
+      "en": ["Tornado follows semi-random paths and is hard to aim", "Relies on Enigma, clears rather slowly; best-in-slot items are very rare", "High cast breakpoints: 99%, better 163% (the gear here reaches 99%)"]
+    },
+    "notes": {
+      "de": ["Leveln mit Feuer nach Maxroll; mit 38, spätestens vor Mephisto (Albtraum), auf Wind", "Andere Quellen skillen früher (DiabloBytes um 30) oder später (PureDiablo um 55) um", "Physisch-Immune: Hurrikan, Knochenbruch-Zauber oder Altern vom Söldner", "Hauptquellen Stand 3.2; PureDiablo und Mein-MMO von 2021; 3.2/3.3 ändern den Druiden nicht"],
+      "en": ["Level with fire after Maxroll; switch to wind at 38, before Nightmare Mephisto", "Other sources respec earlier (DiabloBytes around 30) or later (PureDiablo around 55)", "Physical immunes: Hurricane, a Bone Break sunder charm or the mercenary's Decrepify", "Main sources as of 3.2; PureDiablo and Mein-MMO from 2021; 3.2/3.3 do not change the Druid"]
+    }
+  },
+  "tags": ["leveling", "endgame", "cold", "physical", "caster", "summon", "magicfind"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [245, 250, 235],
+  "trees": [3, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 10, "bossShare": 0.4},
+    "damage": ["physical", "cold"],
+    "keySkills": [{"skill": 245, "w": 1.0}, {"skill": 250, "w": 0.8}, {"skill": 235, "w": 0.6}, {"skill": 240, "w": 0.5}, {"skill": 226, "w": 0.4}, {"skill": 247, "w": 0.2}],
+    "tabs": [{"class": 5, "page": 3, "w": 1.0}, {"class": 5, "page": 1, "w": 0.3}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "dru/3", "w": 1.0},
+      "item_singleskill": {"param": 245, "w": 0.6}, "item_fastercastrate": 0.7, "item_fastergethitrate": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.3, "maxhp": 0.4, "vitality": 0.3, "strength": 0.2, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [4, 10, 19, 30, 46, 68, 99, 163], "source": "https://d2emu.com/guides/builds/wind-druid (99 / 163 also https://maxroll.gg/d2/guides/tornado-hurricane-druid)", "verified": false},
+    "requirements": {"str": 156, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln (Feuer)", "en": "Leveling (fire)"},
+      "levels": [1, 37],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll, vereinfacht: Feuersturm, Felsenfeuer, ab 12 Riss (20 statt 19), Feuersturm bis 18; Stärke zuerst.", "en": "After Maxroll, simplified: Firestorm, Molten Boulder, Fissure from 12 (20, not 19), Firestorm to 18; strength first."},
+      "skills": [
+        {"lvl": 2, "skill": 225, "key": "Firestorm", "to": 4, "note": {"de": "Startangriff", "en": "Starter attack"}},
+        {"lvl": 6, "skill": 229, "key": "Molten Boulder", "to": 2, "note": {"de": "Gegen feuerresistente Gegner", "en": "Against fire-resistant monsters"}},
+        {"lvl": 8, "skill": 225, "key": "Firestorm", "to": 9, "note": {"de": "Mit dem Punkt der Höhle des Bösen", "en": "Includes the Den of Evil point"}},
+        {"lvl": 12, "skill": 234, "key": "Eruption", "to": 20, "note": {"de": "Hauptangriff, ein Punkt pro Stufe", "en": "Main attack, one point per level"}},
+        {"lvl": 12, "skill": 225, "key": "Firestorm", "to": 18, "note": {"de": "Questpunkte; Synergie für Riss", "en": "Quest points; synergy for Fissure"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild, Kristallschwert (Geist)", "en": "Kite Shield, Crystal Sword (Spirit)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige in Leben", "en": "Everything else into life"}}
+      ],
+      "profile": {
+        "damage": ["fire"],
+        "keySkills": [{"skill": 234, "w": 1.0}, {"skill": 225, "w": 0.7}, {"skill": 229, "w": 0.2}],
+        "tabs": [{"class": 5, "page": 3, "w": 1.0}],
+        "stats": {
+          "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "dru/3", "w": 1.0},
+          "item_singleskill": {"param": 234, "w": 0.6}, "item_fastercastrate": 0.6, "item_fastergethitrate": 0.3,
+          "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "vitality": 0.3, "item_fastermovevelocity": 0.2
+        }
+      }
+    },
+    {
+      "id": "wind",
+      "name": {"de": "Wind (umskillen)", "en": "Wind (respec)"},
+      "levels": [38, 74],
+      "plan": "respec",
+      "note": {"de": "Umskillen mit 38, spätestens vor Mephisto (Albtraum); Grizzly-Kette gern jetzt. Wirbelsturm 17 bis 74: unsere Wahl.", "en": "Respec at 38, before Nightmare Mephisto at the latest; Grizzly chain may come now. Twister 17 until 74: our choice."},
+      "skills": [
+        {"lvl": 38, "skill": 230, "key": "Arctic Blast", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 235, "key": "Cyclone Armor", "to": 14, "note": {"de": "Maxroll: 14 beim Umskillen", "en": "Maxroll: 14 at the respec"}},
+        {"lvl": 38, "skill": 240, "key": "Twister", "to": 1, "note": {"de": "Voraussetzung für Tornado", "en": "Prerequisite for Tornado"}},
+        {"lvl": 38, "skill": 245, "key": "Tornado", "to": 20, "note": {"de": "Hauptschaden (physisch)", "en": "Main damage (physical)"}},
+        {"lvl": 38, "skill": 250, "key": "Hurricane", "to": 20, "save": true, "note": {"de": "Übrige Punkte aufheben (Maxroll)", "en": "Keep spare points (Maxroll)"}},
+        {"lvl": 38, "skill": 235, "key": "Cyclone Armor", "to": 20, "note": {"de": "Schild gegen Feuer, Blitz, Kälte", "en": "Shield against fire, lightning, cold"}},
+        {"lvl": 38, "skill": 221, "key": "Raven", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 227, "key": "Summon Spirit Wolf", "to": 1},
+        {"lvl": 38, "skill": 226, "key": "Oak Sage", "to": 1, "note": {"de": "Mehr Leben für alle", "en": "More life for everyone"}},
+        {"lvl": 38, "skill": 237, "key": "Summon Fenris", "to": 1},
+        {"lvl": 38, "skill": 247, "key": "Summon Grizzly", "to": 1, "note": {"de": "Tank; bei Bossen neu rufen", "en": "Tank; recast on bosses"}},
+        {"lvl": 38, "skill": 240, "key": "Twister", "to": 17, "note": {"de": "Synergie; ab 75 die letzten 3 Punkte", "en": "Synergy; the last 3 points from 75"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 65, "why": {"de": "Jalals Mähne (Totemmaske)", "en": "Jalal's Mane (Totemic Mask)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Einsicht beim Söldner", "en": "Mana from the mercenary's Insight"}},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll-Endgame: Twister und Eichbaumweiser voll, übrige Punkte in Schreckenswolf für mehr Grizzly-Leben.", "en": "Maxroll endgame: Twister and Oak Sage maxed, spare points into Dire Wolf for more Grizzly life."},
+      "skills": [
+        {"lvl": 75, "skill": 240, "key": "Twister", "to": 20},
+        {"lvl": 75, "skill": 226, "key": "Oak Sage", "to": 20, "note": {"de": "Oft neu rufen, stirbt leicht", "en": "Recast often, it dies easily"}},
+        {"lvl": 75, "skill": 237, "key": "Summon Fenris", "to": 6, "note": {"de": "Rest: mehr Leben für den Grizzly", "en": "Rest: more life for the Grizzly"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 100, "why": {"de": "Monarch 156 mit Rätsel und Ausrüstung", "en": "Monarch 156 with Enigma and gear"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"item": "sst", "sockets": 2}, "note": {"de": "Kurzstab von Akara; ab Stufe 19", "en": "Short Staff from Akara; from level 19"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab 25; Kristallschwert aus dem Kuhlevel", "en": "From 25; Crystal Sword from the Cow Level"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}, "note": {"de": "Nicht magischer Schild von Fara", "en": "Non-magic shield from Fara"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}, "note": {"de": "Ab 27; vorher Ral-Runen im Helm", "en": "From 27; Ral runes in the helm before"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab 17; nicht magische Rüstung", "en": "From 17; non-magic armor"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "+1 auf Feuer-Fertigkeiten hebt Riss", "en": "+1 fire skills raises Fissure"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen und Widerstände", "en": "Faster run and resistances"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Stab mit Teleport-Ladungen (Ormus), ab 24", "en": "Staff with Teleport charges (Ormus), from 24"}},
+    {"phase": "wind", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "wind", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}},
+    {"phase": "wind", "slot": "offhand", "tier": "bis", "ref": {"unique": "Lidless Wall"}},
+    {"phase": "wind", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "wind", "slot": "helm", "tier": "bis", "ref": {"unique": "Jalal's Mane"}},
+    {"phase": "wind", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Billige Widerstände", "en": "Cheap resistances"}},
+    {"phase": "wind", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "wind", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "wind", "slot": "boots", "tier": "budget", "ref": {"set": "McAuley's Riprap"}},
+    {"phase": "wind", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}, "note": {"de": "Vorher das Auge von Ettlich", "en": "The Eye of Etlich before that"}},
+    {"phase": "wind", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "wind", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleport-Ladungen bis Rätsel", "en": "Teleport charges until Enigma"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Flegel braucht 35 Geschicklichkeit", "en": "A Flail needs 35 dexterity"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "156 Stärke, mit Ausrüstung", "en": "156 strength, with gear"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"type": "pelt", "quality": "rare"}, "note": {"de": "Mit +Druiden- und +Tornado-Fertigkeiten", "en": "With +Druid and +Tornado skills"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport: auf Gruppen springen", "en": "Teleport: jump onto packs"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}, "note": {"de": "Magic Find; sonst Sandsturmtreck", "en": "Magic find; otherwise Sandstorm Trek"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}, "note": {"de": "Oder gefertigtes Zauberer-Amulett", "en": "Or a crafted caster amulet"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Bone Break"}, "note": {"de": "Bricht Physisch-Immunität (Herold-Beute)", "en": "Breaks physical immunity (Herald loot)"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor dem Beschwören", "en": "Battle Orders before summoning"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Schnitters Tribut senkt per Altern die Physisch-Resistenz", "en": "Act 2 desert mercenary (Nightmare) with Might; The Reaper's Toll lowers physical resistance via Decrepify"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation: Mana für dich", "en": "Meditation: mana for you"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"unique": "The Reaper's Toll"}, "note": {"de": "75 % Angriffstempo mit Ausrüstung und Sockeln für sicheres Altern", "en": "75% attack speed from gear and sockets for reliable Decrepify"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"set": "Guillaume's Face"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Tornado Hurricane Druid Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/tornado-hurricane-druid", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte, Werte, Ausrüstung, Söldner, Mechanik", "en": "Read in full; updated 2026-05-22; points, stats, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Druid Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/druid-leveling", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Feuer bis 38, dann Umskillen auf Wind", "en": "Read in full; updated 2026-05-22; fire to 38, then respec to wind"}},
+    {"site": "DiabloBytes", "title": "Wind Druid Build Guide – Tornado & Hurricane", "url": "https://www.diablobytes.com/d2-resurrected/builds/wind-druid/", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand Juni 2026 (Kopfzeile S15/3.3); Punkte, Werte, Ausrüstung, Söldner", "en": "Read in full; updated June 2026 (header S15/3.3); points, stats, gear, mercenary"}},
+    {"site": "PureDiablo", "title": "Diablo 2 Druid Fire to Wind Starter Guide", "url": "https://purediablo.com/?p=10806", "seen": "2026-11-03", "patch": "keiner (2021)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; 30.09.2021, ohne Patch; Feuer, dann Umskillen in Albtraum Akt 4", "en": "Read in full; 2021-09-30, no patch stated; fire, then respec in Nightmare Act 4"}},
+    {"site": "Mein-MMO", "title": "Diablo 2: Resurrected – 2 Builds für den Druiden", "url": "https://mein-mmo.de/diablo-2-druiden-builds/", "seen": "2026-11-03", "patch": "keiner (2021)", "kind": "guide", "lang": "de",
+     "note": {"de": "Ganz gelesen; 13.10.2021, ohne Patch; Endverteilung wie Maxroll, Rätsel nötig", "en": "Read in full; 2021-10-13, no patch stated; final split as Maxroll, Enigma needed"}},
+    {"site": "D2Emu", "title": "Wind Druid Build Guide", "url": "https://d2emu.com/guides/builds/wind-druid", "seen": "2026-11-03", "patch": "keiner", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; ohne Datum und Patch; Stufen für schnelleres Zaubern", "en": "Read in full; no date or patch; faster cast rate breakpoints"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected patch 3.2 notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Druiden-Änderung; Sunder-Zauber von Herolden", "en": "Read in full; no Druid change; sunder charms from Heralds"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Druiden-Änderung", "en": "Read in full; no Druid change"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

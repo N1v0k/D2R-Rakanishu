@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "id": "ama-javelin",
+  "version": 2,
+  "class": "ama",
+  "classIndex": 0,
+  "title": {"de": "Blitz-Wurfspieß-Amazone (Javazon)", "en": "Lightning Javelin Amazon (Javazon)"},
+  "summary": {
+    "de": "Blitzendes Unheil für Gruppen, Geladener Schlag für Bosse; Kettenblitzschlag, Energieschlag und Blitzschlag als Synergien. Leveln ohne Umskillen: ab 18 Geladener Schlag, ab 30 Blitzendes Unheil. Ziel: Titans Rache, Greifenauge, Söldner mit Unendlichkeit.",
+    "en": "Lightning Fury for packs, Charged Strike for bosses; Lightning Strike, Power Strike and Lightning Bolt as synergies. Leveling without a respec: Charged Strike from 18, Lightning Fury from 30. Goal: Titan's Revenge, Griffon's Eye, an Infinity mercenary."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Blitzendes Unheil räumt dichte Gruppen, sehr stark im geheimen Kuhlevel", "Geladener Schlag gehört zu den stärksten Boss-Killern (Baal, Diablo)", "Leicht zu spielen und schafft alle späten Inhalte"],
+      "en": ["Lightning Fury clears dense packs, very strong in the Secret Cow Level", "Charged Strike is one of the best boss killers (Baal, Diablo)", "Easy to play and clears all late-game content"]
+    },
+    "weaknesses": {
+      "de": ["Blitz-Immune in der Hölle: vor Unendlichkeit Zauber, Fluch, Stoß oder umgehen", "Volle Stärke nur mit teurer Ausrüstung (Greifenauge, Rätsel, Unendlichkeit)", "Langsamer Start: vor Stufe 18 wenig gegen Gruppen"],
+      "en": ["Lightning immunes in Hell: before Infinity a sunder charm, curse, Jab or skipping", "Full power only with expensive gear (Griffon's Eye, Enigma, Infinity)", "Slow start: little against packs before level 18"]
+    },
+    "notes": {
+      "de": ["Leveln nach Gamer Guides ohne Umskillen; Maxroll levelt mit Bogen und skillt mit 38 um", "Gegen Blitz-Immune: Unendlichkeit (die meisten) oder Himmelsriss-Zauber; Donnerschlag hilft erst danach", "Angriffstempo für Blitzendes Unheil: 52 % ideal, mindestens 30 %, je nach Waffe (Maxroll)", "Gamer Guides ist von 2023; Patchnotes 3.2 und 3.3 ändern keine Amazonen-Fertigkeit"],
+      "en": ["Leveling after Gamer Guides without a respec; Maxroll levels with a bow, respecs at 38", "Against lightning immunes: Infinity (most of them) or a Crack of the Heavens charm; Thunderstroke helps after that", "Attack speed for Lightning Fury: 52% ideal, at least 30%, depending on the weapon (Maxroll)", "Gamer Guides dates from 2023; patch notes 3.2 and 3.3 change no Amazon skill"]
+    }
+  },
+  "tags": ["leveling", "endgame", "lightning", "bosses", "magicfind"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [35, 24, 34],
+  "trees": [3, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 15, "bossShare": 0.6},
+    "damage": ["lightning", "physical"],
+    "keySkills": [{"skill": 35, "w": 1.0}, {"skill": 24, "w": 0.9}, {"skill": 34, "w": 0.5}, {"skill": 14, "w": 0.4}, {"skill": 20, "w": 0.3}, {"skill": 33, "w": 0.3}, {"skill": 32, "w": 0.2}],
+    "tabs": [{"class": 0, "page": 3, "w": 1.0}, {"class": 0, "page": 2, "w": 0.3}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "ama/3", "w": 1.0},
+      "item_singleskill": {"param": 35, "w": 0.6}, "item_fasterattackrate": 0.7, "item_fastercastrate": 0.3, "item_fastergethitrate": 0.3,
+      "passive_ltng_pierce": 0.9, "passive_ltng_mastery": 0.7, "item_pierce_light_immunity": 0.6, "item_pierce": 0.6,
+      "lifedrainmindam": 0.3, "manadrainmindam": 0.4, "dexterity": 0.2, "strength": 0.2,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [48, 68, 99], "source": "https://maxroll.gg/d2/guides/lightning-fury-amazon-guide", "verified": false},
+    "requirements": {"str": 156, "dex": 109}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Nach Gamer Guides: Einpunkt-Fertigkeiten früh, ab 18 Geladener Schlag; freie Punkte für Stufe 30 aufheben.", "en": "After Gamer Guides: one-point skills early, Charged Strike from 18; keep spare points for level 30."},
+      "skills": [
+        {"lvl": 2, "skill": 10, "key": "Jab", "to": 1, "note": {"de": "Voraussetzung für Energieschlag", "en": "Prerequisite for Power Strike"}},
+        {"lvl": 3, "skill": 9, "key": "Critical Strike", "to": 1, "note": {"de": "Weg zu Durchbohren", "en": "Path to Pierce"}},
+        {"lvl": 4, "skill": 8, "key": "Inner Sight", "to": 1, "note": {"de": "Weg zur Walküre", "en": "Path to Valkyrie"}},
+        {"lvl": 6, "skill": 14, "key": "Power Strike", "to": 1},
+        {"lvl": 6, "skill": 15, "key": "Poison Javelin", "to": 1, "note": {"de": "Früh gegen Gruppen", "en": "Early against packs"}},
+        {"lvl": 6, "skill": 13, "key": "Dodge", "to": 1},
+        {"lvl": 12, "skill": 20, "key": "Lightning Bolt", "to": 1},
+        {"lvl": 12, "skill": 17, "key": "Slow Missiles", "to": 1},
+        {"lvl": 12, "skill": 18, "key": "Avoid", "to": 1},
+        {"lvl": 18, "skill": 24, "key": "Charged Strike", "to": 1, "note": {"de": "Hauptangriff bis Stufe 30", "en": "Main attack until level 30"}},
+        {"lvl": 18, "skill": 25, "key": "Plague Javelin", "to": 1, "note": {"de": "Voraussetzung für Blitzendes Unheil", "en": "Prerequisite for Lightning Fury"}},
+        {"lvl": 18, "skill": 23, "key": "Penetrate", "to": 1},
+        {"lvl": 19, "skill": 24, "key": "Charged Strike", "to": 6},
+        {"lvl": 24, "skill": 28, "key": "Dopplezon", "to": 1, "note": {"de": "Weg zur Walküre", "en": "Path to Valkyrie"}},
+        {"lvl": 24, "skill": 29, "key": "Evade", "to": 1},
+        {"lvl": 24, "skill": 24, "key": "Charged Strike", "to": 12}
+      ],
+      "stats": [
+        {"stat": "str", "to": 50, "why": {"de": "Ausrüstung beim Leveln (Gamer Guides)", "en": "Leveling gear (Gamer Guides)"}},
+        {"stat": "dex", "to": 50, "why": {"de": "Wie Gamer Guides (Stufe 7 bis 11)", "en": "As Gamer Guides (levels 7 to 11)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige in Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [30, 99],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll: Blitzendes Unheil, Geladener Schlag, Kettenblitzschlag, Energieschlag voll; Rest Blitzschlag.", "en": "After Maxroll: Lightning Fury, Charged Strike, Lightning Strike, Power Strike maxed; the rest Lightning Bolt."},
+      "skills": [
+        {"lvl": 30, "skill": 35, "key": "Lightning Fury", "to": 1, "note": {"de": "Ab jetzt die Hauptfertigkeit", "en": "From now on the main skill"}},
+        {"lvl": 30, "skill": 32, "key": "Valkyrie", "to": 1, "note": {"de": "Lenkt Gegner ab", "en": "Draws the enemies' attention"}},
+        {"lvl": 30, "skill": 33, "key": "Pierce", "to": 1, "note": {"de": "Ohne Klingenschweif mehr (82 %)", "en": "More without Razortail (82%)"}},
+        {"lvl": 30, "skill": 35, "key": "Lightning Fury", "to": 20},
+        {"lvl": 30, "skill": 24, "key": "Charged Strike", "to": 20, "note": {"de": "Für Bosse und Einzelziele", "en": "For bosses and single targets"}},
+        {"lvl": 30, "skill": 34, "key": "Lightning Strike", "to": 20, "note": {"de": "Synergie", "en": "Synergy"}},
+        {"lvl": 30, "skill": 14, "key": "Power Strike", "to": 20, "note": {"de": "Synergie", "en": "Synergy"}},
+        {"lvl": 30, "skill": 20, "key": "Lightning Bolt", "to": 17, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "dex", "to": 110, "why": {"de": "Titans Rache (109); mehr über Ausrüstung", "en": "Titan's Revenge (109); more via gear"}},
+        {"stat": "str", "to": 156, "why": {"de": "Geist im Monarch; mit Rätsel geht weniger", "en": "Spirit in a Monarch; less with Enigma"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "jave", "quality": "magic"}, "note": {"de": "Gegen Ende (Akt 5 Normal, um 29) mit +Angriffstempo", "en": "Late (Normal Act 5, about 29) with +attack speed"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"type": "jave", "quality": "rare"}, "note": {"de": "Mit Leben- und Manaraub", "en": "With life and mana leech"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword120"}, "base": {"item": "bsh", "sockets": 2}, "note": {"de": "Ab Stufe 29; Knochenschild von Drognan", "en": "From level 29; Bone Shield from Drognan"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"type": "glov", "quality": "magic"}, "note": {"de": "Mit +Angriffstempo", "en": "With +attack speed"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schnelleres Laufen, Widerstände", "en": "Faster run, resistances"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Titan's Revenge"}, "note": {"de": "Ätherisch und aufgewertet am besten; Ersatz mitnehmen", "en": "Ethereal and upgraded is best; carry a spare"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Griffon's Eye"}, "note": {"de": "Senkt den Blitz-Widerstand der Gegner", "en": "Lowers the enemies' lightning resistance"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "uui", "sockets": 3}, "note": {"de": "Teleport für schnelle Läufe", "en": "Teleport for fast runs"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Günstiger Einstieg", "en": "Cheap start"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"type": "glov", "quality": "rare"}, "note": {"de": "+2 Wurfspieß-Fertigkeiten, 20 % Angriffstempo", "en": "+2 Javelin skills, 20% attack speed"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}, "note": {"de": "Mit genug +Fertigkeiten Durchbohren auf 100 %", "en": "With enough +skills, pierce chance reaches 100%"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Highlord's Wrath"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Kann nicht eingefroren werden", "en": "Cannot be frozen"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}},
+    {"phase": "end", "slot": "switch", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Ladungen Widerstandsschwund, vor Unendlichkeit", "en": "Lower Resist charges, before Infinity"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit bricht die meisten Blitz-Immunitäten", "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity breaks most lightning immunities"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"item": "pax", "sockets": 4}, "note": {"de": "Meditation gegen Manamangel", "en": "Meditation against low mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4, "eth": true}, "note": {"de": "Verurteilung senkt Blitz-Widerstand", "en": "Conviction lowers lightning resistance"}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Mit Juwel (Angriffstempo, Feuerwiderstand)", "en": "With a jewel (attack speed, fire resistance)"}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"item": "xsk", "sockets": 3}, "note": {"de": "Günstiger Einstieg", "en": "Cheap start"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Lightning Fury Amazon Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/lightning-fury-amazon-guide", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Reihenfolge, Einpunkt-Fertigkeiten, Ausrüstung, Söldner, Tempo-Stufen", "en": "Read in full; updated 2026-05-22; max order, one-point skills, gear, mercenary, breakpoints"}},
+    {"site": "Maxroll", "title": "Amazon Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/amazon-leveling-guide", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Bogen bis 38, dann Umskillen; Leveln-Ausrüstung", "en": "Read in full; updated 2026-05-22; bow until 38, then respec; leveling gear"}},
+    {"site": "Gamer Guides", "title": "Javelin Amazon (Javazon)", "url": "https://www.gamerguides.com/diablo-ii-resurrected/guide/characters/amazon-builds/javelin-amazon", "seen": "2026-11-03", "patch": "nicht genannt (2023)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 01.03.2023, kein Patch genannt; Punkte je Stufe ohne Umskillen, Werte, Ausrüstung", "en": "Read in full; updated 2023-03-01, no patch stated; points per level without respec, stats, gear"}},
+    {"site": "DiabloBytes", "title": "Lightning Javazon Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/lightning-javazon/", "seen": "2026-11-03", "patch": "3.2 / 3.3 (unklar)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand Juni 2026; Endgame-Reihenfolge, Ausrüstung, Söldner; Stufen beim Leveln falsch", "en": "Read in full; updated June 2026; endgame order, gear, mercenary; leveling levels are wrong"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an der Amazone oder an Wurfspieß-Gegenständen", "en": "Read in full; no change to the Amazon or to javelin items"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; nur zwei Bögen geändert (Jägerbogen, Reißauge), nichts für Wurfspieße", "en": "Read in full; only two bows changed (Rogue's Bow, Pluckeye), nothing for javelins"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 16 (3.4)", "url": "https://news.blizzard.com/en-us/article/24316567/diablo-ii-resurrected-ladder-season-16", "seen": "2026-11-03", "patch": "3.4", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an der Amazone", "en": "Read in full; no change to the Amazon"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

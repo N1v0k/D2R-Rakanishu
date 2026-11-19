@@ -1,0 +1,267 @@
+{
+  "schema": 1,
+  "id": "bar-dthrow",
+  "version": 1,
+  "class": "bar",
+  "classIndex": 4,
+  "title": {"de": "Doppelwurf-Barbar", "en": "Double Throw Barbarian"},
+  "summary": {
+    "de": "Wirft zwei Wurfwaffen zugleich aus sicherem Abstand; Wurfwaffenbeherrschung lässt sie durchschlagen und füllt die Menge wieder auf. Ab 12 wird geworfen, ohne Umskillen bis 99; im Endgame Zerfleischer und Kriegswürger, dazu Gegenstand finden für Elite-Beute.",
+    "en": "Throws two throwing weapons at once from a safe distance; Throwing Mastery makes them pierce and refills their quantity. Throw from 12, no respec up to 99; in the endgame Lacerator and Warshrike, plus Find Item for elite loot."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sicher aus der Ferne; durchschlagende Würfe treffen ganze Reihen", "Guter Elite-Jäger mit Gegenstand finden", "Ohne Umskillen von 12 bis 99", "Mit Wurfwaffenbeherrschung ist die Menge im Endgame kein Thema"],
+      "en": ["Safe at range; piercing throws hit whole rows", "Good elite hunter with Find Item", "No respec from 12 to 99", "With Throwing Mastery quantity is no issue in the endgame"]
+    },
+    "weaknesses": {
+      "de": ["Fast nur physischer Schaden: physisch Immune brauchen Verstärken (Zerfleischer) oder Knochenbruch", "Stark von den Wurfwaffen abhängig", "Beim Werfen steht man still", "Früh knappe Menge: Waffen beim Händler auffüllen"],
+      "en": ["Almost only physical damage: physical immunes need Amplify Damage (Lacerator) or Bone Break", "Very dependent on the throwing weapons", "You stand still while throwing", "Short on quantity early: refill weapons at vendors"]
+    },
+    "notes": {
+      "de": ["Unser Plan: mit 12 auf Doppelwurf wie DiabloBytes; Maxroll levelt erst mit dem Leitfaden", "Endgame-Punkte nach Maxroll: 10 in Gegenstand finden und Kampfbefehle", "Doppelschwung ist Synergie für Doppelwurf (Spieltabellen 3.3)", "Söldner nach Maxroll: Akt 1 Feuer mit Glaube; Einsicht davor ist unsere Wahl", "Quellen Stand 3.2 (S14); 3.3: keine Balance-Änderung, nur ein Fehler bei Sprung behoben"],
+      "en": ["Our plan: Double Throw from 12 as DiabloBytes does; Maxroll levels with its leveling guide first", "Endgame points per Maxroll: 10 in Find Item and Battle Orders", "Double Swing is a synergy for Double Throw (game tables 3.3)", "Mercenary per Maxroll: Act 1 fire with Faith; Insight before that is our choice", "Sources as of 3.2 (S14); 3.3: no balance change, only a Leap bug fixed"]
+    }
+  },
+  "tags": ["leveling", "endgame", "magicfind", "physical"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [140, 135, 142],
+  "trees": [1, 2, 3],
+  "profile": {
+    "bestgear": {"survivalHits": 15, "bossShare": 0.4},
+    "damage": ["physical"],
+    "keySkills": [
+      {"skill": 140, "w": 1.0},
+      {"skill": 135, "w": 0.9},
+      {"skill": 133, "w": 0.6},
+      {"skill": 142, "w": 0.5},
+      {"skill": 131, "w": 0.4},
+      {"skill": 149, "w": 0.4}
+    ],
+    "tabs": [{"class": 4, "page": 1, "w": 1.0}, {"class": 4, "page": 2, "w": 0.9}, {"class": 4, "page": 3, "w": 0.5}],
+    "stats": {
+      "item_allskills": 1.0,
+      "item_addclassskills": 1.0,
+      "item_addskill_tab": {"param": "bar/1", "w": 0.8},
+      "item_singleskill": {"param": 135, "w": 0.5},
+      "item_fasterattackrate": 0.8,
+      "item_pierce": 0.7,
+      "item_replenish_quantity": 0.4,
+      "maxdamage": 0.5,
+      "item_maxdamage_percent": 0.6,
+      "tohit": 0.5,
+      "item_tohit_percent": 0.4,
+      "item_deadlystrike": 0.5,
+      "item_crushingblow": 0.3,
+      "lifedrainmindam": 0.4,
+      "item_demondamage_percent": 0.2,
+      "item_cannotbefrozen": 0.5,
+      "item_magicbonus": 0.4,
+      "item_fastercastrate": 0.2,
+      "fireresist": 0.3,
+      "coldresist": 0.3,
+      "lightresist": 0.3,
+      "poisonresist": 0.2,
+      "maxhp": 0.4,
+      "dexterity": 0.5,
+      "strength": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [105], "source": "https://maxroll.gg/d2/guides/double-throw-barbarian-guide", "verified": false},
+    "requirements": {"str": 118, "dex": 142}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {
+        "de": "Bis 11 Doppelschwung, ab 12 Doppelwurf mit Händler-Wurfwaffen (DiabloBytes); Kampfbefehle ab 24.",
+        "en": "Double Swing until 11, Double Throw from 12 with vendor throwing weapons (DiabloBytes); Battle Orders from 24."
+      },
+      "skills": [
+        {"lvl": 2, "skill": 126, "key": "Bash", "to": 1, "note": {"de": "Voraussetzung für Doppelschwung", "en": "Prerequisite for Double Swing"}},
+        {"lvl": 3, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Verscheucht Gegner, wenn es eng wird", "en": "Scares monsters off when it gets tight"}},
+        {"lvl": 6, "skill": 133, "key": "Double Swing", "to": 1, "save": true, "note": {"de": "Punkte aus 4 und 5 aufheben", "en": "Keep the points from 4 and 5"}},
+        {"lvl": 6, "skill": 135, "key": "Throwing Mastery", "to": 1, "note": {"de": "Wurfwaffen verbrauchen weniger", "en": "Throwing weapons run out less"}},
+        {"lvl": 7, "skill": 133, "key": "Double Swing", "to": 5, "note": {"de": "Nahkampf bis 12 (DiabloBytes)", "en": "Melee until 12 (DiabloBytes)"}},
+        {"lvl": 7, "skill": 135, "key": "Throwing Mastery", "to": 4},
+        {"lvl": 12, "skill": 140, "key": "Double Throw", "to": 1, "save": true, "note": {"de": "Ab jetzt Hauptangriff", "en": "Main attack from now on"}},
+        {"lvl": 12, "skill": 140, "key": "Double Throw", "to": 6},
+        {"lvl": 12, "skill": 135, "key": "Throwing Mastery", "to": 6},
+        {"lvl": 16, "skill": 138, "key": "Shout", "to": 1, "note": {"de": "Mehr Verteidigung; Voraussetzung", "en": "More defense; prerequisite"}},
+        {"lvl": 18, "skill": 140, "key": "Double Throw", "to": 9},
+        {"lvl": 24, "skill": 149, "key": "Battle Orders", "to": 1, "save": true, "note": {"de": "Punkt aus 23 aufheben", "en": "Keep the point from 23"}},
+        {"lvl": 24, "skill": 147, "key": "Frenzy", "to": 1, "note": {"de": "Tempo durch Raserei-Ladungen", "en": "Speed from Frenzy charges"}},
+        {"lvl": 24, "skill": 140, "key": "Double Throw", "to": 13},
+        {"lvl": 24, "skill": 135, "key": "Throwing Mastery", "to": 9}
+      ],
+      "stats": [
+        {"stat": "str", "to": 40, "why": {"de": "Rüstungen und Gürtel", "en": "Armor and belts"}},
+        {"stat": "dex", "to": 60, "why": {"de": "Wurfwaffen; Geschick erhöht den Schaden", "en": "Throwing weapons; dexterity adds damage"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "mid",
+      "name": {"de": "Albtraum–Hölle", "en": "Nightmare–Hell"},
+      "levels": [30, 74],
+      "plan": "cumulative",
+      "note": {
+        "de": "Erst Tempo, Doppelwurf voll, Einzelpunkte, dann Wurfwaffenbeherrschung voll, 10 in Kampfbefehle, dann Doppelschwung.",
+        "en": "Speed first, Double Throw maxed, single points, then Throwing Mastery maxed, 10 in Battle Orders, then Double Swing."
+      },
+      "skills": [
+        {"lvl": 30, "skill": 155, "key": "Battle Command", "to": 1, "note": {"de": "+1 auf alle Fertigkeiten", "en": "+1 to all skills"}},
+        {"lvl": 30, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 148, "key": "Increased Speed", "to": 1, "note": {"de": "Schneller laufen", "en": "Run faster"}},
+        {"lvl": 30, "skill": 140, "key": "Double Throw", "to": 20, "note": {"de": "Unsere Wahl: früh voll zum Leveln", "en": "Our choice: maxed early for leveling"}},
+        {"lvl": 30, "skill": 145, "key": "Iron Skin", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 153, "key": "Natural Resistance", "to": 1, "note": {"de": "Alle Widerstände", "en": "All resistances"}},
+        {"lvl": 30, "skill": 131, "key": "Find Potion", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 142, "key": "Find Item", "to": 1, "note": {"de": "Elite-Leichen plündern", "en": "Loot elite corpses"}},
+        {"lvl": 30, "skill": 150, "key": "Grim Ward", "to": 1, "note": {"de": "Senkt physischen Widerstand", "en": "Lowers physical resistance"}},
+        {"lvl": 30, "skill": 135, "key": "Throwing Mastery", "to": 20, "note": {"de": "Maxroll: als Erstes voll", "en": "Maxroll: maxed first"}},
+        {"lvl": 30, "skill": 149, "key": "Battle Orders", "to": 10, "note": {"de": "Maxroll: 10 Punkte", "en": "Maxroll: 10 points"}},
+        {"lvl": 30, "skill": 133, "key": "Double Swing", "to": 20, "note": {"de": "Synergie für Doppelwurf (Tabellen 3.3)", "en": "Synergy for Double Throw (tables 3.3)"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 88, "why": {"de": "Aufgewerteter Skalpierer; fürs Endgame vorsorgen", "en": "Upgraded Scalper; saving up for the endgame"}},
+        {"stat": "dex", "to": 170, "why": {"de": "Wurfwaffen; Geschick erhöht den Schaden", "en": "Throwing weapons; dexterity adds damage"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll-Endgame: 10 in Gegenstand finden, dann Trank suchen voll.", "en": "Maxroll endgame: 10 in Find Item, then Find Potion maxed."},
+      "skills": [
+        {"lvl": 75, "skill": 142, "key": "Find Item", "to": 10, "note": {"de": "Maxroll: 10 Punkte", "en": "Maxroll: 10 points"}},
+        {"lvl": 75, "skill": 131, "key": "Find Potion", "to": 20, "note": {"de": "Synergie für Plündern und Grausiger Schutz", "en": "Synergy for Find Item and Grim Ward"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 118, "why": {"de": "Arreats Antlitz; Guillaumes Gesicht 115", "en": "Arreat's Face; Guillaume's Face 115"}},
+        {"stat": "dex", "to": 250, "why": {"de": "Maxroll: 200–300 Punkte in Geschick", "en": "Maxroll: 200-300 points into dexterity"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige (Maxroll)", "en": "Everything else (Maxroll)"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "taxe", "quality": "magic"}, "note": {"de": "Zwei Wurfäxte oder -messer vom Händler", "en": "Two throwing axes or knives from vendors"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"type": "jave", "quality": "magic"}, "note": {"de": "Wurfspieße gehen auch", "en": "Javelins work too"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword88"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"unique": "Bloodfist"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"set": "Death's Hand"}, "note": {"de": "Mit Wächter des Todes: Tempo, Widerstände", "en": "With Death's Guard: speed, resistances"}},
+    {"phase": "lvl", "slot": "belt", "tier": "bis", "ref": {"set": "Death's Guard"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleportieren-Ladungen von Ormus", "en": "Teleport charges from Ormus"}},
+    {"phase": "mid", "slot": "weapon", "tier": "budget", "ref": {"unique": "Deathbit"}, "note": {"de": "Ab 44; für die Hölle aufwerten (beide Quellen)", "en": "From 44; upgrade it for Hell (both sources)"}},
+    {"phase": "mid", "slot": "weapon", "tier": "alt", "ref": {"unique": "The Scalper"}, "note": {"de": "Ab 57; aufgewertet stärker (Maxroll)", "en": "From 57; stronger upgraded (Maxroll)"}},
+    {"phase": "mid", "slot": "offhand", "tier": "budget", "ref": {"type": "thro", "quality": "magic"}, "note": {"de": "Zweite Wurfwaffe, z. B. „grausam“ von Malah", "en": "Second throwing weapon, e.g. a Cruel one from Malah"}},
+    {"phase": "mid", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "mid", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "mid", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+    {"phase": "mid", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}, "note": {"de": "Durchschlagen", "en": "Piercing"}},
+    {"phase": "mid", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen und Widerstände", "en": "Faster run and resistances"}},
+    {"phase": "mid", "slot": "ring", "tier": "alt", "ref": {"unique": "Raven Frost"}, "note": {"de": "Kann nicht eingefroren werden, aber Kälteschaden zerschmettert Leichen", "en": "Cannot be frozen, but its cold damage shatters corpses"}},
+    {"phase": "mid", "slot": "switch", "tier": "budget", "ref": {"runeword": "Runeword172"}, "base": {"item": "7cr", "sockets": 3}, "note": {"de": "Zwei Stück: mit Doppelschwung Tempo vorladen (Maxroll)", "en": "Two of them: pre-buff speed with Double Swing (Maxroll)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Lacerator"}, "note": {"de": "Ätherisch; wirkt Verstärkter Schaden", "en": "Ethereal; casts Amplify Damage"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"unique": "Gimmershred"}, "note": {"de": "Hat Kälteschaden: weniger Leichen zum Plündern", "en": "Has cold damage: fewer corpses to loot"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"unique": "Warshrike"}, "note": {"de": "Ätherisch; durchschlägt Gruppen", "en": "Ethereal; pierces through packs"}},
+    {"phase": "end", "slot": "offhand", "tier": "alt", "ref": {"unique": "Deathbit"}, "note": {"de": "Aufgewertet", "en": "Upgraded"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"set": "Guillaume's Face"}, "note": {"de": "Mit Cham gesockelt (Maxroll)", "en": "Socketed with Cham (Maxroll)"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Arreat's Face"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "utp", "sockets": 3}, "note": {"de": "Teleportieren", "en": "Teleport"}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}, "note": {"de": "Mehr Schaden", "en": "More damage"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Laying of Hands"}},
+    {"phase": "end", "slot": "gloves", "tier": "alt", "ref": {"unique": "Chance Guards"}, "note": {"de": "Für Magic Find", "en": "For magic find"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}},
+    {"phase": "end", "slot": "belt", "tier": "alt", "ref": {"unique": "Nosferatu's Coil"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Highlord's Wrath"}},
+    {"phase": "end", "slot": "amulet", "tier": "alt", "ref": {"unique": "Atma's Scarab"}, "note": {"de": "Verstärkter Schaden gegen physisch Immune", "en": "Amplify Damage against physical immunes"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"type": "ring", "quality": "rare"}, "note": {"de": "Leben, Treffer, Widerstände; ohne Kälteschaden", "en": "Life, attack rating, resistances; no cold damage"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Bone Break"}, "note": {"de": "Bricht physische Immunität", "en": "Breaks physical immunity"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Fertigkeiten und schnelles Zaubern zum Plündern", "en": "Skills and fast casting for Find Item"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword172"}, "base": {"item": "7cr", "sockets": 3}}
+  ],
+  "merc": {
+    "act": 1,
+    "difficulty": 2,
+    "aura": "Fire Arrow",
+    "why": {
+      "de": "Jägerin aus Akt 1 mit Feuerpfeilen, Glaube gibt Fanatismus; Feuer statt Kälte schont die Leichen",
+      "en": "Act 1 rogue with fire arrows, Faith gives Fanaticism; fire instead of cold keeps corpses intact"
+    },
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "bow", "sockets": 4}, "note": {"de": "Unsere Wahl vor Glaube: Meditation für Mana", "en": "Our choice before Faith: Meditation for mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword38"}, "base": {"type": "bow", "sockets": 4}, "note": {"de": "Fanatismus: mehr Tempo und Schaden", "en": "Fanaticism: more speed and damage"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}},
+      {"slot": "armor", "tier": "bis", "ref": {"unique": "Shaftstop"}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Double Throw Barbarian Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/double-throw-barbarian-guide",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Immunitäten",
+        "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, immunities"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Double Throw Barbarian Build Guide (Double Throw + Throwing Mastery)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/double-throw-barb/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Juni 2026; Doppelwurf ab 12, Punkte, Geschick 200–300, Ausrüstung",
+        "en": "Read in full; June 2026; Double Throw from 12, points, 200-300 dexterity, gear"
+      }
+    },
+    {
+      "site": "Maxroll",
+      "title": "Barbarian Leveling Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/barbarian-leveling",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; Leveln-Ausrüstung bis 29 (Todes-Set, Tarnung)", "en": "Read in full; leveling gear up to 29 (Death set, Stealth)"}
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-05",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; keine Barbaren-Balance-Änderung, Fehler bei Sprung behoben",
+        "en": "Read in full; no Barbarian balance change, Leap bug fixed"
+      }
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

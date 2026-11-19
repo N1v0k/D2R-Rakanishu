@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "id": "ass-traps",
+  "version": 2,
+  "class": "ass",
+  "classIndex": 6,
+  "title": {"de": "Blitzfallen-Assassine (Trapsin)", "en": "Lightning Trap Assassin (Trapsin)"},
+  "summary": {
+    "de": "Fallen-Baum: Blitzwächter schießen durchschlagende Blitze, Todeswächter sprengen Leichen. Leveln mit Feuerbombe und Feuerwelle, mit 38 Umskillen auf Fallen; im Endgame fünf Fallen auf 20 und ein Söldner mit Unendlichkeit.",
+    "en": "Traps tree: Lightning Sentries fire piercing bolts, Death Sentries blow up corpses. Level with Fire Blast and Wake of Fire, respec to traps at 38; in the endgame five traps at 20 and a mercenary with Infinity."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sicher: Fallen kämpfen auf Abstand, Gedankenschlag und Schattenmantel halten Gegner fern", "Blitz, Feuer und Kadaverexplosion: drei Schadensarten", "Günstiger Einstieg mit Geist und einem Stab mit Widerstandsschwund-Ladungen"],
+      "en": ["Safe: traps fight at range, Mind Blast and Cloak of Shadows keep enemies away", "Lightning, fire and corpse explosions: three damage types", "Cheap start with Spirit and a wand with Lower Resist charges"]
+    },
+    "weaknesses": {
+      "de": ["Ohne Unendlichkeit oder Himmelsriss langsam gegen Blitz-Immune; Feuerbombe hilft", "Schaden baut sich langsam auf; frühe Akt-Bosse sind zäh", "Teures Endgame: Unendlichkeit, Greifenauge, Rätsel"],
+      "en": ["Slow against lightning immunes without Infinity or Crack of the Heavens; Fire Blast helps", "Damage builds up slowly; early act bosses take a while", "Expensive endgame: Infinity, Griffon's Eye, Enigma"]
+    },
+    "notes": {
+      "de": ["Leveln und Umskillen mit 38 nach Maxroll; GIGA skillt schon ab 32 im Albtraum um", "Ohne Umskillen (Gamer Guides, 2.4): Schocknetz, Comboblitzwächter, ab 24 Blitzwächter", "Fallen legen nutzt Angriffstempo (Temposchub); Zaubertempo hilft beim Teleport", "Hauptquellen Stand 3.2, GIGA von 2021; laut Patchnotes ändern 3.2 und 3.3 die Assassine nicht"],
+      "en": ["Leveling and the respec at 38 after Maxroll; GIGA respecs from 32 in Nightmare", "No respec (Gamer Guides, 2.4): Shock Web, Charged Bolt Sentry, Lightning Sentry from 24", "Laying traps uses attack speed (Burst of Speed); cast rate helps Teleport", "Main sources as of 3.2, GIGA from 2021; per the patch notes 3.2 and 3.3 do not change the Assassin"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "lightning", "fire", "caster"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [271, 276, 251],
+  "trees": [1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["lightning", "fire", "physical"],
+    "keySkills": [{"skill": 271, "w": 1.0}, {"skill": 276, "w": 0.7}, {"skill": 256, "w": 0.6}, {"skill": 261, "w": 0.6}, {"skill": 251, "w": 0.5}, {"skill": 258, "w": 0.2}],
+    "tabs": [{"class": 6, "page": 1, "w": 1.0}, {"class": 6, "page": 2, "w": 0.2}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "ass/1", "w": 1.0},
+      "item_singleskill": {"param": 271, "w": 0.7}, "passive_ltng_pierce": 0.9, "item_pierce_light_immunity": 0.6,
+      "item_fasterattackrate": 0.4, "item_fastercastrate": 0.4, "item_fastergethitrate": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [8, 16, 27, 42, 65, 102], "source": "https://www.diablobytes.com/d2-resurrected/builds/lightning-trapsin/", "verified": false},
+    "requirements": {"str": 156, "dex": 79}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln (Feuer)", "en": "Leveling (fire)"},
+      "levels": [1, 37],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll: Feuerbombe, Temposchub, ab 12 Feuerwelle; Questpunkte, ab 32 alles in Feuerbombe. Werte vereinfacht.", "en": "After Maxroll: Fire Blast, Burst of Speed, Wake of Fire from 12; quests, from 32 all into Fire Blast. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 251, "key": "Fire Trauma", "to": 4, "note": {"de": "Hauptangriff bis Feuerwelle", "en": "Main attack until Wake of Fire"}},
+        {"lvl": 2, "skill": 252, "key": "Claw Mastery", "to": 1, "note": {"de": "Punkt aus der Höhle des Bösen", "en": "Den of Evil point; prerequisite"}},
+        {"lvl": 6, "skill": 258, "key": "Quickness", "to": 2, "note": {"de": "Immer aktiv halten", "en": "Keep it up at all times"}},
+        {"lvl": 8, "skill": 251, "key": "Fire Trauma", "to": 5},
+        {"lvl": 9, "skill": 258, "key": "Quickness", "to": 5},
+        {"lvl": 12, "skill": 262, "key": "Wake of Fire Sentry", "to": 20, "note": {"de": "Ein Punkt je Stufe (Obergrenze)", "en": "One point per level (level cap)"}},
+        {"lvl": 12, "skill": 251, "key": "Fire Trauma", "to": 14, "note": {"de": "Questpunkte, ab 32 alle Punkte", "en": "Quest points, all points from 32"}}
+      ],
+      "stats": [
+        {"stat": "ene", "to": 35, "why": {"de": "Stufe 2-3: Mana zum Start", "en": "Levels 2-3: mana at the start"}},
+        {"stat": "vit", "to": 105, "why": {"de": "Bis etwa Stufe 20 (Maxroll)", "en": "Until about level 20 (Maxroll)"}},
+        {"stat": "str", "to": 43, "why": {"de": "Geist im Kristallschwert", "en": "Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "trap",
+      "name": {"de": "Fallen ab 38", "en": "Traps from 38"},
+      "levels": [38, 74],
+      "plan": "respec",
+      "note": {"de": "Umskillen mit 38 vor Akt 4 Albtraum (Maxroll; je nach Quests bis 40); dann Blitz-, Comboblitzwächter, Schocknetz voll.", "en": "Respec at 38 before Nightmare Act 4 (Maxroll; by 40 per quests); then max Lightning and Charged Bolt Sentry, Shock Web."},
+      "skills": [
+        {"lvl": 38, "skill": 251, "key": "Fire Trauma", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 256, "key": "Shock Field", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 271, "key": "Lightning Sentry", "to": 15, "note": {"de": "Hauptschaden; 15 mit Stufe 38", "en": "Main damage; 15 at level 38"}},
+        {"lvl": 38, "skill": 276, "key": "Death Sentry", "to": 9, "note": {"de": "Kadaverexplosion; 9 mit Stufe 38", "en": "Corpse explosion; 9 at level 38"}},
+        {"lvl": 38, "skill": 252, "key": "Claw Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 258, "key": "Quickness", "to": 3},
+        {"lvl": 38, "skill": 253, "key": "Psychic Hammer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 264, "key": "Cloak of Shadows", "to": 1, "note": {"de": "Blendet Gegner auf Abstand", "en": "Blinds ranged enemies"}},
+        {"lvl": 38, "skill": 273, "key": "Mind Blast", "to": 1, "note": {"de": "Betäubt und bekehrt Gegner", "en": "Stuns and converts enemies"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 10, "note": {"de": "Synergie für Blitzwächter", "en": "Synergy for Lightning Sentry"}},
+        {"lvl": 38, "skill": 271, "key": "Lightning Sentry", "to": 20, "note": {"de": "Zuerst voll", "en": "Max first"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 20},
+        {"lvl": 38, "skill": 256, "key": "Shock Field", "to": 20, "note": {"de": "Synergie für Blitzwächter", "en": "Synergy for Lightning Sentry"}},
+        {"lvl": 38, "skill": 251, "key": "Fire Trauma", "to": 7, "note": {"de": "Rest; ab 75 weiter", "en": "The rest; continues from 75"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust 45, Kristallschwert 43", "en": "Magefist 45, Crystal Sword 43"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Nach dem Umskillen alles in Leben", "en": "After the respec, all into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll ab 75: Todeswächter, Feuerbombe 20, je 1 Verblassen, Waffenblock; Temposchub bleibt 3 (unsere Wahl); 1 frei", "en": "Maxroll from 75: Death Sentry, Fire Blast 20, 1 each Fade, Weapon Block; Burst of Speed stays 3 (ours); 1 point free"},
+      "skills": [
+        {"lvl": 75, "skill": 267, "key": "Fade", "to": 1, "note": {"de": "Wahlweise statt Temposchub", "en": "Optional instead of Burst of Speed"}},
+        {"lvl": 75, "skill": 276, "key": "Death Sentry", "to": 20, "note": {"de": "Vierte volle Falle", "en": "Fourth maxed trap"}},
+        {"lvl": 75, "skill": 251, "key": "Fire Trauma", "to": 20, "note": {"de": "Gegen Blitz-Immune; mehr Schüsse", "en": "For lightning immunes; more shots"}},
+        {"lvl": 75, "skill": 263, "key": "Weapon Block", "to": 1, "note": {"de": "Nur mit zwei Klauen", "en": "Only with two claws"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 79, "why": {"de": "Großklauen 79; Monarch 156 mit Rätsel", "en": "Greater Talons 79; Monarch 156 w/ Enigma"}},
+        {"stat": "dex", "to": 79, "why": {"de": "Großklauen 79 (zwei Klauen)", "en": "Greater Talons 79 (dual claws)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"item": "sst", "sockets": 2}, "note": {"de": "Ab 19; Kurzstab von Akara", "en": "From 19; Short Staff from Akara"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Runen von der Gräfin im Albtraum", "en": "Runes from the Nightmare Countess"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "shie", "sockets": 3}, "note": {"de": "Großer oder eckiger Schild (Farah)", "en": "Large or Kite Shield (Farah)"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}, "note": {"de": "Runen von der Gräfin im Albtraum", "en": "Runes from the Nightmare Countess"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab 17; Runen von der Gräfin (Normal)", "en": "From 17; runes from the Countess (Normal)"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Kriegsstab mit Teleport-Ladungen (Ormus)", "en": "Battle Staff with Teleport charges (Ormus)"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"type": "glov", "quality": "magic"}, "note": {"de": "Schwere Handschuhe mit Angriffstempo", "en": "Heavy Gloves with attack speed"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen, Blitz-/Feuer-Widerstand", "en": "Faster run, lightning/fire resistance"}},
+    {"phase": "trap", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Bleibt bis zum Endgame", "en": "Kept until the endgame"}},
+    {"phase": "trap", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "shie", "sockets": 3}, "note": {"de": "Aus Normal weiter nutzen", "en": "Carried over from Normal"}},
+    {"phase": "trap", "slot": "switch", "tier": "bis", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Widerstandsschwund-Ladungen (Drognan, Akara)", "en": "Lower Resist charges (Drognan, Akara)"}},
+    {"phase": "trap", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "trap", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword175"}, "base": {"type": "helm", "sockets": 3}, "note": {"de": "Oder Temperament / Heim (seit 2.6)", "en": "Or Temper / Hearth (since 2.6)"}},
+    {"phase": "trap", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Günstige Widerstände", "en": "Cheap resistances"}},
+    {"phase": "trap", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "trap", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "Schneller zaubern, +1 Feuer-Fertigkeiten", "en": "Faster cast rate, +1 fire skills"}},
+    {"phase": "trap", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Assassinen- oder +Fallen-Fertigkeiten", "en": "+Assassin or +Traps skills"}},
+    {"phase": "trap", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "trap", "slot": "charm", "tier": "budget", "ref": {"type": "lcha", "quality": "magic"}, "note": {"de": "Riesenzauber mit +1 Fallen", "en": "Grand Charm with +1 Traps"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"type": "h2h", "quality": "magic"}, "note": {"de": "Großklauen +3 Fallen, +3 Blitzwächter (Anya)", "en": "Greater Talons +3 Traps, +3 Lightning Sentry (Anya)"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"type": "h2h", "quality": "magic"}, "note": {"de": "Zweite Klaue; 2 Regenbogenfacetten", "en": "Second claw; 2 Rainbow Facets"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "Schild statt zweiter Klaue", "en": "Shield instead of a second claw"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Griffon's Eye"}, "note": {"de": "Mit Regenbogenfacette (Blitz)", "en": "With a Rainbow Facet (lightning)"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport, +2 Fertigkeiten", "en": "Teleport, +2 skills"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"set": "Aldur's Advance"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Zweiter Ring: Bul Kathos' Hochzeitsring", "en": "Second ring: Bul-Kathos' Wedding Band"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Crack of the Heavens"}, "note": {"de": "Bricht Blitz-Immunität; plus Fackel, Vernichtikus", "en": "Breaks lightning immunity; plus Torch, Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Holy Freeze",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum), Heiliger Frost bremst; Unendlichkeit senkt Blitz-Widerstand", "en": "Act 2 desert mercenary (Nightmare), Holy Freeze slows; Infinity lowers lightning resistance"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"item": "9pa", "sockets": 4}, "note": {"de": "Vor Unendlichkeit: Mana über Meditation", "en": "Before Infinity: mana via Meditation"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7s8", "sockets": 4, "eth": true}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Lightning Sentry Assassin Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/lightning-sentry-assassin", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Mechanik", "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Assassin Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/assassin-leveling", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Feuer-Leveln, Umskillen mit 38, Ausrüstung", "en": "Read in full; updated 2026-05-22; fire leveling, respec at 38, gear"}},
+    {"site": "DiabloBytes", "title": "Lightning Trapsin Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/lightning-trapsin/", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand Juni 2026; Reihenfolge, Ausrüstung, Söldner, FCR; Freischaltstufen falsch", "en": "Read in full; June 2026; order, gear, mercenary, FCR; its unlock levels are wrong"}},
+    {"site": "Gamer Guides", "title": "Trap Assassin - Assassin Builds (Diablo II: Resurrected)", "url": "https://www.gamerguides.com/diablo-ii-resurrected/guide/characters/assassin-builds/trap-assassin", "seen": "2026-11-03", "patch": "2.4", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 01.03.2023: Plan ohne Umskillen; sonst Feuerwelle und Umskillen", "en": "Read in full; updated 2023-03-01: a plan without respec; otherwise Wake of Fire and respec"}},
+    {"site": "GIGA", "title": "Diablo 2 Resurrected: Die besten Builds für die Assassine", "url": "https://www.giga.de/tipp/diablo-2-resurrected-die-besten-builds-fuer-die-assassine/", "seen": "2026-11-03", "patch": "2021, ohne Angabe", "kind": "guide", "lang": "de",
+     "note": {"de": "Ganz gelesen; 02.11.2021: Feuerbombe und Feuerwelle bis 31, ab 32 Umskillen auf Fallen", "en": "Read in full; 2021-11-02: Fire Blast and Wake of Fire to 31, respec to traps from 32"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 14 (patch 3.2 notes)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; Klassenänderungen nur für den Hexenmeister, keine für die Assassine", "en": "Read in full; class changes only for the Warlock, none for the Assassin"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an Assassinen-Fertigkeiten", "en": "Read in full; no change to Assassin skills"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

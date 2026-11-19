@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "id": "ama-strafe",
+  "version": 1,
+  "class": "ama",
+  "classIndex": 0,
+  "title": {"de": "Streuen-Bogenamazone (Strafe-Bowazon)", "en": "Strafe Bow Amazon (Strafe Bowazon)"},
+  "summary": {
+    "de": "Streuen feuert eine schnelle Pfeilsalve auf alles in Reichweite; Gelenkter Pfeil und Mehrfachschuss verstärken es und helfen gegen Bosse und offene Flächen. Leveln mit Explodierendem Pfeil bis 37, mit 38 Umskillen. Ziel: Glaube im Großen Matronenbogen, Klingenschweif, Atmas Skarabäus, Söldner mit Macht und Stolz.",
+    "en": "Strafe fires a fast volley of arrows at everything in range; Guided Arrow and Multiple Shot boost it and help against bosses and open areas. Level with Exploding Arrow until 37, respec at 38. Goal: Faith in a Grand Matron Bow, Razortail, Atma's Scarab, a Might mercenary with Pride."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Bequem: ein Angriff, der sich die Ziele selbst sucht", "Sehr stark in Gängen, wo die Gegner hintereinander stehen", "Früh mit wenig Ausrüstung spielbar, gute Brücke zur Mehrfachschuss-Amazone"],
+      "en": ["Easy: one attack that picks its own targets", "Very strong in corridors where enemies line up", "Playable early with little gear, a good bridge to the Multi-Shot Amazon"]
+    },
+    "weaknesses": {
+      "de": ["Glaskanone: wenig Leben, Seelen-Gruppen sind gefährlich", "Lange Angriffsanimation; in offenen Gebieten schwächer", "Nur physischer Schaden; gegen Physisch-Immune meist Atmas Skarabäus"],
+      "en": ["Glass cannon: little life, packs of Souls are dangerous", "Long attack animation; weaker in open areas", "Physical damage only; against physical immunes usually Atma's Scarab"]
+    },
+    "notes": {
+      "de": ["Leveln nach Maxroll mit Feuerbogen; Maxroll skillt mit 38 auf Wurfspieß, wir gleich auf Bogen", "Durchbohren 5 wie im Maxroll-Planer; mit +Fertigkeiten ~69 %, mit Klingenschweif fast 100 %", "Werte: Quellen setzen fast alles auf Geschick; 100 Vitalität ist unsere Sicherheitsreserve", "Manie (Wechselbogen) ist seit Patch 3.3 auch ohne Ladder erhältlich", "Maxroll Stand 18.07.2026 (S14), DiabloBytes Juni 2026; 3.3 ändert keine Amazonen-Fertigkeit"],
+      "en": ["Leveling after Maxroll with a fire bow; Maxroll respecs to javelins at 38, we go straight to the bow", "Pierce 5 as in the Maxroll planner; with +skills ~69%, with Razortail almost 100%", "Stats: sources put nearly everything into dexterity; 100 vitality is our safety margin", "Mania (swap bow) is also available outside the ladder since patch 3.3", "Maxroll updated 2026-07-18 (S14), DiabloBytes June 2026; 3.3 changes no Amazon skill"]
+    }
+  },
+  "tags": ["leveling", "endgame", "physical", "magicfind"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [26, 22, 12],
+  "trees": [1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 15, "bossShare": 0.4},
+    "damage": ["physical"],
+    "keySkills": [{"skill": 26, "w": 1.0}, {"skill": 22, "w": 0.6}, {"skill": 12, "w": 0.5}, {"skill": 9, "w": 0.5}, {"skill": 33, "w": 0.4}, {"skill": 23, "w": 0.3}, {"skill": 32, "w": 0.2}],
+    "tabs": [{"class": 0, "page": 1, "w": 1.0}, {"class": 0, "page": 2, "w": 0.5}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "ama/1", "w": 1.0},
+      "item_singleskill": {"param": 26, "w": 0.6}, "item_fasterattackrate": 0.8, "item_fastergethitrate": 0.3, "item_fastermovevelocity": 0.4,
+      "item_maxdamage_percent": 0.7, "maxdamage": 0.6, "mindamage": 0.4, "item_tohit_percent": 0.5, "tohit": 0.5,
+      "item_crushingblow": 0.6, "item_deadlystrike": 0.6, "item_openwounds": 0.3, "item_pierce": 0.7, "item_demondamage_percent": 0.3,
+      "lifedrainmindam": 0.6, "manadrainmindam": 0.5, "item_cannotbefrozen": 0.5, "dexterity": 0.6, "strength": 0.2,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "requirements": {"str": 134, "dex": 187}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln (Feuer)", "en": "Leveling (fire)"},
+      "levels": [1, 37],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll: erst Feuerpfeil, ab 12 Explodierender Pfeil; Giftwurfspieß bis Ende Akt 1. Questpunkte vereinfacht.", "en": "After Maxroll: Fire Arrow first, Exploding Arrow from 12; Poison Javelin to the end of Act 1; quests simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 7, "key": "Fire Arrow", "to": 4, "note": {"de": "Stufe 2 bis 5", "en": "Levels 2 to 5"}},
+        {"lvl": 6, "skill": 6, "key": "Magic Arrow", "to": 1, "note": {"de": "Der Punkt aus der Höhle des Bösen", "en": "The Den of Evil point"}},
+        {"lvl": 6, "skill": 15, "key": "Poison Javelin", "to": 5, "note": {"de": "Mit Wurfspießen auf dem Wechselplatz", "en": "With javelins on weapon swap"}},
+        {"lvl": 11, "skill": 12, "key": "Multiple Shot", "to": 1, "note": {"de": "Voraussetzung für Explodierenden Pfeil", "en": "Prerequisite for Exploding Arrow"}},
+        {"lvl": 12, "skill": 16, "key": "Exploding Arrow", "to": 20, "note": {"de": "Hauptangriff bis zum Umskillen", "en": "Main attack until the respec"}},
+        {"lvl": 12, "skill": 7, "key": "Fire Arrow", "to": 13, "note": {"de": "Synergie; Maxroll gibt auch Questpunkte hierher", "en": "Synergy; Maxroll also puts quest points here"}}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 70, "why": {"de": "Maxroll: Stufe 2 bis 11 in Vitalität", "en": "Maxroll: levels 2 to 11 into vitality"}},
+        {"stat": "dex", "to": 28, "why": {"de": "Jagdbogen", "en": "Hunter's Bow"}},
+        {"stat": "str", "to": 27, "why": {"de": "Beschlagenes Leder für Verstohlenheit", "en": "Studded Leather for Stealth"}},
+        {"stat": "ene", "to": 30, "why": {"de": "Maxroll: Stufe 14 bis 16, Mana für Pfeile", "en": "Maxroll: levels 14 to 16, mana for arrows"}},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Streuen", "en": "Strafe"},
+      "levels": [38, 99],
+      "plan": "respec",
+      "note": {"de": "Mit 38 umskillen. Nach Maxroll: Streuen, Gelenkter Pfeil, Mehrfachschuss, Kritischer Schlag voll, Rest Durchschlagen.", "en": "Respec at Akara at 38. Targets after Maxroll: Strafe, Guided Arrow, Multiple Shot, Critical Strike, the rest Penetrate."},
+      "skills": [
+        {"lvl": 38, "skill": 6, "key": "Magic Arrow", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 12, "key": "Multiple Shot", "to": 1},
+        {"lvl": 38, "skill": 11, "key": "Cold Arrow", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 22, "key": "Guided Arrow", "to": 1},
+        {"lvl": 38, "skill": 26, "key": "Strafe", "to": 1, "note": {"de": "Ab jetzt der Hauptangriff", "en": "From now on the main attack"}},
+        {"lvl": 38, "skill": 8, "key": "Inner Sight", "to": 1},
+        {"lvl": 38, "skill": 17, "key": "Slow Missiles", "to": 1, "note": {"de": "Bremst gegnerische Geschosse", "en": "Slows enemy projectiles"}},
+        {"lvl": 38, "skill": 28, "key": "Dopplezon", "to": 1, "note": {"de": "Lockvogel zieht Gegner ab", "en": "Decoy draws enemies away"}},
+        {"lvl": 38, "skill": 13, "key": "Dodge", "to": 1},
+        {"lvl": 38, "skill": 18, "key": "Avoid", "to": 1},
+        {"lvl": 38, "skill": 29, "key": "Evade", "to": 1},
+        {"lvl": 38, "skill": 32, "key": "Valkyrie", "to": 1, "note": {"de": "Tank, hält Gegner von dir fern", "en": "Tank, keeps enemies off you"}},
+        {"lvl": 38, "skill": 9, "key": "Critical Strike", "to": 1},
+        {"lvl": 38, "skill": 23, "key": "Penetrate", "to": 1},
+        {"lvl": 38, "skill": 33, "key": "Pierce", "to": 1},
+        {"lvl": 38, "skill": 26, "key": "Strafe", "to": 20},
+        {"lvl": 38, "skill": 33, "key": "Pierce", "to": 5, "note": {"de": "Mit Klingenschweif fast immer durch", "en": "With Razortail almost always through"}},
+        {"lvl": 38, "skill": 22, "key": "Guided Arrow", "to": 20, "note": {"de": "Synergie für Streuen; Einzelziele", "en": "Synergy for Strafe; single targets"}},
+        {"lvl": 38, "skill": 12, "key": "Multiple Shot", "to": 20, "note": {"de": "Synergie; für offene Flächen", "en": "Synergy; for open areas"}},
+        {"lvl": 38, "skill": 9, "key": "Critical Strike", "to": 20, "note": {"de": "Doppelter physischer Schaden", "en": "Double physical damage"}},
+        {"lvl": 38, "skill": 23, "key": "Penetrate", "to": 16, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 110, "why": {"de": "Buriza 110, Glaube 108; Windmacht braucht 134", "en": "Buriza 110, Faith 108; Windforce needs 134"}},
+        {"stat": "dex", "to": 187, "why": {"de": "Nebel-Matriarchenbogen 187, Glaube 152", "en": "Mist Matriarchal Bow 187, Faith 152"}},
+        {"stat": "vit", "to": 100, "why": {"de": "Etwas Leben als Reserve", "en": "Some life as a safety margin"}},
+        {"stat": "ene", "none": true},
+        {"stat": "dex", "rest": true, "why": {"de": "Geschick erhöht den Bogenschaden", "en": "Dexterity raises bow damage"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"item": "hbw"}, "note": {"de": "Jagdbogen mit Rubinen in den Sockeln", "en": "Hunter's Bow with rubies in the sockets"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword170"}, "base": {"item": "hbw", "sockets": 2}, "note": {"de": "Statt des Bogens mit Edelsteinen (Maxroll)", "en": "Instead of the gemmed bow (Maxroll)"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab Stufe 17", "en": "From level 17"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"type": "glov", "quality": "magic"}, "note": {"de": "Alptraum: mit schnellerem Angriff", "en": "Nightmare: with faster attack"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schnelleres Laufen, Widerstände", "en": "Faster run, resistances"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Kriegsstab mit Teleport-Ladungen von Ormus, ab Stufe 24", "en": "Staff with Teleport charges from Ormus, from level 24"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword38"}, "base": {"item": "amc", "sockets": 4}, "note": {"de": "Fanatismus-Aura: schneller und stärker", "en": "Fanaticism aura: faster and stronger"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"unique": "Windforce"}, "note": {"de": "Sehr viel Schaden, braucht 134 Stärke", "en": "Huge damage, needs 134 strength"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword84"}, "base": {"item": "amb", "sockets": 5}, "note": {"de": "Konzentration und eingebautes Durchbohren (DiabloBytes)", "en": "Concentration and built-in piercing (DiabloBytes)"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword170"}, "base": {"item": "hbw", "sockets": 2}, "note": {"de": "Unsere Wahl als Übergang nach dem Umskillen, bis Buriza (Stufe 41)", "en": "Our choice as a bridge after the respec, until Buriza (level 41)"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"unique": "Buriza-Do Kyanon"}, "note": {"de": "Starter: durchbohrt immer, Durchbohren-Punkte unnötig", "en": "Starter: always pierces, no Pierce points needed"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"set": "Guillaume's Face"}, "note": {"de": "Vernichtender Schlag, tödlicher Schlag, Juwel in den Sockel", "en": "Crushing blow, deadly strike, a jewel in the socket"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"type": "circ", "quality": "magic"}, "note": {"de": "Maxroll-Planer: magisches Diadem mit 3 Sockeln und Juwelen", "en": "Maxroll planner: magic Diadem with 3 sockets and jewels"}},
+    {"phase": "end", "slot": "helm", "tier": "budget", "ref": {"set": "Sigon's Visor"}, "note": {"de": "Mit Handschuhen und Schuhen von Sigon: viel Angriffswert", "en": "With Sigon's gloves and boots: lots of attack rating"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "utp", "sockets": 4}, "note": {"de": "Viel zusätzlicher Schaden", "en": "Lots of extra damage"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Laying of Hands"}, "note": {"de": "Schneller Angriff, viel Schaden gegen Dämonen", "en": "Faster attack, high damage to demons"}},
+    {"phase": "end", "slot": "gloves", "tier": "budget", "ref": {"set": "Sigon's Gage"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}, "note": {"de": "Durchbohren von Gegenständen; mit dem Skill fast 100 %", "en": "Piercing from gear; with the skill almost 100%"}},
+    {"phase": "end", "slot": "belt", "tier": "budget", "ref": {"set": "Death's Guard"}, "note": {"de": "Kann nicht eingefroren werden", "en": "Cannot be frozen"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "boots", "tier": "budget", "ref": {"set": "Sigon's Sabot"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Atma's Scarab"}, "note": {"de": "Löst Verstärkter Schaden aus und bricht fast jede Physisch-Immunität", "en": "Triggers Amplify Damage, breaks almost any physical immunity"}},
+    {"phase": "end", "slot": "amulet", "tier": "alt", "ref": {"unique": "Highlord's Wrath"}, "note": {"de": "Mehr Schaden, aber kein Brechen von Immunitäten", "en": "More damage, but no immunity breaking"}},
+    {"phase": "end", "slot": "amulet", "tier": "budget", "ref": {"set": "Angelic Wings"}, "note": {"de": "Mit dem himmlischen Ring: viel Angriffswert", "en": "With the Angelic ring: lots of attack rating"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Kann nicht eingefroren werden", "en": "Cannot be frozen"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"type": "ring", "quality": "rare"}, "note": {"de": "Zweiter Ring: Lebens- und Manaraub", "en": "Second ring: life and mana leech"}},
+    {"phase": "end", "slot": "ring", "tier": "budget", "ref": {"set": "Angelic Halo"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Hellfire Torch"}, "note": {"de": "Amazonen-Fackel: +3 Amazonen-Fertigkeiten, auch für Durchbohren", "en": "Amazon torch: +3 Amazon skills, also for Pierce"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword172"}, "base": {"item": "amc", "sockets": 3}, "note": {"de": "Damit angreifen, bis Temposchub auslöst (5 %), dann zurück", "en": "Attack with it until Burst of Speed triggers (5%), then swap back"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword49"}, "base": {"item": "hbw", "sockets": 4}, "note": {"de": "Zwischen den Gruppen für schnelleres Laufen", "en": "Between packs for faster running"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Alptraum) mit Macht; Stolz gibt Konzentration für noch mehr physischen Schaden", "en": "Act 2 desert mercenary (Nightmare) with Might; Pride adds Concentration for even more physical damage"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"item": "9pa", "sockets": 4, "eth": true}, "note": {"de": "Meditation gegen Manamangel", "en": "Meditation against low mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword109"}, "base": {"item": "7h7", "sockets": 4, "eth": true}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3, "eth": true}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword14"}, "base": {"item": "utp", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"item": "crn", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Stirbt er zu oft: Vampirblick statt dessen", "en": "If he dies too often: Vampire Gaze instead"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Strafe Amazon Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/strafe-amazon", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen samt Planer; Stand 18.07.2026; Reihenfolge, Varianten, Ausrüstung, Söldner, Tempo-Stufe", "en": "Read in full incl. planner; updated 2026-07-18; max order, variants, gear, mercenary, speed breakpoint"}},
+    {"site": "Maxroll", "title": "Amazon Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/amazon-leveling-guide", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Feuerbogen bis 38, Werte und Ausrüstung beim Leveln", "en": "Read in full; updated 2026-05-22; fire bow until 38, leveling stats and gear"}},
+    {"site": "DiabloBytes", "title": "Strafe Amazon Build Guide — Bowazon", "url": "https://www.diablobytes.com/d2-resurrected/builds/strafe-amazon/", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand Juni 2026; Reihenfolge, Werte, Ausrüstung, Söldner; Stufen beim Leveln falsch", "en": "Read in full; updated June 2026; max order, stats, gear, mercenary; leveling levels are wrong"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-04", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; Manie und Bollwerk jetzt auch ohne Ladder; keine Amazonen-Fertigkeit geändert", "en": "Read in full; Mania and Bulwark now outside the ladder too; no Amazon skill changed"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

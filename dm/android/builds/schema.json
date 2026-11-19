@@ -1,0 +1,178 @@
+{
+  "$comment": "构建指南的数据格式（第 1 版）：只有我们自己的话、游戏表里的键 / 编号与数字；名字、说明与图都在导入包里从玩家自己的游戏文件取（gen_build_names.py）。check_builds.py 按这份校验，另加语义检查。 | The build guide data format (version 1): only our own words, keys / ids from the game tables, and numbers; names, descriptions and pictures are taken from the player's own game files at pack time (gen_build_names.py). check_builds.py validates against this, plus semantic checks.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "version", "class", "classIndex", "title", "summary", "overview", "tags", "difficulty", "mode", "gameVersion", "patch",
+               "keySkills", "trees", "profile", "phases", "gear", "merc", "sources", "review"],
+  "properties": {
+    "schema": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "minLength": 3, "maxLength": 40},
+    "version": {"type": "integer", "minimum": 1, "maximum": 999},
+    "class": {"enum": ["ama", "sor", "nec", "pal", "bar", "dru", "ass", "war"]},
+    "classIndex": {"type": "integer", "minimum": 0, "maximum": 7},
+    "title": {"$ref": "#/$defs/text60"},
+    "summary": {"$ref": "#/$defs/text400"},
+    "overview": {
+      "type": "object", "additionalProperties": false, "required": ["strengths", "weaknesses"],
+      "properties": {"strengths": {"$ref": "#/$defs/textList"}, "weaknesses": {"$ref": "#/$defs/textList"}, "notes": {"$ref": "#/$defs/textList"}}
+    },
+    "tags": {"type": "array", "maxItems": 8, "uniqueItems": true,
+             "items": {"enum": ["leveling", "endgame", "budget", "bosses", "ssf", "magicfind", "fire", "cold", "lightning", "poison", "physical", "magic", "summon", "melee", "caster"]}},
+    "difficulty": {"type": "integer", "minimum": 1, "maximum": 3},
+    "mode": {"type": "object", "additionalProperties": false, "required": ["core", "ladder"],
+             "properties": {"core": {"enum": ["softcore", "hardcore"]}, "ladder": {"enum": ["nonladder", "ladder"]}}},
+    "gameVersion": {"const": "3.3.94012"},
+    "patch": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "keySkills": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"$ref": "#/$defs/skillId"}},
+    "trees": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 3}},
+    "profile": {"$ref": "#/$defs/profile"},
+    "phases": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/phase"}},
+    "gear": {"type": "array", "maxItems": 48, "items": {"$ref": "#/$defs/gear"}},
+    "merc": {"$ref": "#/$defs/merc"},
+    "sources": {"type": "array", "minItems": 2, "maxItems": 8, "items": {"$ref": "#/$defs/source"}},
+    "review": {
+      "type": "object", "additionalProperties": false, "required": ["checks", "played"],
+      "properties": {
+        "checks": {"type": "array", "uniqueItems": true, "items": {"enum": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"]}},
+        "played": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "skillId": {"type": "integer", "minimum": 0, "maximum": 511},
+    "text20": {"type": "object", "additionalProperties": false, "required": ["de", "en"],
+               "properties": {"de": {"type": "string", "minLength": 1, "maxLength": 20}, "en": {"type": "string", "minLength": 1, "maxLength": 20}}},
+    "text60": {"type": "object", "additionalProperties": false, "required": ["de", "en"],
+               "properties": {"de": {"type": "string", "minLength": 1, "maxLength": 60}, "en": {"type": "string", "minLength": 1, "maxLength": 60}}},
+    "text120": {"type": "object", "additionalProperties": false, "required": ["de", "en"],
+                "properties": {"de": {"type": "string", "minLength": 1, "maxLength": 120}, "en": {"type": "string", "minLength": 1, "maxLength": 120}}},
+    "text400": {"type": "object", "additionalProperties": false, "required": ["de", "en"],
+                "properties": {"de": {"type": "string", "minLength": 1, "maxLength": 400}, "en": {"type": "string", "minLength": 1, "maxLength": 400}}},
+    "textList": {"type": "object", "additionalProperties": false, "required": ["de", "en"],
+                 "properties": {"de": {"type": "array", "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 120}},
+                                "en": {"type": "array", "maxItems": 6, "items": {"type": "string", "minLength": 1, "maxLength": 120}}}},
+    "phase": {
+      "type": "object", "additionalProperties": false, "required": ["id", "name", "levels", "plan", "skills", "stats"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z]{2,8}$"},
+        "name": {"$ref": "#/$defs/text20"},
+        "levels": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1, "maximum": 99}},
+        "plan": {"enum": ["cumulative", "respec"]},
+        "note": {"$ref": "#/$defs/text120"},
+        "skills": {"type": "array", "maxItems": 120, "items": {"$ref": "#/$defs/step"}},
+        "stats": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/statRule"}},
+        "profile": {"$ref": "#/$defs/profile"}
+      }
+    },
+    "step": {
+      "type": "object", "additionalProperties": false, "required": ["lvl", "skill", "key", "to"],
+      "properties": {
+        "lvl": {"type": "integer", "minimum": 1, "maximum": 99},
+        "skill": {"$ref": "#/$defs/skillId"},
+        "key": {"type": "string", "minLength": 1, "maxLength": 40},
+        "to": {"type": "integer", "minimum": 1, "maximum": 20},
+        "save": {"type": "boolean"},
+        "note": {"$ref": "#/$defs/text60"}
+      }
+    },
+    "statRule": {
+      "type": "object", "additionalProperties": false, "required": ["stat"],
+      "properties": {
+        "stat": {"enum": ["str", "dex", "vit", "ene"]},
+        "to": {"type": "integer", "minimum": 0, "maximum": 500},
+        "rest": {"const": true},
+        "none": {"const": true},
+        "why": {"$ref": "#/$defs/text60"}
+      }
+    },
+    "ref": {
+      "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 2,
+      "properties": {
+        "runeword": {"type": "string", "pattern": "^Runeword[0-9]{1,3}$"},
+        "unique": {"type": "string", "minLength": 1, "maxLength": 40},
+        "set": {"type": "string", "minLength": 1, "maxLength": 40},
+        "item": {"type": "string", "pattern": "^[a-z0-9]{2,4}$"},
+        "type": {"type": "string", "pattern": "^[a-z0-9]{3,4}$"},
+        "quality": {"enum": ["normal", "superior", "magic", "rare", "set", "unique"]}
+      }
+    },
+    "base": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": {
+        "item": {"type": "string", "pattern": "^[a-z0-9]{2,4}$"},
+        "type": {"type": "string", "pattern": "^[a-z0-9]{3,4}$"},
+        "sockets": {"type": "integer", "minimum": 1, "maximum": 6},
+        "eth": {"type": "boolean"}
+      }
+    },
+    "gear": {
+      "type": "object", "additionalProperties": false, "required": ["phase", "slot", "tier", "ref"],
+      "properties": {
+        "phase": {"type": "string", "pattern": "^[a-z]{2,8}$"},
+        "slot": {"enum": ["weapon", "offhand", "helm", "armor", "gloves", "belt", "boots", "amulet", "ring", "charm", "switch"]},
+        "tier": {"enum": ["budget", "bis", "alt"]},
+        "ref": {"$ref": "#/$defs/ref"},
+        "base": {"$ref": "#/$defs/base"},
+        "note": {"$ref": "#/$defs/text120"}
+      }
+    },
+    "mercGear": {
+      "type": "object", "additionalProperties": false, "required": ["slot", "tier", "ref"],
+      "properties": {
+        "slot": {"enum": ["weapon", "helm", "armor"]},
+        "tier": {"enum": ["budget", "bis", "alt"]},
+        "ref": {"$ref": "#/$defs/ref"},
+        "base": {"$ref": "#/$defs/base"},
+        "note": {"$ref": "#/$defs/text120"}
+      }
+    },
+    "merc": {
+      "type": "object", "additionalProperties": false, "required": ["act", "difficulty", "aura", "why", "gear"],
+      "properties": {
+        "act": {"enum": [1, 2, 3, 5]},
+        "difficulty": {"type": "integer", "minimum": 1, "maximum": 3},
+        "aura": {"type": "string", "minLength": 1, "maxLength": 40},
+        "why": {"$ref": "#/$defs/text120"},
+        "gear": {"type": "array", "maxItems": 12, "items": {"$ref": "#/$defs/mercGear"}}
+      }
+    },
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["site", "title", "url", "seen", "patch", "kind"],
+      "properties": {
+        "site": {"type": "string", "minLength": 1, "maxLength": 40},
+        "title": {"type": "string", "minLength": 1, "maxLength": 120},
+        "url": {"type": "string", "pattern": "^https://[^ ]+$", "maxLength": 300},
+        "seen": {"$ref": "#/$defs/date"},
+        "patch": {"type": "string", "maxLength": 20},
+        "kind": {"enum": ["guide", "database", "forum", "video", "vendor"]},
+        "lang": {"enum": ["de", "en"]},
+        "note": {"$ref": "#/$defs/text120"}
+      }
+    },
+    "weight": {"type": "number", "minimum": 0, "maximum": 1},
+    "profile": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "damage": {"type": "array", "uniqueItems": true, "items": {"enum": ["fire", "cold", "lightning", "poison", "magic", "physical"]}},
+        "keySkills": {"type": "array", "maxItems": 8, "items": {"type": "object", "additionalProperties": false, "required": ["skill", "w"],
+                      "properties": {"skill": {"$ref": "#/$defs/skillId"}, "w": {"$ref": "#/$defs/weight"}}}},
+        "tabs": {"type": "array", "maxItems": 3, "items": {"type": "object", "additionalProperties": false, "required": ["class", "page", "w"],
+                 "properties": {"class": {"type": "integer", "minimum": 0, "maximum": 7}, "page": {"type": "integer", "minimum": 1, "maximum": 3}, "w": {"$ref": "#/$defs/weight"}}}},
+        "stats": {"type": "object", "maxProperties": 40,
+                  "additionalProperties": {"oneOf": [{"$ref": "#/$defs/weight"},
+                                                     {"type": "object", "additionalProperties": false, "required": ["param", "w"],
+                                                      "properties": {"param": {"type": ["string", "integer"]}, "w": {"$ref": "#/$defs/weight"}}}]}},
+        "caps": {"type": "object", "maxProperties": 20, "additionalProperties": {"type": "integer", "minimum": 0, "maximum": 100}},
+        "breakpoints": {"type": "object", "additionalProperties": false, "required": ["verified"],
+                        "properties": {"item_fastercastrate": {"type": "array", "maxItems": 12, "items": {"type": "integer", "minimum": 0, "maximum": 400}},
+                                       "source": {"type": "string", "maxLength": 300}, "verified": {"type": "boolean"}}},
+        "requirements": {"type": "object", "additionalProperties": false,
+                         "properties": {"str": {"type": "integer", "minimum": 0, "maximum": 500}, "dex": {"type": "integer", "minimum": 0, "maximum": 500}}},
+        "bestgear": {"type": "object", "additionalProperties": false, "required": ["survivalHits", "bossShare"],
+                     "properties": {"survivalHits": {"type": "integer", "minimum": 0, "maximum": 200}, "bossShare": {"type": "number", "minimum": 0, "maximum": 1}}}
+      }
+    }
+  }
+}

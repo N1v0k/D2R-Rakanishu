@@ -1,0 +1,10 @@
+DmIOS.xcodeproj/
+Sources/Info.plist
+Sources/DmIOS.entitlements
+Gen/
+RomfsDownloader/Info.plist
+RomfsDownloader/RomfsDownloader.entitlements
+local.env
+
+Sources/TouchArt/dm_native_*.png
+Sources/dm_touch_native_art.c

@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "id": "bar-ww",
+  "version": 2,
+  "class": "bar",
+  "classIndex": 4,
+  "title": {"de": "Wirbelwind-Barbar", "en": "Whirlwind Barbarian"},
+  "summary": {
+    "de": "Wirbelwind dreht durch Gruppen und trifft alles ringsum; Klingenbeherrschung, Kampfbefehle und Trank suchen folgen. Leveln mit Doppelschwung und Raserei, Wirbelwind ab 30, im Endgame zwei Trauer-Phasenklingen.",
+    "en": "Whirlwind spins through packs and hits everything around you; Blade Mastery, Battle Orders and Find Potion follow. Level with Double Swing and Frenzy, Whirlwind from 30, two Grief Phase Blades in the endgame."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Hält viel aus und wirbelt durch ganze Gruppen", "Kampfbefehle und Kampfaufruf stärken auch die Gruppe", "Viele Ausrüstungswege, leicht zu lernen"],
+      "en": ["Tough, spins through whole packs", "Battle Orders and Battle Command also buff the party", "Many gear options, easy to learn"]
+    },
+    "weaknesses": {
+      "de": ["Stark von der Ausrüstung abhängig (Trauer, Rätsel)", "Langsam gegen physisch Immune: Amok, Altern vom Söldner", "Beim Wirbeln kein Trank; braucht Leben- und Mana-Absaugung"],
+      "en": ["Very gear-dependent (Grief, Enigma)", "Slow against physical immunes: Berserk, the merc's Decrepify", "No potions while spinning; needs life and mana leech"]
+    },
+    "notes": {
+      "de": ["Unsere Anpassung: Maxroll levelt 31–74 mit Kriegsschrei, wir skillen mit 30 auf Wirbelwind", "Zweimal umskillen: mit 30 (Maxroll: 31) und mit 75 (Maxroll); ab 75 Werte für Phasenklinge", "Trank suchen verstärkt Grausiger Schutz, Kampfbefehle stärkt Amok (Spieltabellen 3.3)", "Quellen Stand 3.2 (Fextralife von 2021); 3.3 ohne Balance-Änderung am Barbaren"],
+      "en": ["Our adaptation: Maxroll levels 31–74 with War Cry, we respec to Whirlwind at 30", "Respec twice: at 30 (Maxroll: 31) and at 75 (Maxroll); from 75 stats for Phase Blades", "Find Potion boosts Grim Ward, Battle Orders boosts Berserk (game tables 3.3)", "Sources as of 3.2 (Fextralife from 2021); 3.3 has no Barbarian balance change"]
+    }
+  },
+  "tags": ["leveling", "endgame", "physical", "melee"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [151, 127, 149],
+  "trees": [1, 3, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 20, "bossShare": 0.4},
+    "damage": ["physical", "magic"],
+    "keySkills": [{"skill": 151, "w": 1.0}, {"skill": 127, "w": 0.8}, {"skill": 149, "w": 0.7}, {"skill": 131, "w": 0.4}, {"skill": 152, "w": 0.4}, {"skill": 155, "w": 0.3}],
+    "tabs": [{"class": 4, "page": 1, "w": 1.0}, {"class": 4, "page": 3, "w": 0.6}, {"class": 4, "page": 2, "w": 0.5}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "bar/1", "w": 0.8},
+      "item_singleskill": {"param": 151, "w": 0.6}, "item_fasterattackrate": 0.7, "maxdamage": 0.5, "item_maxdamage_percent": 0.5,
+      "lifedrainmindam": 0.6, "manadrainmindam": 0.5, "item_deadlystrike": 0.5, "item_crushingblow": 0.5, "item_openwounds": 0.2,
+      "tohit": 0.3, "item_demondamage_percent": 0.2, "item_fastergethitrate": 0.3, "item_fastercastrate": 0.1, "damageresist": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "strength": 0.2, "dexterity": 0.2,
+      "item_fastermovevelocity": 0.2, "item_magicbonus": 0.1
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [63], "source": "https://maxroll.gg/d2/guides/whirlwind-barbarian-guide", "verified": false},
+    "requirements": {"str": 125, "dex": 136}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll-Reihenfolge: Doppelschwung mit zwei Szeptern, dann Flegel, Raserei und Kampfbefehle. Werte vereinfacht.", "en": "Maxroll order: Double Swing with two scepters, then flails, Frenzy and Battle Orders. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 126, "key": "Bash", "to": 1},
+        {"lvl": 3, "skill": 129, "key": "Mace Mastery", "to": 2, "note": {"de": "Szepter und Flegel sind Streitkolben", "en": "Scepters and flails are maces"}},
+        {"lvl": 6, "skill": 133, "key": "Double Swing", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 5 aufheben", "en": "Keep the point from level 5"}},
+        {"lvl": 6, "skill": 132, "key": "Leap", "to": 1, "note": {"de": "Voraussetzung für Sprungangriff", "en": "Prerequisite for Leap Attack"}},
+        {"lvl": 7, "skill": 133, "key": "Double Swing", "to": 6, "note": {"de": "Hauptangriff mit zwei Waffen", "en": "Main attack with two weapons"}},
+        {"lvl": 12, "skill": 126, "key": "Bash", "to": 6},
+        {"lvl": 16, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 16, "skill": 137, "key": "Taunt", "to": 1, "note": {"de": "Voraussetzung für Schlachtruf", "en": "Prerequisite for Battle Cry"}},
+        {"lvl": 18, "skill": 143, "key": "Leap Attack", "to": 1, "save": true, "note": {"de": "Fortbewegung über Hindernisse", "en": "Movement over obstacles"}},
+        {"lvl": 18, "skill": 146, "key": "Battle Cry", "to": 1},
+        {"lvl": 19, "skill": 129, "key": "Mace Mastery", "to": 3},
+        {"lvl": 20, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 21, "skill": 138, "key": "Shout", "to": 1},
+        {"lvl": 22, "skill": 140, "key": "Double Throw", "to": 1, "note": {"de": "Voraussetzung für Raserei", "en": "Prerequisite for Frenzy"}},
+        {"lvl": 24, "skill": 147, "key": "Frenzy", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 23 aufheben", "en": "Keep the point from level 23"}},
+        {"lvl": 24, "skill": 149, "key": "Battle Orders", "to": 1, "note": {"de": "Ständig aktiv halten", "en": "Keep it up all the time"}},
+        {"lvl": 24, "skill": 148, "key": "Increased Speed", "to": 1},
+        {"lvl": 25, "skill": 149, "key": "Battle Orders", "to": 2},
+        {"lvl": 25, "skill": 147, "key": "Frenzy", "to": 2},
+        {"lvl": 26, "skill": 126, "key": "Bash", "to": 9}
+      ],
+      "stats": [
+        {"stat": "str", "to": 41, "why": {"de": "Flegel für Boshaftigkeit (Maxroll)", "en": "Flail for Malice (Maxroll)"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel (Maxroll)", "en": "Flail (Maxroll)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "ww",
+      "name": {"de": "Wirbelwind", "en": "Whirlwind"},
+      "levels": [30, 74],
+      "plan": "respec",
+      "note": {"de": "Unsere Anpassung: mit 30 auf Wirbelwind umskillen (Maxroll nimmt Kriegsschrei); Reihenfolge nach Maxroll.", "en": "Our adaptation: respec to Whirlwind at 30 (Maxroll takes War Cry here); order as in Maxroll."},
+      "skills": [
+        {"lvl": 30, "skill": 126, "key": "Bash", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 132, "key": "Leap", "to": 1, "note": {"de": "Springt über Hindernisse", "en": "Jumps over obstacles"}},
+        {"lvl": 30, "skill": 139, "key": "Stun", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 143, "key": "Leap Attack", "to": 1, "note": {"de": "Fortbewegung bis Rätsel", "en": "Movement until Enigma"}},
+        {"lvl": 30, "skill": 144, "key": "Concentrate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 151, "key": "Whirlwind", "to": 1, "note": {"de": "Hauptangriff", "en": "Main attack"}},
+        {"lvl": 30, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 138, "key": "Shout", "to": 1},
+        {"lvl": 30, "skill": 149, "key": "Battle Orders", "to": 1},
+        {"lvl": 30, "skill": 155, "key": "Battle Command", "to": 1, "note": {"de": "+1 auf alle Fertigkeiten", "en": "+1 to all skills"}},
+        {"lvl": 30, "skill": 137, "key": "Taunt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 146, "key": "Battle Cry", "to": 1, "note": {"de": "Senkt Abwehr und Schaden", "en": "Lowers defense and damage"}},
+        {"lvl": 30, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 148, "key": "Increased Speed", "to": 1},
+        {"lvl": 30, "skill": 145, "key": "Iron Skin", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 153, "key": "Natural Resistance", "to": 1},
+        {"lvl": 30, "skill": 131, "key": "Find Potion", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 142, "key": "Find Item", "to": 1, "note": {"de": "Auf Bossen und Ratsmitgliedern", "en": "On bosses and Council members"}},
+        {"lvl": 30, "skill": 150, "key": "Grim Ward", "to": 1, "note": {"de": "Gegner fliehen; enge Gänge", "en": "Enemies flee; tight corridors"}},
+        {"lvl": 30, "skill": 152, "key": "Berserk", "to": 1, "note": {"de": "Unsere Wahl: früh gegen Immune", "en": "Our choice: early, for immunes"}},
+        {"lvl": 30, "skill": 151, "key": "Whirlwind", "to": 20, "note": {"de": "Ein Punkt je Stufe bis 49", "en": "One point per level until 49"}},
+        {"lvl": 30, "skill": 127, "key": "Blade Mastery", "to": 20, "note": {"de": "Für Schwerter; bekommt den Rest", "en": "For swords; takes the rest"}},
+        {"lvl": 30, "skill": 149, "key": "Battle Orders", "to": 20},
+        {"lvl": 30, "skill": 131, "key": "Find Potion", "to": 6, "note": {"de": "Stärkt Grausiger Schutz", "en": "Boosts Grim Ward"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 43, "why": {"de": "Kristallschwert (Maxroll nach Umskillen)", "en": "Crystal Sword (Maxroll after respec)"}},
+        {"stat": "dex", "none": true, "why": {"de": "Zwei Waffen, kein Schild zum Blocken", "en": "Two weapons, no shield to block"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {"de": "Mit 75 umskillen wie Maxroll: Werte für Phasenklingen, Punkte wie zuvor, dann Trank suchen voll, Rest in Amok.", "en": "Respec at 75 as in Maxroll: stats for Phase Blades, points as before, then Find Potion maxed, the rest into Berserk."},
+      "skills": [
+        {"lvl": 75, "skill": 126, "key": "Bash", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 132, "key": "Leap", "to": 1},
+        {"lvl": 75, "skill": 139, "key": "Stun", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 143, "key": "Leap Attack", "to": 1, "note": {"de": "Fortbewegung bis Rätsel", "en": "Movement until Enigma"}},
+        {"lvl": 75, "skill": 144, "key": "Concentrate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 151, "key": "Whirlwind", "to": 1},
+        {"lvl": 75, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 138, "key": "Shout", "to": 1},
+        {"lvl": 75, "skill": 149, "key": "Battle Orders", "to": 1},
+        {"lvl": 75, "skill": 155, "key": "Battle Command", "to": 1, "note": {"de": "Zweimal vor Kampfbefehle wirken", "en": "Cast twice before Battle Orders"}},
+        {"lvl": 75, "skill": 137, "key": "Taunt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 146, "key": "Battle Cry", "to": 1},
+        {"lvl": 75, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 148, "key": "Increased Speed", "to": 1},
+        {"lvl": 75, "skill": 145, "key": "Iron Skin", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 153, "key": "Natural Resistance", "to": 1},
+        {"lvl": 75, "skill": 131, "key": "Find Potion", "to": 1},
+        {"lvl": 75, "skill": 142, "key": "Find Item", "to": 1},
+        {"lvl": 75, "skill": 150, "key": "Grim Ward", "to": 1},
+        {"lvl": 75, "skill": 152, "key": "Berserk", "to": 1, "note": {"de": "Unsere Wahl: früh gegen Immune", "en": "Our choice: early, for immunes"}},
+        {"lvl": 75, "skill": 151, "key": "Whirlwind", "to": 20, "note": {"de": "Hauptschaden", "en": "Main damage"}},
+        {"lvl": 75, "skill": 127, "key": "Blade Mastery", "to": 20, "note": {"de": "Für die Phasenklingen", "en": "For the Phase Blades"}},
+        {"lvl": 75, "skill": 149, "key": "Battle Orders", "to": 20, "note": {"de": "Leben, Mana; Synergie für Amok", "en": "Life, mana; synergy for Berserk"}},
+        {"lvl": 75, "skill": 131, "key": "Find Potion", "to": 20, "note": {"de": "Stärkt Grausiger Schutz", "en": "Boosts Grim Ward"}},
+        {"lvl": 75, "skill": 152, "key": "Berserk", "to": 14, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 103, "why": {"de": "Archonplatte; Rest über Gegenstände", "en": "Archon Plate; the rest from items"}},
+        {"stat": "dex", "to": 136, "why": {"de": "Phasenklinge (DiabloBytes)", "en": "Phase Blade (DiabloBytes)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige (Maxroll)", "en": "Everything else (Maxroll)"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "normal"}, "note": {"de": "Zwei Szepter von Akara (Maxroll)", "en": "Two scepters from Akara (Maxroll)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword81"}, "base": {"item": "fla", "sockets": 3}, "note": {"de": "Ab 15; zweiter Flegel mit 3 Tal (Maxroll)", "en": "From 15; second flail with 3 Tal (Maxroll)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"unique": "SuperKhalimFlail"}, "note": {"de": "Akt 3 bis Travincal (Maxroll)", "en": "Act 3 until Travincal (Maxroll)"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword88"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"unique": "Bloodfist"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"set": "Death's Hand"}, "note": {"de": "Mit Wächter des Todes: Tempo, Widerstände", "en": "With Death's Guard: speed, resistances"}},
+    {"phase": "lvl", "slot": "belt", "tier": "bis", "ref": {"set": "Death's Guard"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleportieren-Ladungen, bei Ormus (Maxroll)", "en": "Teleport charges, from Ormus (Maxroll)"}},
+    {"phase": "ww", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Unsere Anpassung: Maxrolls Waffe für Kriegsschrei, nur Notlösung", "en": "Our adaptation: Maxroll's War Cry weapon, a stopgap only"}},
+    {"phase": "ww", "slot": "offhand", "tier": "alt", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Zweites Geist-Schwert (Notlösung)", "en": "Second Spirit sword (stopgap)"}},
+    {"phase": "ww", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword151"}, "base": {"item": "crs", "sockets": 6}, "note": {"de": "Ab 41; DiabloBytes nimmt eine Phasenklinge, das Kristallschwert (43 Stärke) ist unsere Wahl", "en": "From 41; DiabloBytes uses a Phase Blade, the Crystal Sword (43 Str) is our choice"}},
+    {"phase": "ww", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "ww", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Widerstände (Maxroll)", "en": "Resistances (Maxroll)"}},
+    {"phase": "ww", "slot": "gloves", "tier": "budget", "ref": {"type": "glov", "quality": "magic"}, "note": {"de": "Mit Widerständen (Maxroll)", "en": "With resistances (Maxroll)"}},
+    {"phase": "ww", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Vier Reihen, Feuer- und Blitzwiderstand", "en": "Four rows, fire and lightning resist"}},
+    {"phase": "ww", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen und Widerstände", "en": "Faster run and resistances"}},
+    {"phase": "ww", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleportieren-Stab bleibt (Maxroll)", "en": "Keep the Teleport staff (Maxroll)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword47"}, "base": {"item": "7cr", "sockets": 5}, "note": {"de": "In beiden Händen (Maxroll Standard)", "en": "In both hands (Maxroll standard)"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword47"}, "base": {"item": "7cr", "sockets": 5}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Arreat's Face"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"type": "tors", "sockets": 3}, "note": {"de": "Teleportieren; Magier- oder Archonplatte", "en": "Teleport; Mage Plate or Archon Plate"}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword41"}, "base": {"item": "utp", "sockets": 4}, "note": {"de": "Mehr Schaden statt Teleportieren", "en": "More damage instead of Teleport"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Laying of Hands"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "String of Ears"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Gorerider"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Highlord's Wrath"}, "note": {"de": "Oder Maras Kaleidoskop", "en": "Or Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Zweiter Ring: Bul Kathos' Hochzeitsring", "en": "Second ring: Bul-Kathos' Wedding Band"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Hellfire Torch"}, "note": {"de": "Barbar; dazu Vernichtikus", "en": "Barbarian; plus Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Nur zum Verstärken; daneben Herz der Eiche", "en": "For buffs only; Heart of the Oak beside it"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Schnitters Tribut wirkt Altern", "en": "Act 2 desert mercenary (Nightmare) with Might; The Reaper's Toll casts Decrepify"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}},
+      {"slot": "weapon", "tier": "bis", "ref": {"unique": "The Reaper's Toll"}, "note": {"de": "Ätherisch (Maxroll)", "en": "Ethereal (Maxroll)"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Ätherisch (Maxroll)", "en": "Ethereal (Maxroll)"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Whirlwind Barbarian Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/whirlwind-barbarian-guide", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Endgame ab 75: Punkte, Ausrüstung, Söldner, Mechanik", "en": "Read in full; updated 2026-05-22; endgame from 75: points, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Barbarian Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/barbarian-leveling", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte und Werte bis 30, Ausrüstung, Umskillen", "en": "Read in full; updated 2026-05-22; points and stats to 30, gear, respec"}},
+    {"site": "DiabloBytes", "title": "Whirlwind Barbarian Build Guide (WW Barb)", "url": "https://www.diablobytes.com/d2-resurrected/builds/whirlwind-barb/", "seen": "2026-11-03", "patch": "3.2 / 3.3 (unklar)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Juni 2026; Text sagt 3.2, Kopfzeile 3.3; gleiche Endgame-Reihenfolge, Werte, Ausrüstung; Wirbelwind ab 30", "en": "Read in full; June 2026; text says 3.2, header 3.3; same endgame order, stats, gear; Whirlwind from 30"}},
+    {"site": "Fextralife", "title": "Barbarian Build Guide Diablo 2 Resurrected: Whirlwind Barbarian", "url": "https://fextralife.com/barbarian-build-guide-diablo-2-resurrected-whirlwind-barbarian/", "seen": "2026-11-03", "patch": "2.x (2021)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; 30.09.2021, alt: mit Raserei leveln, dann auf Wirbelwind umskillen", "en": "Read in full; 2021-09-30, old: level with Frenzy, then respec to Whirlwind"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Barbaren", "en": "Read in full; no change to the Barbarian"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Barbaren, nur ein Fehler bei Sprung behoben", "en": "Read in full; no change to the Barbarian, only a Leap bug fix"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

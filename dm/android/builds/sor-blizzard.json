@@ -1,0 +1,184 @@
+{
+  "schema": 1,
+  "id": "sor-blizzard",
+  "version": 2,
+  "class": "sor",
+  "classIndex": 1,
+  "title": {"de": "Blizzard-Zauberin", "en": "Blizzard Sorceress"},
+  "summary": {
+    "de": "Kältebaum: Blizzard für Flächen, Gletschernadel und Eisstoß für Gruppen und Bosse, Teleport für schnelle Läufe. Leveln mit Nova wie bei Maxroll, mit 26 auf Kälte umskillen. Billig zu starten und beliebt zum Farmen mit Magic Find.",
+    "en": "Cold tree: Blizzard for areas, Glacial Spike and Ice Blast for packs and bosses, Teleport for fast runs. Level with Nova as Maxroll does, respec to cold at 26. Cheap to start and popular for magic-find farming."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Blizzard deckt große Flächen ab; Kälte verlangsamt und friert Gegner ein", "Teleport von Haus aus: schnelle Läufe zu Andariel, Mephisto und Pindleskin", "Billiger Start mit Geist, Überlieferung und Verstohlenheit; gut für Magic Find"],
+      "en": ["Blizzard covers large areas; cold slows and freezes monsters", "Native Teleport: fast runs to Andariel, Mephisto and Pindleskin", "Cheap start with Spirit, Lore and Stealth; good for magic find"]
+    },
+    "weaknesses": {
+      "de": ["Kälte-Immune in der Hölle: Söldner mit Macht, Der Kältespalt oder vorbeiteleportieren", "Wenig Leben, verträgt kaum Treffer: Abstand halten und Gegner ziehen", "Braucht Stufen für schnelleres Zaubern (63 / 105 %); Blizzard hat eine Abklingzeit"],
+      "en": ["Cold immunes in Hell: a Might mercenary, Cold Rupture or teleporting past them", "Low life, takes few hits: keep your distance and kite", "Needs faster cast rate breakpoints (63 / 105%); Blizzard has a cooldown"]
+    },
+    "notes": {
+      "de": ["Mit 26 bei Akara umskillen (Maxroll); D2Runewizard levelt mit Feuer und skillt um 30 um", "Ab 51 unsere Anpassung: weiter Kälte statt Meteor (Maxroll), spart ein zweites Umskillen", "Starter-Variante (Maxroll): Kältebeherrschung gleich nach Blizzard ausbauen", "Maxroll 22.05.2026 (S14), D2Runewizard 04/2025 (vor 3.0); 3.2/3.3 ohne Zauberin-Änderung"],
+      "en": ["Respec at Akara at 26 (Maxroll); D2Runewizard levels with fire and respecs near 30", "From 51 our adaptation: more cold instead of Meteor (Maxroll), saves a second respec", "Starter variant (Maxroll): raise Cold Mastery right after Blizzard", "Maxroll 2026-05-22 (S14), D2Runewizard 04/2025 (pre-3.0); no Sorceress changes in 3.2/3.3"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "magicfind", "cold", "caster"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [59, 55, 65],
+  "trees": [3, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["cold"],
+    "keySkills": [{"skill": 59, "w": 1.0}, {"skill": 55, "w": 0.7}, {"skill": 45, "w": 0.6}, {"skill": 65, "w": 0.6}, {"skill": 39, "w": 0.3}, {"skill": 54, "w": 0.3}],
+    "tabs": [{"class": 1, "page": 3, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "sor/3", "w": 1.0},
+      "item_singleskill": {"param": 59, "w": 0.6}, "item_fastercastrate": 0.8, "item_fastergethitrate": 0.3,
+      "passive_cold_mastery": 0.7, "passive_cold_pierce": 0.8, "item_pierce_cold_immunity": 0.5,
+      "fireresist": 0.3, "coldresist": 0.2, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [37, 63, 105], "source": "https://maxroll.gg/d2/guides/blizzard-sorceress ; https://maxroll.gg/d2/guides/sorceress-leveling", "verified": false},
+    "requirements": {"str": 156}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 25],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll: Comboblitz, dann Statikfeld und Nova; Teleport ab 18; Izual-Punkte in Statikfeld. Werte vereinfacht.", "en": "Maxroll: Charged Bolt, then Static Field and Nova; Teleport from 18; Izual points to Static Field. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 38, "key": "Charged Bolt", "to": 4, "note": {"de": "Startzauber bis Nova", "en": "Starter until Nova"}},
+        {"lvl": 6, "skill": 44, "key": "Frost Nova", "to": 1, "note": {"de": "Verlangsamt; zum Freikommen", "en": "Slows; to break free"}},
+        {"lvl": 6, "skill": 42, "key": "Static Field", "to": 4, "note": {"de": "Gegen zähe Gegner und Bosse", "en": "For tough monsters and bosses"}},
+        {"lvl": 10, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 11, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 12, "skill": 48, "key": "Nova", "to": 6, "note": {"de": "Hauptzauber bis zum Umskillen", "en": "Main spell until the respec"}},
+        {"lvl": 18, "skill": 54, "key": "Teleport", "to": 1, "save": true, "note": {"de": "Radament-Punkt dafür aufheben", "en": "Keep the Radament point for it"}},
+        {"lvl": 18, "skill": 48, "key": "Nova", "to": 14}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 55, "why": {"de": "Maxroll: Stufe 2–10 in Vitalität", "en": "Maxroll: levels 2-10 into vitality"}},
+        {"stat": "str", "to": 47, "why": {"de": "Geist im Kristallschwert, Magierfaust", "en": "Spirit in a Crystal Sword, Magefist"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "cold",
+      "name": {"de": "Kälte", "en": "Cold"},
+      "levels": [26, 74],
+      "plan": "respec",
+      "note": {"de": "Umskillen mit 26 nach Maxroll (Reihenfolge und ohne Extra-Punkt unsere), Blizzard ab 27 voll; ab 51 Kälte statt Meteor.", "en": "Respec at 26 as Maxroll does (order and no extra point are ours), Blizzard each level from 27; from 51 cold, not Meteor."},
+      "skills": [
+        {"lvl": 26, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 26, "skill": 54, "key": "Teleport", "to": 1},
+        {"lvl": 26, "skill": 40, "key": "Frozen Armor", "to": 1},
+        {"lvl": 26, "skill": 39, "key": "Ice Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 26, "skill": 45, "key": "Ice Blast", "to": 7, "note": {"de": "Einzelziel, z. B. Bosse", "en": "Single target, e.g. bosses"}},
+        {"lvl": 26, "skill": 44, "key": "Frost Nova", "to": 1, "note": {"de": "Voraussetzung für Blizzard", "en": "Prerequisite for Blizzard"}},
+        {"lvl": 26, "skill": 55, "key": "Glacial Spike", "to": 9, "note": {"de": "Friert Gruppen ein", "en": "Freezes packs"}},
+        {"lvl": 26, "skill": 59, "key": "Blizzard", "to": 3, "note": {"de": "Hauptschaden ab jetzt", "en": "Main damage from now on"}},
+        {"lvl": 26, "skill": 42, "key": "Static Field", "to": 5, "note": {"de": "Maxroll: 5 Punkte beim Umskillen", "en": "Maxroll: 5 points at the respec"}},
+        {"lvl": 27, "skill": 59, "key": "Blizzard", "to": 6},
+        {"lvl": 30, "skill": 65, "key": "Cold Mastery", "to": 1, "note": {"de": "Durchdringt Kälteresistenz", "en": "Pierces cold resistance"}},
+        {"lvl": 30, "skill": 59, "key": "Blizzard", "to": 20},
+        {"lvl": 30, "skill": 65, "key": "Cold Mastery", "to": 3, "note": {"de": "Maxroll: Questpunkte in Albtraum", "en": "Maxroll: Nightmare quest points"}},
+        {"lvl": 30, "skill": 55, "key": "Glacial Spike", "to": 20, "note": {"de": "Synergie für Blizzard", "en": "Synergy for Blizzard"}},
+        {"lvl": 30, "skill": 45, "key": "Ice Blast", "to": 20, "note": {"de": "Unsere Anpassung statt Meteor", "en": "Our adaptation instead of Meteor"}},
+        {"lvl": 30, "skill": 39, "key": "Ice Bolt", "to": 11, "note": {"de": "Synergie; Rest im Endgame", "en": "Synergy; the rest in the endgame"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust, Geist im Kristallschwert", "en": "Magefist, Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Maxroll: der Rest in Vitalität", "en": "Maxroll: the rest into vitality"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll-Endgame: Eisblitz voll, dann Kältebeherrschung; ein Punkt in Wärme.", "en": "Maxroll endgame: max Ice Bolt, then Cold Mastery; one point in Warmth."},
+      "skills": [
+        {"lvl": 75, "skill": 37, "key": "Warmth", "to": 1, "note": {"de": "Etwas Mana-Regeneration", "en": "A little mana regeneration"}},
+        {"lvl": 75, "skill": 39, "key": "Ice Bolt", "to": 20, "note": {"de": "Synergie für Blizzard, Eisstoß, Gletschernadel", "en": "Synergy for Blizzard, Ice Blast, Glacial Spike"}},
+        {"lvl": 75, "skill": 65, "key": "Cold Mastery", "to": 20, "note": {"de": "Maxroll: zuletzt ausbauen", "en": "Maxroll: raised last"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 156, "why": {"de": "Geist-Monarch 156; Nachtschwinge nur 96", "en": "Spirit Monarch 156; Nightwing's Veil only 96"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Mit +2–3 Comboblitz (Akara)", "en": "With +2-3 Charged Bolt (Akara)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Mit schnellerem Zaubern (Akara, Drognan)", "en": "With faster cast rate (Akara, Drognan)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25; Basis aus dem Kuhlevel", "en": "From level 25; base from the Cow Level"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}, "note": {"de": "Großer Schild von Fara", "en": "Large Shield from Fara"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Runen von der Gräfin", "en": "Runes from the Countess"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "lvl", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "lvl", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "cold", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "cold", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}},
+    {"phase": "cold", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "cold", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "cold", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "cold", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "cold", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Widerstände und Leben (Händler)", "en": "Resistances and life (vendors)"}},
+    {"phase": "cold", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Widerstände, schnelleres Laufen", "en": "Resistances, faster run"}},
+    {"phase": "cold", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Fertigkeiten oder schnelleres Zaubern", "en": "+Skills or faster cast rate"}},
+    {"phase": "cold", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "cold", "slot": "switch", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Ladungen Resistenz senken, ab Stufe 30–35", "en": "Lower Resist charges, from level 30-35"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Fathom"}, "note": {"de": "+Zauberin, +Kälte-Schaden", "en": "+Sorceress skills, +cold damage"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "Monarch braucht 156 Stärke", "en": "A Monarch needs 156 strength"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Nightwing's Veil"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"unique": "Ormus' Robes"}, "note": {"de": "Am besten mit +Blizzard", "en": "Best with +Blizzard"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Sandstorm Trek"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Zwei Stück", "en": "Two of them"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "PreCrafted Cold Rupture"}, "note": {"de": "Bricht Kälte-Immunität, aber -70 bis -90 % Kälteresistenz-Malus; Söldner mit Einsicht", "en": "Breaks cold immunity, but with a -70 to -90% cold resistance penalty; merc with Insight"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht: Schaden gegen Kälte-Immune; Heiliger Frost geht auch", "en": "Act 2 desert mercenary (Nightmare) with Might: damage against cold immunes; Holy Freeze also works"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation löst die Mana-Sorgen", "en": "Meditation solves mana problems"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4}, "note": {"de": "Für Gruppen mit Kälte-Immunen; sonst Einsicht (Standard)", "en": "For areas with cold immunes; otherwise Insight (standard)"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Blizzard Sorceress Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/blizzard-sorceress", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Zauber-Tempo", "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, cast rate"}},
+    {"site": "Maxroll", "title": "Sorceress Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/sorceress-leveling", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Leveln mit Nova, Umskillen mit 26, Werte, Ausrüstung", "en": "Read in full; updated 2026-05-22; Nova leveling, respec at 26, stats, gear"}},
+    {"site": "D2Runewizard", "title": "Blizzard Sorceress Build Guide", "url": "https://d2runewizard.com/guides/blizzard-sorc", "seen": "2026-11-03", "patch": "vor 3.0", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 11.04.2025, vor 3.0: Endgame-Punkte, Ausrüstung, Söldner Akt 2 Albtraum", "en": "Read in full; 2025-04-11, before 3.0: endgame points, gear, Act 2 Nightmare mercenary"}},
+    {"site": "DiabloBytes", "title": "Blizzard Sorceress Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/blizzard-sorc/", "seen": "2026-11-03", "patch": "3.2 / 3.3 (unklar)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Juni 2026; Text sagt 3.2, Kopfzeile 3.3; nur zur Bestätigung (Punkte, Söldner)", "en": "Read in full; June 2026; text says 3.2, header 3.3; confirmation only (points, mercenary)"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an der Zauberin oder an Kälte-Fertigkeiten", "en": "Read in full; no change to the Sorceress or to cold skills"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an der Zauberin", "en": "Read in full; no change to the Sorceress"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

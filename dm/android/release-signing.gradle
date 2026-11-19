@@ -1,0 +1,40 @@
+ext.dmResolveSigning = { File sourceRoot, File debugKey, Map environment, String settingsPath ->
+    def settingsFile = new File(settingsPath).canonicalFile
+    def outside = { File candidate ->
+        if (candidate.toPath().startsWith(sourceRoot.canonicalFile.toPath()))
+            throw new IllegalArgumentException('Signing files must be outside the repository')
+        for (File parent = candidate.parentFile; parent != null; parent = parent.parentFile) {
+            if (new File(parent, '.git').isFile() || new File(parent, '.git/HEAD').isFile())
+                throw new IllegalArgumentException('Signing files must be outside any Git checkout')
+        }
+    }
+    def settings = new Properties()
+    if (settingsFile.exists()) {
+        outside(settingsFile)
+        if (!settingsFile.isFile()) throw new IllegalArgumentException('Signing settings must be a file')
+        settingsFile.withInputStream { settings.load(it) }
+    }
+    def value = { String name, String env -> environment[env] ?: settings.getProperty(name) }
+    def keyPath = value('storeFile', 'DM_ANDROID_KEYSTORE')
+    def alias = value('keyAlias', 'DM_ANDROID_KEY_ALIAS')
+    def storePass = value('storePassword', 'DM_ANDROID_STORE_PASSWORD') ?: environment['DM_ANDROID_KEY_PASS']
+    def keyPass = value('keyPassword', 'DM_ANDROID_KEY_PASSWORD') ?: environment['DM_ANDROID_KEY_PASS']
+    if (keyPath || alias || storePass || keyPass || settingsFile.exists()) {
+        if (!keyPath || !alias || !storePass || !keyPass)
+            throw new IllegalArgumentException('Release signing configuration is incomplete')
+        def key = new File(keyPath.toString())
+        if (!key.isAbsolute()) key = new File(settingsFile.parentFile, keyPath.toString())
+        key = key.canonicalFile
+        outside(key)
+        if (!key.isFile()) throw new IllegalArgumentException('The configured release keystore does not exist')
+        return [storeFile: key, keyAlias: alias, storePassword: storePass, keyPassword: keyPass,
+                storeType: value('storeType', 'DM_ANDROID_STORE_TYPE') ?: 'JKS', fallback: false]
+    }
+    if (!debugKey.isFile()) throw new IllegalArgumentException('The existing debug keystore is missing; no key will be created')
+    return [fallback: true]
+}
+
+ext.dmCheckSigning = { boolean fallback, boolean release, boolean allowed ->
+    if (fallback && release && !allowed)
+        throw new IllegalArgumentException('Release signing is missing. For local testing only, opt in with -PdmAllowDebugSigning=true or DM_ALLOW_DEBUG_SIGNING=1.')
+}

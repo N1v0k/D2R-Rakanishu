@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">사용자 드라이버</string>
+    <string name="dmAndroidDriverPackage">드라이버 패키지</string>
+    <string name="dmAndroidDriverRunning">사용 중</string>
+    <string name="dmAndroidDriverIdle">선택됨, 이번에는 불러오지 않음</string>
+    <string name="dmAndroidDriverFellBack">사용자 그래픽 드라이버가 두 번 시작을 끝내지 못했습니다. 게임은 다시 시스템 드라이버를 사용합니다. 다시 시도하려면 기술 페이지의 그래픽 드라이버에서 드라이버를 다시 선택하세요.</string>
+    <string name="dmAndroidDriverLoadFailed">사용자 그래픽 드라이버를 불러올 수 없습니다(%1$s). 게임은 시스템 드라이버를 사용합니다.</string>
+    <string name="dmAndroidDriverRejected">드라이버 ZIP을 불러오지 않습니다(%1$s). 게임은 시스템 드라이버를 사용합니다.</string>
+    <string name="dmAndroidDriverSafe">안전 시작: 이번에는 시스템 드라이버로 시작합니다.</string>
+    <string name="dmAndroidDriverSafeShort">시스템 드라이버</string>
+    <string name="dmAndroidDriverSafeLong">시스템 드라이버로 시작</string>
+    <string name="dmAndroidDriverPage">그래픽 드라이버</string>
+    <string name="dmAndroidDriverSystem">시스템 드라이버</string>
+    <string name="dmAndroidDriverActive">사용 중</string>
+    <string name="dmAndroidDriverChosen">선택됨</string>
+    <string name="dmAndroidDriverBlocked">차단됨</string>
+    <string name="dmAndroidDriverAdd">추가</string>
+    <string name="dmAndroidDriverDelete">삭제</string>
+    <string name="dmAndroidDriverRestart">다시 시작</string>
+    <string name="dmAndroidDriverAdded">드라이버 추가됨: %1$s</string>
+    <string name="dmAndroidDriverInvalid">유효한 드라이버가 아닙니다: %1$s</string>
+    <string name="dmAndroidDriverAfterRestart">다시 시작하면 적용됩니다</string>
+</resources>

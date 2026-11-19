@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">Controlador propio</string>
+    <string name="dmAndroidDriverPackage">Paquete de controlador</string>
+    <string name="dmAndroidDriverRunning">en uso</string>
+    <string name="dmAndroidDriverIdle">elegido, no cargado esta vez</string>
+    <string name="dmAndroidDriverFellBack">El controlador gráfico propio no terminó de iniciar dos veces. El juego vuelve a usar el controlador del sistema. Para reintentar, elige otra vez el controlador en la página Técnica, en Controladores gráficos.</string>
+    <string name="dmAndroidDriverLoadFailed">No se pudo cargar el controlador gráfico propio (%1$s). El juego usa el controlador del sistema.</string>
+    <string name="dmAndroidDriverRejected">El ZIP del controlador no se carga (%1$s). El juego usa el controlador del sistema.</string>
+    <string name="dmAndroidDriverSafe">Inicio seguro: esta vez con el controlador del sistema.</string>
+    <string name="dmAndroidDriverSafeShort">Controlador del sistema</string>
+    <string name="dmAndroidDriverSafeLong">Iniciar con el controlador del sistema</string>
+    <string name="dmAndroidDriverPage">Controladores gráficos</string>
+    <string name="dmAndroidDriverSystem">Controlador del sistema</string>
+    <string name="dmAndroidDriverActive">activo</string>
+    <string name="dmAndroidDriverChosen">elegido</string>
+    <string name="dmAndroidDriverBlocked">bloqueado</string>
+    <string name="dmAndroidDriverAdd">Añadir</string>
+    <string name="dmAndroidDriverDelete">Eliminar</string>
+    <string name="dmAndroidDriverRestart">Reiniciar</string>
+    <string name="dmAndroidDriverAdded">Controlador añadido: %1$s</string>
+    <string name="dmAndroidDriverInvalid">No es un controlador válido: %1$s</string>
+    <string name="dmAndroidDriverAfterRestart">Se aplicará tras reiniciar</string>
+</resources>

@@ -1,0 +1,1808 @@
+{
+  "schema": 1,
+  "version": 1,
+  "gameVersion": "3.3.94012",
+  "categories": [
+    {
+      "id": "def",
+      "de": "Verteidigung",
+      "en": "Defense"
+    },
+    {
+      "id": "off",
+      "de": "Angriff",
+      "en": "Offense"
+    },
+    {
+      "id": "speed",
+      "de": "Tempo",
+      "en": "Speed"
+    }
+  ],
+  "sources": {
+    "mx-hit": {
+      "site": "Maxroll",
+      "title": "Hit Chance Mechanics",
+      "url": "https://maxroll.gg/d2/resources/hit-chance-mechanics",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Trefferformel mit Grenzen 5 und 95 %, Verteidigung aus Geschick/4 und Gegenständen, Prozente auf die Summe, Angriffswert 5 je Geschick, Monster-Angriffswert aus Stufe",
+        "en": "Hit formula with the 5 and 95 % limits, Defense from Dexterity/4 and items, percentages on the sum, Attack Rating 5 per Dexterity, monster Attack Rating from level"
+      }
+    },
+    "mx-block": {
+      "site": "Maxroll",
+      "title": "Block Mechanics",
+      "url": "https://maxroll.gg/d2/resources/block-mechanics",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Blockformel, Obergrenze 75 %, beim Laufen ein Drittel, Klassenbonus, was sich blocken lässt",
+        "en": "Block formula, 75 % cap, a third while running, class bonus, what can be blocked"
+      }
+    },
+    "mx-dr": {
+      "site": "Maxroll",
+      "title": "Damage Reductions",
+      "url": "https://maxroll.gg/d2/resources/damage-reductions",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Widerstände je Schwierigkeit, Obergrenzen 75/95 %, Schadensreduktion in % bis 50 %, flache Reduktionen vor den Widerständen",
+        "en": "Resistances per difficulty, 75/95 % caps, damage reduction in % up to 50 %, flat reductions before resistances"
+      }
+    },
+    "mx-mod": {
+      "site": "Maxroll",
+      "title": "Attack Modifiers",
+      "url": "https://maxroll.gg/d2/resources/attack-modifiers",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Vernichtender Schlag, Todesschlag/Kritischer Schlag, Offene Wunden, abgesaugtes Leben/Mana mit Abzug in Albtraum/Hölle",
+        "en": "Crushing Blow, Deadly/Critical Strike, Open Wounds, Life/Mana stolen with the Nightmare/Hell penalty"
+      }
+    },
+    "mx-bp": {
+      "site": "Maxroll",
+      "title": "Breakpoints & Animations",
+      "url": "https://maxroll.gg/d2/resources/breakpoints-animations",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Zauberrate- und Erholungs-Breakpoints der sieben klassischen Klassen, wirksame Obergrenze",
+        "en": "Cast rate and hit recovery breakpoints of the seven classic classes, effective cap"
+      }
+    },
+    "fx-combat": {
+      "site": "Fextralife",
+      "title": "Combat",
+      "url": "https://diablo2.wiki.fextralife.com/Combat",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Trefferchance, Verteidigung, Widerstände je Schwierigkeit, Vernichtender Schlag, Todesschlag, Offene Wunden, Entzug, Gift",
+        "en": "Hit chance, Defense, resistances per difficulty, Crushing Blow, Deadly Strike, Open Wounds, leech, poison"
+      }
+    },
+    "pd-block": {
+      "site": "PureDiablo",
+      "title": "Block (D2 Wiki)",
+      "url": "https://purediablo.com/d2wiki/Block",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Blockformel mit Geschick und Stufe, Obergrenze 75 %, beim Laufen ein Drittel",
+        "en": "Block formula with Dexterity and level, 75 % cap, a third while running"
+      }
+    },
+    "dw-ar": {
+      "site": "Diablo Wiki",
+      "title": "Attack Rating",
+      "url": "https://diablo2.diablowiki.net/AR",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Trefferformel, Grenze 95 %",
+        "en": "Hit formula, 95 % limit"
+      }
+    },
+    "wt-bp": {
+      "site": "Warcraft Tavern",
+      "title": "D2R Breakpoints",
+      "url": "https://www.warcrafttavern.com/d2/breakpoints/",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Zauberrate-Breakpoints der sieben klassischen Klassen, Erholung Paladin/Druide",
+        "en": "Cast rate breakpoints of the seven classic classes, hit recovery Paladin/Druid"
+      }
+    },
+    "am-fhr": {
+      "site": "Almar's Guides",
+      "title": "Faster Hit Recovery",
+      "url": "https://almarsguides.com/Computer/Games/Diablo2/Misc/GameMechanics/Breakpoints/FasterHitRecovery/",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Erholungs-Breakpoints aller sieben klassischen Klassen",
+        "en": "Hit recovery breakpoints of all seven classic classes"
+      }
+    },
+    "emu-war": {
+      "site": "D2Emu",
+      "title": "Magic Warlock",
+      "url": "https://d2emu.com/guides/builds/warlock-magic",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Hexenmeister: Zauberrate 0/9/18/30/48/75/125, Erholung 0/5/10/16/26/39/56/86/152",
+        "en": "Warlock: cast rate 0/9/18/30/48/75/125, hit recovery 0/5/10/16/26/39/56/86/152"
+      }
+    },
+    "iv-war-fcr": {
+      "site": "Icy Veins",
+      "title": "Demon Warlock Build",
+      "url": "https://www.icy-veins.com/d2/demon-warlock-build",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Hexenmeister-Zauberrate 0/9/18/30/48/75/125 (15 bis 9 Bilder)",
+        "en": "Warlock cast rate 0/9/18/30/48/75/125 (15 to 9 frames)"
+      }
+    },
+    "iv-war-fhr": {
+      "site": "Icy Veins",
+      "title": "Cleave Warlock Build",
+      "url": "https://www.icy-veins.com/d2/cleave-warlock-build",
+      "seen": "2026-11-04",
+      "lang": "en",
+      "note": {
+        "de": "Hexenmeister-Erholung 0/5/10/16/26/39/56/86/152 (13 bis 5 Bilder)",
+        "en": "Warlock hit recovery 0/5/10/16/26/39/56/86/152 (13 to 5 frames)"
+      }
+    },
+    "ab-magic": {
+      "site": "Arreat Summit",
+      "title": "Magic Item Properties",
+      "url": "https://classic.battle.net/diablo2exp/items/magic.shtml",
+      "seen": "2026-11-05",
+      "lang": "en",
+      "note": {
+        "de": "Offene Wunden: gegen Spieler ein Viertel, mit Geschossen ein Achtel, gegen Bosse die Hälfte; Vernichtender Schlag: Anteile je Ziel, positiver körperlicher Widerstand wirkt",
+        "en": "Open Wounds: a quarter against players, an eighth with missiles, half against bosses; Crushing Blow: shares per target, positive physical resistance applies"
+      }
+    },
+    "ab-curse": {
+      "site": "Arreat Summit",
+      "title": "Necromancer Curses",
+      "url": "https://classic.battle.net/diablo2exp/skills/necromancer-curses.shtml",
+      "seen": "2026-11-05",
+      "lang": "en",
+      "note": {
+        "de": "Verstärkter Schaden senkt den körperlichen Widerstand um 100 % und hebt Immunität auf",
+        "en": "Amplify Damage lowers physical resistance by 100% and removes immunity"
+      }
+    },
+    "ab-pal": {
+      "site": "Arreat Summit",
+      "title": "Paladin Combat Skills",
+      "url": "https://classic.battle.net/diablo2exp/skills/paladin-combat.shtml",
+      "seen": "2026-11-05",
+      "lang": "en",
+      "note": {
+        "de": "Der Schildschlag (Smite) trifft immer, der Angriffswert zählt dort nicht",
+        "en": "Smite always hits, Attack Rating does not matter there"
+      }
+    },
+    "ab-suf": {
+      "site": "Arreat Summit",
+      "title": "Magic Suffixes",
+      "url": "https://classic.battle.net/diablo2exp/items/magic/suf.shtml",
+      "seen": "2026-11-05",
+      "lang": "en",
+      "note": {
+        "de": "Leben und Mana absaugen nur mit Nahkampf und körperlichen Fernangriffen",
+        "en": "Life and mana steal only with melee and physical ranged attacks"
+      }
+    },
+    "mn-fhr": {
+      "site": "Mannm",
+      "title": "Faster Hit Recovery",
+      "url": "https://www.mannm.org/d2library/faqtoids/fhr_eng.html",
+      "seen": "2026-11-05",
+      "lang": "en",
+      "note": {
+        "de": "Schwelle ein Sechzehntel des Höchstlebens (manche Fernangriffe ein Achtel), Chancen 37,5 / 75 / 100 %, Betäubung, Gift ohne Erholung",
+        "en": "Threshold a sixteenth of maximum life (some ranged attacks an eighth), chances 37.5 / 75 / 100%, stun, poison without recovery"
+      }
+    }
+  },
+  "breakpoints": {
+    "fcr": {
+      "classes": {
+        "ama": [
+          [
+            0,
+            19
+          ],
+          [
+            7,
+            18
+          ],
+          [
+            14,
+            17
+          ],
+          [
+            22,
+            16
+          ],
+          [
+            32,
+            15
+          ],
+          [
+            48,
+            14
+          ],
+          [
+            68,
+            13
+          ],
+          [
+            99,
+            12
+          ],
+          [
+            152,
+            11
+          ]
+        ],
+        "sor": [
+          [
+            0,
+            13
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            20,
+            11
+          ],
+          [
+            37,
+            10
+          ],
+          [
+            63,
+            9
+          ],
+          [
+            105,
+            8
+          ],
+          [
+            200,
+            7
+          ]
+        ],
+        "nec": [
+          [
+            0,
+            15
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            18,
+            13
+          ],
+          [
+            30,
+            12
+          ],
+          [
+            48,
+            11
+          ],
+          [
+            75,
+            10
+          ],
+          [
+            125,
+            9
+          ]
+        ],
+        "pal": [
+          [
+            0,
+            15
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            18,
+            13
+          ],
+          [
+            30,
+            12
+          ],
+          [
+            48,
+            11
+          ],
+          [
+            75,
+            10
+          ],
+          [
+            125,
+            9
+          ]
+        ],
+        "bar": [
+          [
+            0,
+            13
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            20,
+            11
+          ],
+          [
+            37,
+            10
+          ],
+          [
+            63,
+            9
+          ],
+          [
+            105,
+            8
+          ],
+          [
+            200,
+            7
+          ]
+        ],
+        "dru": [
+          [
+            0,
+            18
+          ],
+          [
+            4,
+            17
+          ],
+          [
+            10,
+            16
+          ],
+          [
+            19,
+            15
+          ],
+          [
+            30,
+            14
+          ],
+          [
+            46,
+            13
+          ],
+          [
+            68,
+            12
+          ],
+          [
+            99,
+            11
+          ],
+          [
+            163,
+            10
+          ]
+        ],
+        "ass": [
+          [
+            0,
+            16
+          ],
+          [
+            8,
+            15
+          ],
+          [
+            16,
+            14
+          ],
+          [
+            27,
+            13
+          ],
+          [
+            42,
+            12
+          ],
+          [
+            65,
+            11
+          ],
+          [
+            102,
+            10
+          ],
+          [
+            174,
+            9
+          ]
+        ],
+        "war": [
+          [
+            0,
+            15
+          ],
+          [
+            9,
+            14
+          ],
+          [
+            18,
+            13
+          ],
+          [
+            30,
+            12
+          ],
+          [
+            48,
+            11
+          ],
+          [
+            75,
+            10
+          ],
+          [
+            125,
+            9
+          ]
+        ]
+      },
+      "sources": {
+        "classic": [
+          "mx-bp",
+          "wt-bp"
+        ],
+        "war": [
+          "emu-war",
+          "iv-war-fcr"
+        ]
+      },
+      "note": {
+        "de": "Grundgestalt ohne Verwandlung; Zauberin ohne Blitz und Kettenblitz; Druide in Menschengestalt.",
+        "en": "Base form without shapeshifting; Sorceress without Lightning and Chain Lightning; Druid in human form."
+      }
+    },
+    "fhr": {
+      "classes": {
+        "ama": [
+          [
+            0,
+            11
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            13,
+            9
+          ],
+          [
+            20,
+            8
+          ],
+          [
+            32,
+            7
+          ],
+          [
+            52,
+            6
+          ],
+          [
+            86,
+            5
+          ],
+          [
+            174,
+            4
+          ]
+        ],
+        "sor": [
+          [
+            0,
+            15
+          ],
+          [
+            5,
+            14
+          ],
+          [
+            9,
+            13
+          ],
+          [
+            14,
+            12
+          ],
+          [
+            20,
+            11
+          ],
+          [
+            30,
+            10
+          ],
+          [
+            42,
+            9
+          ],
+          [
+            60,
+            8
+          ],
+          [
+            86,
+            7
+          ],
+          [
+            142,
+            6
+          ],
+          [
+            280,
+            5
+          ]
+        ],
+        "nec": [
+          [
+            0,
+            13
+          ],
+          [
+            5,
+            12
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            16,
+            10
+          ],
+          [
+            26,
+            9
+          ],
+          [
+            39,
+            8
+          ],
+          [
+            56,
+            7
+          ],
+          [
+            86,
+            6
+          ],
+          [
+            152,
+            5
+          ],
+          [
+            377,
+            4
+          ]
+        ],
+        "pal": [
+          [
+            0,
+            9
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            15,
+            7
+          ],
+          [
+            27,
+            6
+          ],
+          [
+            48,
+            5
+          ],
+          [
+            86,
+            4
+          ],
+          [
+            200,
+            3
+          ]
+        ],
+        "bar": [
+          [
+            0,
+            9
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            15,
+            7
+          ],
+          [
+            27,
+            6
+          ],
+          [
+            48,
+            5
+          ],
+          [
+            86,
+            4
+          ],
+          [
+            200,
+            3
+          ]
+        ],
+        "dru": [
+          [
+            0,
+            13
+          ],
+          [
+            5,
+            12
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            16,
+            10
+          ],
+          [
+            26,
+            9
+          ],
+          [
+            39,
+            8
+          ],
+          [
+            56,
+            7
+          ],
+          [
+            86,
+            6
+          ],
+          [
+            152,
+            5
+          ],
+          [
+            377,
+            4
+          ]
+        ],
+        "ass": [
+          [
+            0,
+            9
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            15,
+            7
+          ],
+          [
+            27,
+            6
+          ],
+          [
+            48,
+            5
+          ],
+          [
+            86,
+            4
+          ],
+          [
+            200,
+            3
+          ]
+        ],
+        "war": [
+          [
+            0,
+            13
+          ],
+          [
+            5,
+            12
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            16,
+            10
+          ],
+          [
+            26,
+            9
+          ],
+          [
+            39,
+            8
+          ],
+          [
+            56,
+            7
+          ],
+          [
+            86,
+            6
+          ],
+          [
+            152,
+            5
+          ]
+        ]
+      },
+      "sources": {
+        "classic": [
+          "mx-bp",
+          "am-fhr"
+        ],
+        "war": [
+          "emu-war",
+          "iv-war-fhr"
+        ]
+      },
+      "note": {
+        "de": "Grundgestalt ohne Verwandlung; Paladin und Druide mit den Werten für „andere Waffen“.",
+        "en": "Base form without shapeshifting; Paladin and Druid with the values for \"other weapons\"."
+      }
+    }
+  },
+  "phrases": {
+    "noLive": {
+      "de": "Deine eigenen Werte gibt es nur im Spiel.",
+      "en": "Your own values are only available in a game."
+    },
+    "def": {
+      "de": "Deine Verteidigung: [{0}]",
+      "en": "Your Defense: [{0}]"
+    },
+    "pct": {
+      "de": "Prozent aus Fertigkeiten und Schreinen gerade: [+{0} %]",
+      "en": "Percent from skills and shrines right now: [+{0}%]"
+    },
+    "defWith": {
+      "de": "Ohne den Schrein wären es [{0}]",
+      "en": "Without the shrine it would be [{0}]"
+    },
+    "defWould": {
+      "de": "Mit einem Rüstungsschrein (+{0} %) wären es [{1}]",
+      "en": "With an Armor Shrine (+{0}%) it would be [{1}]"
+    },
+    "noModel": {
+      "de": "Wie viel ein Schrein ausmacht, lässt sich gerade nicht genau nachrechnen.",
+      "en": "How much a shrine adds cannot be recalculated exactly right now."
+    },
+    "hitYou": {
+      "de": "Ein Monster der Stufe {0} trifft dich zu [{1} %]",
+      "en": "A level {0} monster hits you [{1}%] of the time"
+    },
+    "hitYouWith": {
+      "de": "Ein Monster der Stufe {0} trifft dich zu [{1} %] statt {2} % ohne den Schrein",
+      "en": "A level {0} monster hits you [{1}%] of the time instead of {2}% without the shrine"
+    },
+    "hitYouWould": {
+      "de": "Ein Monster der Stufe {0} träfe dich dann zu [{1} %] statt {2} %",
+      "en": "A level {0} monster would then hit you [{1}%] of the time instead of {2}%"
+    },
+    "block": {
+      "de": "Deine Blockchance: [{0} %], beim Laufen {1} %",
+      "en": "Your chance to block: [{0}%], {1}% while running"
+    },
+    "noBlock": {
+      "de": "Deine Blockchance ist gerade [0 %]: ohne Schild, oder die Geschicklichkeit reicht für deine Stufe nicht.",
+      "en": "Your chance to block is [0%] right now: no shield, or your Dexterity is too low for your level."
+    },
+    "diff": {
+      "de": "Schwierigkeit: {0}",
+      "en": "Difficulty: {0}"
+    },
+    "res": {
+      "de": "{0}: [{1} %] (gesammelt {2}, Abzug {3}, Obergrenze {4} %)",
+      "en": "{0}: [{1}%] (collected {2}, penalty {3}, limit {4}%)"
+    },
+    "dr": {
+      "de": "Schaden reduziert um [{0}]; in Prozent {1} % (zählt bis 50 %)",
+      "en": "Damage reduced by [{0}]; in percent {1}% (counts up to 50%)"
+    },
+    "mdr": {
+      "de": "Magieschaden reduziert um [{0}]",
+      "en": "Magic damage reduced by [{0}]"
+    },
+    "plr": {
+      "de": "Giftdauer-Verkürzung, gesammelt (ohne Abzug der Schwierigkeit): [{0} %]",
+      "en": "Poison length reduction, collected (before the difficulty penalty): [{0}%]"
+    },
+    "ar": {
+      "de": "Dein Angriffswert: [{0}]",
+      "en": "Your Attack Rating: [{0}]"
+    },
+    "arNone": {
+      "de": "Dein Angriffswert lässt sich gerade nicht lesen.",
+      "en": "Your Attack Rating cannot be read right now."
+    },
+    "hitIt": {
+      "de": "Du triffst ein Monster der Stufe {0} zu [{1} %]",
+      "en": "You hit a level {0} monster [{1}%] of the time"
+    },
+    "value": {
+      "de": "Dein Wert: [{0} %]",
+      "en": "Your value: [{0}%]"
+    },
+    "leech": {
+      "de": "Leben [{0} %], Mana {1} % pro Treffer",
+      "en": "Life [{0}%], mana {1}% per hit"
+    },
+    "leechDiff": {
+      "de": "Nach dem Abzug in {0}: Leben [{1} %], Mana {2} %",
+      "en": "After the penalty in {0}: life [{1}%], mana {2}%"
+    },
+    "cast": {
+      "de": "Dein Wert: {0} % → [{1} Bilder] ({2} s) je Zauber",
+      "en": "Your value: {0}% → [{1} frames] ({2} s) per spell"
+    },
+    "recover": {
+      "de": "Dein Wert: {0} % → [{1} Bilder] ({2} s) Erholung",
+      "en": "Your value: {0}% → [{1} frames] ({2} s) recovery"
+    },
+    "next": {
+      "de": "Nächste Stufe: {0} % → {1} Bilder (noch [{2} %])",
+      "en": "Next step: {0}% → {1} frames ([{2}%] to go)"
+    },
+    "top": {
+      "de": "Schneller geht es mit dieser Tabelle nicht.",
+      "en": "This table gets no faster."
+    },
+    "noClass": {
+      "de": "Für diese Klasse gibt es hier keine Tabelle.",
+      "en": "There is no table for this class here."
+    },
+    "diff0": {
+      "de": "Normal",
+      "en": "Normal"
+    },
+    "diff1": {
+      "de": "Albtraum",
+      "en": "Nightmare"
+    },
+    "diff2": {
+      "de": "Hölle",
+      "en": "Hell"
+    }
+  },
+  "terms": [
+    {
+      "id": "defense",
+      "cat": "def",
+      "name": {
+        "stat": 31
+      },
+      "fallback": {
+        "de": "Verteidigung",
+        "en": "Defense"
+      },
+      "keywords": [
+        "def",
+        "rüstung",
+        "armor",
+        "armour",
+        "ac",
+        "trefferchance",
+        "hit chance"
+      ],
+      "stats": [
+        31
+      ],
+      "text": {
+        "what": {
+          "de": "Deine Verteidigung entscheidet, wie oft dich Monster mit Waffen und Geschossen treffen. Sie kommt aus Rüstung, Helm, Schild und anderen Teilen, dazu je 4 Punkte Geschicklichkeit ein Punkt.",
+          "en": "Your Defense decides how often monsters hit you with weapons and missiles. It comes from armor, helm, shield and other gear, plus one point per 4 points of Dexterity."
+        },
+        "how": {
+          "de": "Jeder Angriff würfelt gegen deine Verteidigung. Je höher sie im Vergleich zum Angriffswert des Monsters ist, desto öfter geht der Schlag daneben. Prozent-Boni aus Fertigkeiten und Schreinen kommen auf die ganze Summe.",
+          "en": "Every attack rolls against your Defense. The higher it is compared to the monster's Attack Rating, the more often the blow misses. Percent bonuses from skills and shrines apply to the whole sum."
+        },
+        "helps": {
+          "de": "Nahkampfschläge und Pfeile, Speere oder Steine von Monstern.",
+          "en": "Melee blows and arrows, spears or rocks thrown by monsters."
+        },
+        "not": {
+          "de": "Zauber und andere Wirkungen, die nicht gegen Verteidigung würfeln (z. B. die Feuerbälle eines Gefallenen Schamanen), treffen immer – dagegen helfen Widerstände. Ein Waffentreffer mit Feuer oder Kälte, der daneben geht, macht dagegen auch keinen Elementarschaden. Ein Monster trifft auch bei sehr hoher Verteidigung noch in mindestens 5 von 100 Fällen.",
+          "en": "Spells and other effects that do not roll against Defense (e.g. the fireballs of a Fallen Shaman) always hit; resistances help there. A weapon hit carrying fire or cold that misses, on the other hand, deals no elemental damage either. Even against a very high Defense a monster still hits at least 5 times in 100."
+        },
+        "rule": {
+          "de": "Trefferchance = 200 % × AW ÷ (AW + Verteidigung) × Stufe Angreifer ÷ (Stufe Angreifer + Stufe Verteidiger), begrenzt auf 5 bis 95 %. Verteidigung = (Gegenstände + Geschicklichkeit ÷ 4) × (100 % + Prozent-Boni).",
+          "en": "Hit chance = 200% × AR ÷ (AR + Defense) × attacker level ÷ (attacker level + defender level), limited to 5 to 95%. Defense = (items + Dexterity ÷ 4) × (100% + percent bonuses)."
+        }
+      },
+      "limits": {
+        "de": "Die Trefferchance gilt für ein gedachtes Monster deiner Stufe mit den Grundwerten der Monstertabelle; echte Monster haben mehr oder weniger Angriffswert. Sie gilt im Stehen und Gehen.",
+        "en": "The hit chance is for an imagined monster of your level with the base values of the monster table; real monsters have more or less Attack Rating. It holds while standing and walking."
+      },
+      "sources": [
+        "mx-hit",
+        "fx-combat"
+      ],
+      "checked": [
+        "itemstatcost.txt:31",
+        "monlvl.txt"
+      ]
+    },
+    {
+      "id": "enhdef",
+      "cat": "def",
+      "name": {
+        "stat": 16
+      },
+      "fallback": {
+        "de": "Verbesserte Verteidigung",
+        "en": "Enhanced Defense"
+      },
+      "keywords": [
+        "ed",
+        "schrein",
+        "shrine",
+        "rüstungsschrein",
+        "armor shrine",
+        "prozent",
+        "percent"
+      ],
+      "stats": [
+        16,
+        171,
+        215,
+        269
+      ],
+      "text": {
+        "what": {
+          "de": "Ein Prozent-Aufschlag auf Verteidigung. Auf einem Gegenstand zählt er nur für dessen eigene Verteidigung. Aus einem Schrein oder einer Fertigkeit gilt er für deine ganze Verteidigung.",
+          "en": "A percent bonus on Defense. On an item it counts for that item's own Defense only. From a shrine or a skill it applies to all of your Defense."
+        },
+        "how": {
+          "de": "Der Rüstungsschrein gibt für etwa anderthalb Minuten +100 %. Ohne andere Prozent-Boni verdoppelt das deine Verteidigung, auch den Teil aus Geschicklichkeit; hast du schon Prozent-Boni, werden die 100 Punkte dazugezählt, nicht vervielfacht. Monster verfehlen dich in dieser Zeit öfter.",
+          "en": "The Armor Shrine gives +100% for about one and a half minutes. Without other percent bonuses that doubles your Defense, the part from Dexterity too; if you already have percent bonuses, the 100 points are added to them, not multiplied. Monsters miss you more often during that time."
+        },
+        "helps": {
+          "de": "Wie Verteidigung: Nahkampf und Geschosse von Monstern.",
+          "en": "Like Defense: melee and missiles of monsters."
+        },
+        "not": {
+          "de": "Zauber und Wirkungen, die nicht gegen Verteidigung würfeln. Doppelte Verteidigung halbiert die Treffer nicht: der Gewinn ist kleiner, je höher die Verteidigung schon ist.",
+          "en": "Spells and effects that do not roll against Defense. Double Defense does not halve the hits: the gain gets smaller the higher your Defense already is."
+        },
+        "rule": {
+          "de": "Verteidigung = (Gegenstände + Geschicklichkeit ÷ 4) × (100 % + Prozent aus Fertigkeiten und Schreinen). Verbesserte Verteidigung auf einem Gegenstand wirkt schon im Wert dieses Gegenstands.",
+          "en": "Defense = (items + Dexterity ÷ 4) × (100% + percent from skills and shrines). Enhanced Defense on an item is already part of that item's value."
+        }
+      },
+      "limits": {
+        "de": "„Mit/ohne Schrein“ steht nur da, wenn die Nachrechnung genau den Wert des Spiels trifft. Trefferchance wie bei Verteidigung: gedachtes Monster deiner Stufe, im Stehen und Gehen.",
+        "en": "\"With/without the shrine\" only shows when the recalculation matches the game's value exactly. Hit chance as for Defense: imagined monster of your level, standing and walking."
+      },
+      "sources": [
+        "mx-hit",
+        "fx-combat"
+      ],
+      "checked": [
+        "itemstatcost.txt:16",
+        "itemstatcost.txt:171",
+        "shrines.txt:Armor Shrine",
+        "states.txt:shrine_armor"
+      ]
+    },
+    {
+      "id": "block",
+      "cat": "def",
+      "name": {
+        "stat": 20
+      },
+      "fallback": {
+        "de": "Blockchance",
+        "en": "Chance to Block"
+      },
+      "keywords": [
+        "block",
+        "schild",
+        "shield",
+        "blocken"
+      ],
+      "stats": [
+        20
+      ],
+      "text": {
+        "what": {
+          "de": "Mit einem Schild kannst du einen Treffer ganz abfangen – dann macht er gar keinen Schaden.",
+          "en": "With a shield you can catch a hit completely; then it does no damage at all."
+        },
+        "how": {
+          "de": "Die Chance hängt vom Schild und deiner Klasse ab, in der Erweiterung zusätzlich von Geschicklichkeit und Stufe: mit jeder Stufe sinkt sie etwas, mehr Geschicklichkeit hebt sie wieder. Mehr als 75 % geht nicht.",
+          "en": "The chance depends on the shield and your class, in the expansion also on Dexterity and level: it drops a little with every level, more Dexterity raises it again. It cannot go above 75%."
+        },
+        "helps": {
+          "de": "Nahkampfschläge und Geschosse mit körperlichem Schaden, z. B. Pfeile.",
+          "en": "Melee blows and missiles with physical damage, e.g. arrows."
+        },
+        "not": {
+          "de": "Die meisten Zauber lassen sich nicht blocken. Beim Laufen ist die Blockchance nur ein Drittel so hoch.",
+          "en": "Most spells cannot be blocked. While running the chance to block is only a third."
+        },
+        "rule": {
+          "de": "Erweiterung: (Schild-Block + Klassenbonus + erhöhte Blockchance) × (Geschicklichkeit − 15) ÷ (Stufe × 2), höchstens 75 %. Ohne Erweiterung (klassisch) zählt die Summe in der Klammer allein, ebenfalls höchstens 75 %.",
+          "en": "Expansion: (shield block + class bonus + increased block) × (Dexterity − 15) ÷ (level × 2), at most 75%. Without the expansion (classic) the sum in the brackets counts alone, also at most 75%."
+        }
+      },
+      "limits": {
+        "de": "Der Wert gilt im Stehen und Gehen; beim Laufen ist es ein Drittel.",
+        "en": "The value holds while standing and walking; while running it is a third."
+      },
+      "sources": [
+        "mx-block",
+        "pd-block"
+      ],
+      "checked": [
+        "itemstatcost.txt:20",
+        "charstats.txt:BlockFactor"
+      ]
+    },
+    {
+      "id": "resist",
+      "cat": "def",
+      "name": {
+        "group": 39
+      },
+      "fallback": {
+        "de": "Widerstände",
+        "en": "Resistances"
+      },
+      "keywords": [
+        "res",
+        "resist",
+        "widerstand",
+        "feuer",
+        "kälte",
+        "blitz",
+        "fire",
+        "cold",
+        "lightning",
+        "albtraum",
+        "hölle",
+        "nightmare",
+        "hell",
+        "max"
+      ],
+      "stats": [
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "text": {
+        "what": {
+          "de": "Feuer-, Kälte-, Blitz- und Giftwiderstand senken den Schaden dieser Art um ihren Prozentwert.",
+          "en": "Fire, Cold, Lightning and Poison Resistance lower damage of that kind by their percentage."
+        },
+        "how": {
+          "de": "Im Charakterbogen steht schon der Wert nach dem Abzug der Schwierigkeit: in Albtraum 40 Punkte weniger, in der Hölle 100 Punkte weniger. Mehr als 75 % zählt nicht; „zu max. Widerstand“ hebt diese Grenze, aber höchstens auf 95 %.",
+          "en": "The character sheet already shows the value after the difficulty penalty: 40 points less in Nightmare, 100 points less in Hell. More than 75% does not count; \"to Maximum Resist\" raises that limit, but to 95% at most."
+        },
+        "helps": {
+          "de": "Zauber und Elementarschaden von Monstern, auch Feuer am Boden. Kältewiderstand verkürzt zusätzlich das Verlangsamen und Einfrieren.",
+          "en": "Spells and elemental damage of monsters, fire on the ground too. Cold Resistance also shortens chilling and freezing."
+        },
+        "not": {
+          "de": "Körperlicher Schaden durch Waffen – dagegen helfen Verteidigung, Block und Schadensreduktion.",
+          "en": "Physical damage from weapons; Defense, block and damage reduction help there."
+        },
+        "rule": {
+          "de": "Wirksam = gesammelter Wert + Abzug (Normal 0, Albtraum −40, Hölle −100; ohne Erweiterung −20/−50), höchstens 75 % + max. Widerstand (bis 95 %), mindestens −100 %.",
+          "en": "Effective = collected value + penalty (Normal 0, Nightmare −40, Hell −100; without the expansion −20/−50), at most 75% + maximum resist (up to 95%), at least −100%."
+        }
+      },
+      "limits": {
+        "de": "Flüche wie Widerstandsschwund und Auren von Monstern senken den Wert im Kampf weiter; das ist hier nicht eingerechnet.",
+        "en": "Curses like Lower Resist and monster auras lower the value further in a fight; that is not included here."
+      },
+      "sources": [
+        "mx-dr",
+        "fx-combat"
+      ],
+      "checked": [
+        "difficultylevels.txt:ResistPenalty",
+        "difficultylevels.txt:ResistPenaltyNonExpansion",
+        "itemstatcost.txt:39-46"
+      ]
+    },
+    {
+      "id": "dr",
+      "cat": "def",
+      "name": {
+        "stat": 34
+      },
+      "fallback": {
+        "de": "Schadensreduktion",
+        "en": "Damage Reduction"
+      },
+      "keywords": [
+        "dr",
+        "schaden reduziert",
+        "damage reduced",
+        "physisch",
+        "physical"
+      ],
+      "stats": [
+        34,
+        36
+      ],
+      "text": {
+        "what": {
+          "de": "Zieht von jedem körperlichen Treffer etwas ab: „Schaden reduziert um X“ eine feste Zahl, „Erlittener physischer Schaden um X % verringert“ einen Anteil.",
+          "en": "Takes something off every physical hit: \"Damage Reduced by X\" a fixed number, \"Physical Damage Received Reduced by X%\" a share."
+        },
+        "how": {
+          "de": "Die feste Zahl wirkt zuerst und ist gegen viele kleine Treffer stark. Der Prozentwert hilft auch gegen große Treffer.",
+          "en": "The fixed number works first and is strong against many small hits. The percentage also helps against big hits."
+        },
+        "helps": {
+          "de": "Körperlichen Schaden von Waffen, Krallen und Pfeilen.",
+          "en": "Physical damage from weapons, claws and arrows."
+        },
+        "not": {
+          "de": "Elementarschaden und Magieschaden. Mehr als 50 % Prozent-Reduktion senkt den Schaden nicht weiter, gleicht aber Flüche aus: Verstärkter Schaden zieht 100 Prozentpunkte ab – aus 50 % werden −50 %, ein Treffer von 100 macht dann 150. Wer 80 % gesammelt hat, landet bei −20 %. Die feste Zahl wirkt auch unter dem Fluch.",
+          "en": "Elemental and magic damage. More than 50% percent reduction does not lower damage further, but it offsets curses: Amplify Damage subtracts 100 percentage points – 50% becomes −50%, so a hit of 100 then deals 150. With 80% collected you end up at −20%. The fixed number still works under the curse."
+        },
+        "rule": {
+          "de": "Erst die feste Zahl, dann der Prozentwert (wirksam höchstens 50 %; Flüche ziehen vom gesammelten Wert ab, Verstärkter Schaden 100 Punkte).",
+          "en": "First the fixed number, then the percentage (effective at most 50%; curses subtract from the collected value, Amplify Damage 100 points)."
+        }
+      },
+      "limits": {
+        "de": "",
+        "en": ""
+      },
+      "sources": [
+        "mx-dr",
+        "fx-combat",
+        "ab-curse"
+      ],
+      "checked": [
+        "itemstatcost.txt:34",
+        "itemstatcost.txt:36",
+        "skills.txt:aurastatcalc1",
+        "skills.txt:Param5"
+      ]
+    },
+    {
+      "id": "mdr",
+      "cat": "def",
+      "name": {
+        "stat": 35
+      },
+      "fallback": {
+        "de": "Magieschadenreduktion",
+        "en": "Magic Damage Reduction"
+      },
+      "keywords": [
+        "mdr",
+        "magie",
+        "magic",
+        "elementar",
+        "elemental"
+      ],
+      "stats": [
+        35
+      ],
+      "text": {
+        "what": {
+          "de": "Zieht eine feste Zahl von Magie-, Feuer-, Kälte- und Blitzschaden ab.",
+          "en": "Takes a fixed number off magic, fire, cold and lightning damage."
+        },
+        "how": {
+          "de": "Der Abzug kommt vor den Widerständen. Gegen viele kleine Treffer, etwa schnelle Feuergeschosse, ist das stark; gegen einen großen Zauber kaum.",
+          "en": "The reduction comes before resistances. Against many small hits, such as fast fire missiles, it is strong; against one big spell it hardly matters."
+        },
+        "helps": {
+          "de": "Viele kleine Treffer mit Magie-, Feuer-, Kälte- oder Blitzschaden.",
+          "en": "Many small hits of magic, fire, cold or lightning damage."
+        },
+        "not": {
+          "de": "Gift und körperlichen Schaden.",
+          "en": "Poison and physical damage."
+        },
+        "rule": {
+          "de": "Schaden − X, danach die Widerstände.",
+          "en": "Damage − X, then resistances."
+        }
+      },
+      "limits": {
+        "de": "",
+        "en": ""
+      },
+      "sources": [
+        "mx-dr",
+        "fx-combat"
+      ],
+      "checked": [
+        "itemstatcost.txt:35"
+      ]
+    },
+    {
+      "id": "poison",
+      "cat": "def",
+      "name": {
+        "word": "poison"
+      },
+      "fallback": {
+        "de": "Gift",
+        "en": "Poison"
+      },
+      "keywords": [
+        "gift",
+        "poison",
+        "giftdauer",
+        "poison length",
+        "brennen",
+        "burning",
+        "über zeit",
+        "over time"
+      ],
+      "stats": [
+        45,
+        46,
+        110
+      ],
+      "text": {
+        "what": {
+          "de": "Gift richtet seinen Schaden nicht auf einmal an, sondern über einige Sekunden; deine Lebenskugel wird dabei grün.",
+          "en": "Poison does not deal its damage at once but over a few seconds; your life globe turns green meanwhile."
+        },
+        "how": {
+          "de": "Giftwiderstand senkt den Schaden, „Giftdauer reduziert um“ macht die Zeit kürzer. Ein Gegengift-Trank beendet die Vergiftung sofort. Feuer am Boden, z. B. eine Feuerwand, brennt dich, solange du darin stehst: das ist Feuerschaden.",
+          "en": "Poison Resistance lowers the damage, \"Poison Length Reduced by\" shortens the time. An Antidote Potion ends the poison at once. Fire on the ground, e.g. a Fire Wall, burns you as long as you stand in it: that is fire damage."
+        },
+        "helps": {
+          "de": "Giftwiderstand und kürzere Giftdauer helfen gegen Gift; gegen Brennen helfen Feuerwiderstand und „Magieschaden reduziert um“, vor allem aber: aus dem Feuer gehen.",
+          "en": "Poison Resistance and shorter poison length help against poison; against burning, Fire Resistance and \"Magic Damage Reduced by\" help, but above all: step out of the fire."
+        },
+        "not": {
+          "de": "Verteidigung und Block helfen gegen den Giftschaden selbst nicht.",
+          "en": "Defense and block do not help against the poison damage itself."
+        },
+        "rule": {
+          "de": "Giftwiderstand wie alle Widerstände: mit Abzug der Schwierigkeit und Obergrenze 75 %.",
+          "en": "Poison Resistance like all resistances: with the difficulty penalty and the 75% limit."
+        }
+      },
+      "limits": {
+        "de": "",
+        "en": ""
+      },
+      "sources": [
+        "fx-combat",
+        "mx-dr"
+      ],
+      "checked": [
+        "itemstatcost.txt:45",
+        "itemstatcost.txt:110"
+      ]
+    },
+    {
+      "id": "ar",
+      "cat": "off",
+      "name": {
+        "stat": 19
+      },
+      "fallback": {
+        "de": "Angriffswert",
+        "en": "Attack Rating"
+      },
+      "keywords": [
+        "aw",
+        "ar",
+        "attack rating",
+        "treffen",
+        "hit",
+        "trefferchance"
+      ],
+      "stats": [
+        19,
+        119
+      ],
+      "text": {
+        "what": {
+          "de": "Dein Angriffswert entscheidet, wie oft deine Waffenangriffe treffen.",
+          "en": "Your Attack Rating decides how often your weapon attacks hit."
+        },
+        "how": {
+          "de": "Er wird mit der Verteidigung des Monsters verglichen. Jeder Punkt Geschicklichkeit gibt 5 Angriffswert; Gegenstände und Fertigkeiten geben mehr. Gegen Monster über deiner Stufe triffst du seltener.",
+          "en": "It is compared with the monster's Defense. Every point of Dexterity gives 5 Attack Rating; items and skills give more. You hit monsters above your level less often."
+        },
+        "helps": {
+          "de": "Waffenangriffe, bei denen auf Treffen gewürfelt wird, auch mit Bogen und Wurfwaffen.",
+          "en": "Weapon attacks that roll to hit, bows and throwing weapons too."
+        },
+        "not": {
+          "de": "Zauber treffen ohne Angriffswert, ebenso einzelne Waffenfertigkeiten, die immer treffen (etwa der Schildschlag des Paladins). Wo auf Treffen gewürfelt wird, gibt es nie mehr als 95 % Trefferchance.",
+          "en": "Spells hit without Attack Rating, and so do some weapon skills that always hit (such as the Paladin's Smite). Where the hit is rolled, there is never more than 95% hit chance."
+        },
+        "rule": {
+          "de": "Trefferchance = 200 % × AW ÷ (AW + Verteidigung des Monsters) × deine Stufe ÷ (deine Stufe + Monsterstufe), begrenzt auf 5 bis 95 %.",
+          "en": "Hit chance = 200% × AR ÷ (AR + the monster's Defense) × your level ÷ (your level + monster level), limited to 5 to 95%."
+        }
+      },
+      "limits": {
+        "de": "Angriffswert für den normalen Angriff mit der Waffe in der Hand. Die Trefferchance gilt für ein gedachtes Monster deiner Stufe mit den Grundwerten der Monstertabelle.",
+        "en": "Attack Rating of the normal attack with the weapon in hand. The hit chance is for an imagined monster of your level with the base values of the monster table."
+      },
+      "sources": [
+        "mx-hit",
+        "fx-combat",
+        "dw-ar",
+        "ab-pal"
+      ],
+      "checked": [
+        "itemstatcost.txt:19",
+        "monlvl.txt",
+        "charstats.txt:ToHitFactor"
+      ]
+    },
+    {
+      "id": "deadly",
+      "cat": "off",
+      "name": {
+        "stat": 141
+      },
+      "fallback": {
+        "de": "Todesschlag",
+        "en": "Deadly Strike"
+      },
+      "keywords": [
+        "ds",
+        "deadly",
+        "todesschlag",
+        "kritisch",
+        "critical",
+        "doppelt",
+        "double"
+      ],
+      "stats": [
+        141
+      ],
+      "text": {
+        "what": {
+          "de": "Die Chance, dass ein Treffer doppelten körperlichen Schaden macht. Der kritische Schlag der Amazone wirkt genauso.",
+          "en": "The chance that a hit deals double physical damage. The Amazon's Critical Strike works the same way."
+        },
+        "how": {
+          "de": "Todesschlag und kritischer Schlag würfeln getrennt; mehr als doppelt wird es dadurch nicht.",
+          "en": "Deadly Strike and Critical Strike roll separately; it never gets more than double from that."
+        },
+        "helps": {
+          "de": "Mehr Schaden mit Waffenangriffen.",
+          "en": "More damage with weapon attacks."
+        },
+        "not": {
+          "de": "Elementarschaden und Zauber werden nicht verdoppelt.",
+          "en": "Elemental damage and spells are not doubled."
+        },
+        "rule": {
+          "de": "Zusammen: 100 − (100 − Todesschlag) × (100 − kritischer Schlag) ÷ 100 Prozent.",
+          "en": "Together: 100 − (100 − Deadly Strike) × (100 − Critical Strike) ÷ 100 percent."
+        }
+      },
+      "limits": {
+        "de": "Den kritischen Schlag der Amazone liest das Glossar nicht; der Wert ist nur der Todesschlag von Gegenständen und Fertigkeiten.",
+        "en": "The glossary does not read the Amazon's Critical Strike; the value is only Deadly Strike from items and skills."
+      },
+      "sources": [
+        "mx-mod",
+        "fx-combat"
+      ],
+      "checked": [
+        "itemstatcost.txt:141"
+      ]
+    },
+    {
+      "id": "openwounds",
+      "cat": "off",
+      "name": {
+        "stat": 135
+      },
+      "fallback": {
+        "de": "Offene Wunden",
+        "en": "Open Wounds"
+      },
+      "keywords": [
+        "ow",
+        "open wounds",
+        "offene wunden",
+        "bluten",
+        "bleed"
+      ],
+      "stats": [
+        135
+      ],
+      "text": {
+        "what": {
+          "de": "Die Chance, dass dein Treffer das Ziel bluten lässt.",
+          "en": "The chance that your hit makes the target bleed."
+        },
+        "how": {
+          "de": "Das Ziel verliert 8 Sekunden lang Leben und kann sich in der Zeit nicht heilen. Der Blutschaden wächst mit deiner Stufe, nicht mit deiner Waffe.",
+          "en": "The target loses life for 8 seconds and cannot heal during that time. The bleed damage grows with your level, not with your weapon."
+        },
+        "helps": {
+          "de": "Monster, die sich schnell heilen, und lange Kämpfe.",
+          "en": "Monsters that heal quickly, and long fights."
+        },
+        "not": {
+          "de": "Gegen Bosse wirkt es halb so stark. Gegen Spieler nur ein Viertel, mit Fernkampf nur ein Achtel; gegen Monster sind Nah- und Fernkampf gleich stark.",
+          "en": "Against bosses it is half as strong. Against players only a quarter, with ranged attacks only an eighth; against monsters melee and ranged are equally strong."
+        },
+        "rule": {
+          "de": "Dauer 8 Sekunden; ein neuer Treffer ersetzt die laufende Blutung.",
+          "en": "Duration 8 seconds; a new hit replaces the running bleed."
+        }
+      },
+      "limits": {
+        "de": "Den Blutschaden selbst rechnet das Glossar nicht aus.",
+        "en": "The glossary does not compute the bleed damage itself."
+      },
+      "sources": [
+        "mx-mod",
+        "fx-combat",
+        "ab-magic"
+      ],
+      "checked": [
+        "itemstatcost.txt:135"
+      ]
+    },
+    {
+      "id": "crushing",
+      "cat": "off",
+      "name": {
+        "stat": 136
+      },
+      "fallback": {
+        "de": "Vernichtender Schlag",
+        "en": "Crushing Blow"
+      },
+      "keywords": [
+        "cb",
+        "crushing",
+        "vernichtend",
+        "leben",
+        "life"
+      ],
+      "stats": [
+        136
+      ],
+      "text": {
+        "what": {
+          "de": "Die Chance, dass dein Treffer dem Ziel zusätzlich einen Teil seines aktuellen Lebens nimmt.",
+          "en": "The chance that your hit also takes a share of the target's current life."
+        },
+        "how": {
+          "de": "Bei normalen Monstern ein Viertel im Nahkampf und ein Achtel im Fernkampf; bei Bossen die Hälfte davon; bei Spielern und Söldnern ein Zehntel bzw. ein Zwanzigstel. Positiver körperlicher Widerstand des Ziels senkt den Anteil, gegen körperlich Immune wirkt er gar nicht. Bei Monstern wird der Anteil mit mehr Spielern im Spiel kleiner.",
+          "en": "Against normal monsters a quarter in melee and an eighth at range; against bosses half of that; against players and mercenaries a tenth or a twentieth. Positive physical resistance of the target lowers the share; against physical immunes it does nothing. Against monsters the share gets smaller with more players in the game."
+        },
+        "helps": {
+          "de": "Monster mit sehr viel Leben, vor allem Bosse.",
+          "en": "Monsters with a lot of life, bosses above all."
+        },
+        "not": {
+          "de": "Weil es vom aktuellen Leben abhängt, wird es gegen fast tote Monster immer schwächer.",
+          "en": "Because it depends on current life, it gets weaker and weaker against nearly dead monsters."
+        },
+        "rule": {
+          "de": "Anteil am aktuellen Leben: Nahkampf ¼, Fernkampf ⅛ (Bosse ⅛ / 1⁄16, Spieler 1⁄10 / 1⁄20) × (100 % − körperlicher Widerstand, wenn positiv); bei Monstern noch geteilt durch (1 + Spieler) ÷ 2. Beispiel: Diablo in der Hölle (45 %), allein, Nahkampf: ⅛ × 55 % ≈ 6,9 %.",
+          "en": "Share of current life: melee ¼, ranged ⅛ (bosses ⅛ / 1⁄16, players 1⁄10 / 1⁄20) × (100% − physical resistance, if positive); against monsters also divided by (1 + players) ÷ 2. Example: Diablo in Hell (45%), alone, melee: ⅛ × 55% ≈ 6.9%."
+        }
+      },
+      "limits": {
+        "de": "",
+        "en": ""
+      },
+      "sources": [
+        "mx-mod",
+        "fx-combat",
+        "ab-magic"
+      ],
+      "checked": [
+        "itemstatcost.txt:136",
+        "monstats.txt:ResDm(H)"
+      ]
+    },
+    {
+      "id": "leech",
+      "cat": "off",
+      "name": {
+        "stat": 60
+      },
+      "fallback": {
+        "de": "Lebensentzug",
+        "en": "Life Leech"
+      },
+      "keywords": [
+        "ll",
+        "ml",
+        "leech",
+        "entzug",
+        "abgesaugt",
+        "stolen",
+        "mana"
+      ],
+      "stats": [
+        60,
+        62
+      ],
+      "text": {
+        "what": {
+          "de": "Ein Teil des körperlichen Schadens, den du mit Angriffen im Nahkampf oder mit Bogen und Wurfwaffen austeilst, kommt als Leben (bzw. Mana) zu dir zurück.",
+          "en": "A share of the physical damage you deal with melee attacks or with bows and throwing weapons comes back to you as life (or mana)."
+        },
+        "how": {
+          "de": "In Albtraum bekommst du nur die Hälfte, in der Hölle ein Drittel. Viele Untote geben gar nichts zurück.",
+          "en": "In Nightmare you get only half, in Hell a third. Many undead give nothing back at all."
+        },
+        "helps": {
+          "de": "Nahkämpfer und Fernkämpfer mit Waffen: sie heilen sich beim Kämpfen.",
+          "en": "Melee and ranged weapon fighters: they heal while fighting."
+        },
+        "not": {
+          "de": "Zauber saugen nichts ab – auch dann nicht, wenn sie körperlichen Schaden machen. Elementarschaden auf der Waffe zählt ebenfalls nicht.",
+          "en": "Spells drain nothing – not even when they deal physical damage. Elemental damage on the weapon does not count either."
+        },
+        "rule": {
+          "de": "Zurück = körperlicher Schaden des Angriffs × Entzug % ÷ Teiler der Schwierigkeit (1 / 2 / 3), und nur so viel, wie das Ziel hergibt.",
+          "en": "Back = physical damage of the attack × leech % ÷ the difficulty divisor (1 / 2 / 3), and only as much as the target gives."
+        }
+      },
+      "limits": {
+        "de": "Der Wert nach dem Abzug der Schwierigkeit gilt für Monster, die voll hergeben; wie viel Leben das pro Treffer ist, hängt von deinem Schaden ab.",
+        "en": "The value after the difficulty penalty is for monsters that give fully; how much life that is per hit depends on your damage."
+      },
+      "sources": [
+        "mx-mod",
+        "fx-combat",
+        "ab-suf"
+      ],
+      "checked": [
+        "itemstatcost.txt:60",
+        "itemstatcost.txt:62",
+        "difficultylevels.txt:LifeStealDivisor",
+        "difficultylevels.txt:ManaStealDivisor"
+      ]
+    },
+    {
+      "id": "fcr",
+      "cat": "speed",
+      "name": {
+        "stat": 105
+      },
+      "fallback": {
+        "de": "Schnellere Zauberrate",
+        "en": "Faster Cast Rate"
+      },
+      "keywords": [
+        "fcr",
+        "zauberrate",
+        "cast",
+        "zaubern",
+        "breakpoint"
+      ],
+      "stats": [
+        105
+      ],
+      "text": {
+        "what": {
+          "de": "Macht deine Zauber schneller.",
+          "en": "Makes your spells faster."
+        },
+        "how": {
+          "de": "Ein Zauber dauert eine feste Zahl von Bildern; das Spiel zeigt 25 Bilder je Sekunde. Erst wenn du die nächste Stufe der Tabelle erreichst (Breakpoint), wird es ein Bild schneller – Prozente dazwischen bringen nichts.",
+          "en": "A spell takes a fixed number of frames; the game shows 25 frames a second. Only when you reach the next step of the table (breakpoint) does it get one frame faster; percent in between does nothing."
+        },
+        "helps": {
+          "de": "Zauberer: mehr Zauber pro Sekunde, schnelleres Teleportieren.",
+          "en": "Casters: more spells per second, faster teleporting."
+        },
+        "not": {
+          "de": "Waffenangriffe – dafür gibt es erhöhte Angriffsgeschwindigkeit.",
+          "en": "Weapon attacks; Increased Attack Speed is for those."
+        },
+        "rule": {
+          "de": "Die Tabelle hängt von der Klasse ab; über dem letzten Breakpoint geht es nicht schneller.",
+          "en": "The table depends on the class; above the last breakpoint it does not get faster."
+        }
+      },
+      "limits": {
+        "de": "Tabelle für die Grundgestalt ohne Verwandlung; Blitz und Kettenblitz der Zauberin haben eine eigene Tabelle.",
+        "en": "Table for the base form without shapeshifting; the Sorceress' Lightning and Chain Lightning have their own table."
+      },
+      "sources": [
+        "mx-bp",
+        "wt-bp",
+        "emu-war",
+        "iv-war-fcr"
+      ],
+      "checked": [
+        "itemstatcost.txt:105"
+      ]
+    },
+    {
+      "id": "fhr",
+      "cat": "speed",
+      "name": {
+        "stat": 99
+      },
+      "fallback": {
+        "de": "Schnellere Erholung nach Treffer",
+        "en": "Faster Hit Recovery"
+      },
+      "keywords": [
+        "fhr",
+        "erholung",
+        "hit recovery",
+        "zucken",
+        "stun",
+        "breakpoint"
+      ],
+      "stats": [
+        99
+      ],
+      "text": {
+        "what": {
+          "de": "Verkürzt das kurze Zusammenzucken, wenn dich ein harter Treffer erwischt.",
+          "en": "Shortens the short flinch when a hard hit catches you."
+        },
+        "how": {
+          "de": "Ob ein Treffer dich kurz unterbricht, hängt von seinem Schaden ab: ab einem Sechzehntel deines Höchstlebens mit 37,5 % Chance, ab einem Achtel mit 75 %, ab einem Viertel immer (manche Fernangriffe rechnen mit doppelt so hohen Schwellen). Betäubende Angriffe können dich auch mit kleinem Schaden unterbrechen. In der Zeit kannst du nichts tun. Wie beim Zaubern zählt nur, welche Stufe der Tabelle du erreichst.",
+          "en": "Whether a hit interrupts you briefly depends on its damage: from a sixteenth of your maximum life with a 37.5% chance, from an eighth with 75%, from a quarter always (some ranged attacks use thresholds twice as high). Stunning attacks can interrupt you even with small damage. You cannot act during that time. As with casting, only the step of the table you reach counts."
+        },
+        "helps": {
+          "de": "Wenn dich viele harte Treffer kurz hintereinander treffen.",
+          "en": "When many hard hits land on you in quick succession."
+        },
+        "not": {
+          "de": "Treffer unter einem Sechzehntel deines Lebens unterbrechen dich ohne Betäubung nicht, Gift nie. Es senkt keinen Schaden.",
+          "en": "Hits below a sixteenth of your life do not interrupt you without a stun, poison never does. It does not lower any damage."
+        },
+        "rule": {
+          "de": "Die Tabelle hängt von der Klasse ab (Paladin und Druide auch von der Waffe).",
+          "en": "The table depends on the class (for Paladin and Druid also on the weapon)."
+        }
+      },
+      "limits": {
+        "de": "Tabelle für die Grundgestalt ohne Verwandlung; Paladin und Druide mit den Werten für „andere Waffen“.",
+        "en": "Table for the base form without shapeshifting; Paladin and Druid with the values for \"other weapons\"."
+      },
+      "sources": [
+        "mx-bp",
+        "am-fhr",
+        "emu-war",
+        "iv-war-fhr",
+        "mn-fhr"
+      ],
+      "checked": [
+        "itemstatcost.txt:99"
+      ]
+    },
+    {
+      "id": "ias",
+      "cat": "speed",
+      "name": {
+        "stat": 93
+      },
+      "fallback": {
+        "de": "Erhöhte Angriffsgeschwindigkeit",
+        "en": "Increased Attack Speed"
+      },
+      "keywords": [
+        "ias",
+        "angriffsgeschwindigkeit",
+        "attack speed",
+        "schnell",
+        "breakpoint"
+      ],
+      "stats": [
+        93
+      ],
+      "text": {
+        "what": {
+          "de": "Macht deine Waffenangriffe schneller.",
+          "en": "Makes your weapon attacks faster."
+        },
+        "how": {
+          "de": "Wie bei der Zauberrate zählen nur Stufen (Breakpoints). Welche Werte du brauchst, hängt von Klasse, Waffenart, der Grundgeschwindigkeit der Waffe und der Fertigkeit ab.",
+          "en": "As with cast rate, only steps (breakpoints) count. Which values you need depends on class, weapon type, the weapon's base speed and the skill."
+        },
+        "helps": {
+          "de": "Nahkämpfer und Bogenschützen: mehr Angriffe pro Sekunde.",
+          "en": "Melee fighters and archers: more attacks per second."
+        },
+        "not": {
+          "de": "Zauber – dafür gibt es schnellere Zauberrate.",
+          "en": "Spells; Faster Cast Rate is for those."
+        },
+        "rule": {
+          "de": "Über die nächste Stufe hinaus bringt mehr Angriffsgeschwindigkeit nichts, bis die übernächste erreicht ist.",
+          "en": "Beyond the next step, more attack speed does nothing until the step after that is reached."
+        }
+      },
+      "limits": {
+        "de": "Breakpoints rechnet das Glossar nicht aus, weil sie von Waffe und Fertigkeit abhängen; es zeigt nur deinen Wert.",
+        "en": "The glossary does not compute breakpoints because they depend on weapon and skill; it shows only your value."
+      },
+      "sources": [
+        "mx-bp",
+        "wt-bp"
+      ],
+      "checked": [
+        "itemstatcost.txt:93"
+      ]
+    }
+  ]
+}
