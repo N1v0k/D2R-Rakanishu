@@ -6,7 +6,7 @@ Diablo II: Resurrected on Android, with the extras I kept wishing the game had.
 
 This is a fork of [d2r-mobile](https://github.com/jhaizhou-ops/d2r-mobile) by jhaizhou. They did the hard part. Their port runs the game's own ARM64 program on the phone and draws it with Vulkan, and the touch controls, endgame modes and farming helpers come from them too. I started playing it on my phone and then kept adding things. Most of them answer questions I had while playing. Can my character take the next boss? Is this ring actually better? Why does this helm look so bad?
 
-You need your own copy of the game. The APK contains none of its files, and everything runs offline.
+You need your own copy of the game. The APK contains none of its files, and everything runs offline. All screenshots were taken on a phone (2480 × 1116).
 
 ## What I added
 
@@ -14,45 +14,84 @@ You need your own copy of the game. The APK contains none of its files, and ever
 
 Bring Charsi her hammer back and she will change how your gear looks. Pick any identified item of the same kind that you have owned, preview it on your character and pay in gold. You can also hide your helm or shield. The real items in your save stay as they are; the looks are kept in a separate file next to it. Each difficulty unlocks this again with its own hammer quest.
 
+| Before | After |
+|:---:|:---:|
+| ![Before transmog](https://github.com/user-attachments/assets/b872c98b-8272-4bbd-950f-fb7133164eb3) | ![After transmog](https://github.com/user-attachments/assets/a3ba2bc8-b059-4f3e-aead-768a7656319c) |
+
+![Charsi's Appearance tab with live preview and price](https://github.com/user-attachments/assets/41c82f39-ef4f-4fe6-a0c5-a7833762e656)
+
 ### Dye with gems
 
 Gems in your inventory turn into colours in the same tab. Dyeing an item uses up one gem of that colour.
+
+| Before | After |
+|:---:|:---:|
+| ![Before dyeing](https://github.com/user-attachments/assets/73b7493e-7919-4ad0-95b2-f31f7a3df51e) | ![After dyeing](https://github.com/user-attachments/assets/bcd77d7b-a288-45b3-a7e6-ec7197fd3d6f) |
+
+![Gem colours in the Appearance tab](https://github.com/user-attachments/assets/506290ae-993b-4a6e-8ebc-48d4b2059890)
 
 ### Combat simulation
 
 Before I walk into Andariel I want to know if I will come back out. The combat page simulates the next main boss, the mini bosses of the act and any other monster against your character as it is right now. You get the time to kill, the time until you die and a rating, and the numbers update when you change gear or skills. Open a fight to see how it plays out.
 
+| Overview | One fight |
+|:---:|:---:|
+| ![Combat simulation overview](https://github.com/user-attachments/assets/05228c2a-ab59-42c2-9b2d-45f8d2490446) | ![One simulated fight](https://github.com/user-attachments/assets/bf8c0634-69ca-4f7e-a38c-da624bf84f5c) |
+
 ### Best gear
 
 This searches everything you carry and store (worn gear, inventory, every personal stash page and the shared tabs) and finds the best combination for your goal. You say how many hits you want to survive and how much boss damage matters compared to clearing groups. The search is exact. With the stash open, one tap puts on a single item or the whole set. Items with auras, item skills or charges are left out for now.
+
+![Best set for your goal, equip in one tap](https://github.com/user-attachments/assets/a8caf667-7799-419b-afd0-c09ce20866e5)
 
 ### Your real DPS
 
 The fight log measures your own damage per second over your last 50 fights with your current gear and skills, shows the range, and splits it between your skills, your mercenary and your summons. Solo kills are compared with what the simulation expected. A curve shows how your DPS changed over time, with a marker wherever you changed gear, levelled up or spent points.
 
+![Measured DPS with range and history](https://github.com/user-attachments/assets/c09fd8a4-1b77-473d-8dd7-782ac08d3d3f)
+
 ### Melee splash (optional)
 
 Melee hits also hit the enemies in a cone in front of you. How much they take depends on your weapon, your class and your strength, and each of those hits shows its own damage number.
+
+![One swing, a damage number on every enemy in the cone](https://github.com/user-attachments/assets/f3250c09-daf0-466b-9bfd-72430960a07d)
 
 ### Shrine stacking (optional)
 
 Shrines no longer replace each other. Each one keeps its own timer, picking up the same shrine again adds to its time, and the symbols sit next to each other above your head. The stamina shrine can also make you run and walk 50 % faster.
 
+| One shrine | Three shrines |
+|:---:|:---:|
+| ![One shrine](https://github.com/user-attachments/assets/e5ba4f12-73da-451f-b947-5ad6649744e5) | ![Three shrines side by side](https://github.com/user-attachments/assets/eb1326d8-04e2-45d2-9082-915396abfea3) |
+
 ### Item comparison in the tooltip
 
 When you look at an item, the tooltip also tells you what it would change for your character. Resistances show up as how much less damage you take, attack and cast speed as animation frames, and you see the difference in life, block chance and skill levels (skill tab bonuses included). At the bottom is the combat simulation's verdict.
+
+| Game tooltip | With comparison |
+|:---:|:---:|
+| ![Game tooltip](https://github.com/user-attachments/assets/72ae23f0-ba25-4672-9398-71ae09ed96b3) | ![Tooltip with comparison](https://github.com/user-attachments/assets/138ab8ee-699a-4f58-b09a-10323e5baf69) |
 
 ### Fight log
 
 Each character keeps its last 50 fights, also across sessions. Every fight has a graph of your life during the fight, and where the simulation can compare, its version of the fight is drawn on top.
 
+![Last fights with life graph and simulated fight](https://github.com/user-attachments/assets/5909785e-2c46-4609-9284-bb4b163ca14e)
+
 ### Kill streak (optional)
 
 A small counter above the action bar. Keep hitting things to keep it going, climb through the tier titles, and get bonus experience when the streak ends.
 
+![Kill streak counter with tier title](https://github.com/user-attachments/assets/6a0d45e0-e108-4d34-a0b8-74f016ead16b)
+
 ### Build guides, recipe book and glossary
 
 There are 28 build guides with skill and stat plans. The cube recipe book is searchable and knows which recipes your stash can make right now. The glossary explains game mechanics using your character's current values.
+
+| | |
+|:---:|:---:|
+| ![Build guide](https://github.com/user-attachments/assets/b2bd4685-74ce-4b7b-a419-3d62c9388d09) | ![Cube recipe book](https://github.com/user-attachments/assets/b378063a-3eb2-47ae-b09c-e5a90831d90e) |
+| ![Glossary with your live values](https://github.com/user-attachments/assets/10058d00-240e-4dad-b2fd-c588ba390dc9) | |
 
 ### Smaller things
 
@@ -63,6 +102,10 @@ The Video tab lets you install and pick a different Vulkan driver, for example T
 The added pages work with a controller. You can map the phone's shoulder triggers, see status effects with their remaining time, and keep a clock, battery and frame rate line on screen.
 
 The game saves every minute, when you leave the app and after stash actions. It pauses in the background instead of being closed. If Android closes it anyway while you are out in the field, the game starts in town as usual and offers to take you back to where you were.
+
+| | |
+|:---:|:---:|
+| ![The Extras page](https://github.com/user-attachments/assets/f258e228-a7d9-4254-9738-400ac9572000) | ![Driver picker in the Video tab](https://github.com/user-attachments/assets/67655f94-73db-4f69-bb0d-f6bcd55ee486) |
 
 From upstream, with thanks to jhaizhou and the people around the community port: the ARM64 and Vulkan runtime, touch and controller controls, Greater Rift, Boss Rush, Elysium mode and the Kill Board, the Chronicle stash, Trove and Pouch, auto-recast, auto-potions, the loot filter, auto-pickup, the runeword helper, save export and import, and the home screen widgets.
 
