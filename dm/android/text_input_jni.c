@@ -8,7 +8,7 @@
 
 static JavaVM *vm;
 static jclass activity_class;
-static jmethodID show_input, report_failure;
+static jmethodID show_input, report_failure, drop_haptic;
 static pthread_mutex_t input_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t input_done = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t work_ready = PTHREAD_COND_INITIALIZER;
@@ -20,6 +20,9 @@ typedef struct input_job {
     jlong id;
     char *strings[4];
     int max_chars, name_rule, numeric_max, failure_code;
+
+
+    int haptic;
 } input_job;
 static input_job *jobs_head, *jobs_tail;
 
@@ -82,7 +85,9 @@ static void *input_worker(void *unused) {
         pthread_mutex_unlock(&input_lock);
 
 
-        if (!job->id) {
+        if (job->haptic) {
+            (*env)->CallStaticVoidMethod(env, activity_class, drop_haptic, job->haptic);
+        } else if (!job->id) {
             (*env)->CallStaticVoidMethod(env, activity_class, report_failure, job->failure_code);
         } else {
             jstring strings[4] = {0};
@@ -117,6 +122,13 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *java_vm, void *reserved) {
         "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;III)V");
     report_failure = (*env)->GetStaticMethodID(env, activity_class, "showNativeFailure", "(I)V");
     if (!show_input || !report_failure) return JNI_ERR;
+
+
+    drop_haptic = (*env)->GetStaticMethodID(env, activity_class, "dropHaptic", "(I)V");
+    if (!drop_haptic) {
+        (*env)->ExceptionClear(env);
+        __android_log_print(ANDROID_LOG_ERROR, "dm-input", "DmActivity.dropHaptic not found: drop vibration is off");
+    }
     vm = java_vm;
     pthread_t worker;
     if (pthread_create(&worker, NULL, input_worker, NULL)) worker_state = -1;
@@ -184,4 +196,20 @@ JNIEXPORT void JNICALL Java_com_xiaoboluo_d2r_DmActivity_nativeTextResult(
         pthread_cond_signal(&input_done);
     }
     pthread_mutex_unlock(&input_lock);
+}
+
+
+
+
+
+
+void front_android_drop_haptic(int tier) {
+    if (!drop_haptic || tier < 1 || tier > 3) return;
+    input_job *job = calloc(1, sizeof *job);
+    if (!job) return;
+    job->haptic = tier;
+    pthread_mutex_lock(&input_lock);
+    if (worker_state > 0) { enqueue(job); job = NULL; }
+    pthread_mutex_unlock(&input_lock);
+    if (job) free_job(job);
 }

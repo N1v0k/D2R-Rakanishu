@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+int dm_drop_haptic_take(void);
+
 uint64_t now_ns(void);
 void dm_uiscreen_set_panel(int panel);
 void dm_tp_request(void);
@@ -289,6 +292,12 @@ static void point_tick(double now) {
 }
 void dm_android_touch_step(uint64_t guest_now, uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry) {
     (void)guest_now;
+
+
+
+
+
+    { int tier = dm_drop_haptic_take(); if (tier) front_android_drop_haptic(tier); }
     pthread_mutex_lock(&lock);
     init_locked();
     int next_swap = dm_custom_get("touch_swap_above");

@@ -74,7 +74,7 @@ The FriBiDi library inside is LGPL: its exact source archive is attached to ever
 ## Building the APK
 
 Version metadata needs no arguments: the defaults in `dm/android/app/build.gradle`
-are this release's published numbers (versionName `1.0.0`, versionCode `30002`;
+are this release's published numbers (versionName `1.0.1`, versionCode `30003`;
 the player variant appends `-player`), so the commands below build exactly the
 published version metadata. `-PdmVersionName=<name> -PdmVersionCode=<n>` override
 them for test builds only.

@@ -25,6 +25,30 @@ int main(){
 
 
 
+
+    CHECK(xbg_adreno_model_by_id(0x43030b00)==735);
+    CHECK(xbg_adreno_model_by_id(0x43020000)==720);
+    CHECK(xbg_adreno_model_by_id(0x12345678)==0);
+    CHECK(xbg_adreno_model_of("Adreno (TM) 22",0x43030b00)==735);
+    CHECK(xbg_adreno_model_of("Adreno (TM) 22",0x12345678)==0);
+    CHECK(xbg_adreno_model_of("Adreno (TM) 730",0x43030b00)==730);
+    CHECK(xbg_adreno_model_of(nullptr,0x43051401)==750);
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 22",0x43030b00));
+    CHECK(!xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 22",0x43030b00));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 22",0x12345678));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 22"));
+    CHECK(xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 22",0x43020000));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x1234,"Adreno (TM) 22",0x43030b00));
+    CHECK(xbg_adreno_dispatch_overruns(0x5143,"Adreno (TM) 8",0x44050001));
+
+
+    CHECK(xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 22",0x43030b00));
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno",0x06050002));
+    CHECK(xbg_adreno_inline_is_new(0x5143,"Adreno",0x06060001));
+    CHECK(!xbg_adreno_inline_is_new(0x5143,"Adreno",0x43051401));
+
+
+
     CHECK(xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 740"));
     CHECK(xbg_adreno_rewrites_fault(0x5143,"Adreno 750"));
     CHECK(xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 799"));
@@ -41,8 +65,50 @@ int main(){
     CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 750"));
     CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno 799"));
     CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 740"));
-    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 735"));
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 735"));
     CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 730"));
+
+
+
+
+    CHECK(xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 720"));
+    CHECK(!xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 725"));
+    CHECK(!xbg_adreno_rewrites_fault(0x5143,"Adreno (TM) 732"));
+    CHECK(!xbg_adreno_rewrites_fault(0x13b5,"Mali-G720"));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 720"));
+
+
+
+
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 660"));
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 650"));
+    CHECK(xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 618"));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 540"));
+    CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 730"));
+    CHECK(xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 660"));
+    CHECK(xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 735"));
+    CHECK(!xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 750"));
+    CHECK(!xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 730"));
+    CHECK(!xbg_adreno_inline_is_new(0x13b5,"Mali-G610"));
+
+
+
+
+    CHECK(xbg_adreno_inline_default(0x5143,"Adreno (TM) 750",true));
+    CHECK(xbg_adreno_inline_default(0x5143,"Adreno (TM) 650",false));
+    CHECK(xbg_adreno_inline_default(0x5143,"Adreno (TM) 650",true));
+    CHECK(!xbg_adreno_inline_default(0x5143,"Adreno (TM) 730",true));
+    CHECK(xbg_adreno_inline_default(0x5143,"Adreno (TM) 730",false));
+    CHECK(!xbg_adreno_inline_default(0x13b5,"Mali-G925-Immortalis MC12",false));
+    CHECK(!xbg_adreno_inline_default(0x144d,"Samsung Xclipse 940",false));
+    CHECK(xbg_adreno_inline_default(0x5143,"Adreno (TM) 22",true,0x43030b00u));
+
+
+
+    CHECK(xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 730",0,false));
+    CHECK(!xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 730",0,true));
+    CHECK(!xbg_adreno_inline_is_new(0x5143,"Adreno (TM) 750",0,false));
+    CHECK(!xbg_adreno_inline_is_new(0x13b5,"Mali-G610",0,false));
     CHECK(!xbg_adreno_compiler_needs_inline(0x5143,"Adreno (TM) 830"));
     CHECK(!xbg_adreno_compiler_needs_inline(0x5143,nullptr));
     CHECK(!xbg_adreno_compiler_needs_inline(0x10002,"Adreno 750"));
@@ -91,6 +157,6 @@ int main(){
     CHECK(!xbg_adreno_dispatch_guard_option(false,-1,nullptr,false));
 
     if(failures){printf("FAIL %d check(s)\n",failures);return 1;}
-    printf("PASS Adreno policy: 740/750 default off, 750-799 inline helpers, 8xx dispatch guard, other vendors unchanged, marker file still wins\n");
+    printf("PASS Adreno policy: 720 and 740-799 default off, 6xx, 735 and 750-799 inline helpers (6xx and 735 retry old skips), 8xx dispatch guard, other vendors unchanged, marker file still wins\n");
     return 0;
 }

@@ -6,7 +6,7 @@ Diablo II: Resurrected on Android, with the extras I kept wishing the game had.
 
 This is a fork of [d2r-mobile](https://github.com/jhaizhou-ops/d2r-mobile) by jhaizhou. They did the hard part. Their port runs the game's own ARM64 program on the phone and draws it with Vulkan, and the touch controls, endgame modes and farming helpers come from them too. I started playing it on my phone and then kept adding things. Most of them answer questions I had while playing. Can my character take the next boss? Is this ring actually better? Why does this helm look so bad?
 
-You need your own copy of the game. The APK contains none of its files, and everything runs offline. The app builds its game pack from your files on the phone itself. All screenshots were taken on a phone (2480 × 1116), the pack build pages on an emulator with test files.
+You need your own copy of the game. The APK contains none of its files, and everything runs offline. The app builds its game pack from your files on the phone itself.
 
 ## What I added
 
@@ -14,31 +14,13 @@ You need your own copy of the game. The APK contains none of its files, and ever
 
 Bring Charsi her hammer back and she will change how your gear looks. Pick any identified item of the same kind that you have owned, preview it on your character and pay in gold. You can also hide your helm or shield. The character select shows the new looks too. The real items in your save stay as they are; the looks are kept in a separate file next to it. Each difficulty unlocks this again with its own hammer quest.
 
-| Before | After |
-|:---:|:---:|
-| ![Before transmog](https://github.com/user-attachments/assets/b872c98b-8272-4bbd-950f-fb7133164eb3) | ![After transmog](https://github.com/user-attachments/assets/a3ba2bc8-b059-4f3e-aead-768a7656319c) |
-
-![Charsi's Appearance tab with live preview and price](https://github.com/user-attachments/assets/41c82f39-ef4f-4fe6-a0c5-a7833762e656)
-
-![The chosen look on the character select](https://github.com/user-attachments/assets/7067a254-7cb3-4c47-9030-ad623a03f9ae)
-
 ### Dye with gems
 
 Gems in your inventory turn into colours in the same tab. Dyeing an item uses up one gem of that colour.
 
-| Before | After |
-|:---:|:---:|
-| ![Before dyeing](https://github.com/user-attachments/assets/73b7493e-7919-4ad0-95b2-f31f7a3df51e) | ![After dyeing](https://github.com/user-attachments/assets/bcd77d7b-a288-45b3-a7e6-ec7197fd3d6f) |
-
-![Gem colours in the Appearance tab](https://github.com/user-attachments/assets/506290ae-993b-4a6e-8ebc-48d4b2059890)
-
 ### Combat simulation
 
 Before I walk into Andariel I want to know if I will come back out. The combat page simulates the next main boss, the mini bosses of the act and any other monster against your character as it is right now. You get the time to kill, the time until you die and a rating, and the numbers update when you change gear or skills. Open a fight to see how it plays out. The enemies have their pictures, made from your own game files when you build the import pack, with the colour variants of a monster family and the superuniques in their own colours.
-
-| Overview | One fight |
-|:---:|:---:|
-| ![Act bosses and mini bosses with their pictures](https://github.com/user-attachments/assets/b912a8f8-8d02-416b-b84a-7f00c071258d) | ![One simulated fight with the enemy's picture](https://github.com/user-attachments/assets/0a332407-d9e9-4bd2-9623-d71982875920) |
 
 ### Monster book
 
@@ -46,86 +28,45 @@ Every kind of monster in the game has a tile in the book, with its picture and a
 
 A monster's page has its life, defense, attacks and resistances, its skills, every area where it shows up with the monster level there, and how many you have killed on each difficulty. It lists everything the monster can drop with the chance per kill for your magic find, and one tap shows the simulated fight. The book is in the quick menu and is also the second tab of the combat page.
 
-| Grid | A monster's page |
-|:---:|:---:|
-| ![The monster book, act 2](https://github.com/user-attachments/assets/a264a879-967d-4bff-84c5-5f95565e5e46) | ![Duriel's page with loot and chance per kill](https://github.com/user-attachments/assets/ba9bfc39-5f27-4ab8-b93b-76d3b10a22ef) |
-
 ### Best gear
 
 This searches everything you carry and store (worn gear, inventory, every personal stash page and the shared tabs) and finds the best combination for your goal. You say how many hits you want to survive and how much boss damage matters compared to clearing groups. The search is exact, and it knows two weapons: the barbarian's weapon pairs, including a two-handed sword held in one hand, and the assassin's two claws with Weapon Block. Skills like Double Swing, Frenzy and Dragon Claw only count with the weapons they need, and when nothing is better, your worn gear stays on. With the stash open, one tap puts on a single item or the whole set. Items with auras, item skills or charges are left out for now.
-
-![Best set for your goal, equip in one tap](https://github.com/user-attachments/assets/a8caf667-7799-419b-afd0-c09ce20866e5)
-
-| Two weapons | Two claws |
-|:---:|:---:|
-| ![Barbarian: a new weapon for each hand](https://github.com/user-attachments/assets/4bb0d4c6-6e1e-4d83-912e-d81fbb3e1031) | ![Assassin: a pair of claws](https://github.com/user-attachments/assets/3652309e-51a2-4a3c-8718-725b591fab88) |
 
 ### Unsocketing
 
 Put a socketed item, a Ral rune and a Scroll of Town Portal into the Horadric Cube and transmute. Every gem, jewel and rune comes back, and the item keeps its empty sockets. In return the item breaks and needs a repair, and a runeword on it is gone. Ethereal items can't be repaired, so they keep their durability. Inserts that don't fit into the cube go to your inventory. The game's own Hel rune recipe, which destroys the inserts, still works as before.
 
-| Before | After |
-|:---:|:---:|
-| ![A socketed cap, a Ral rune and a scroll in the cube](https://github.com/user-attachments/assets/035750a4-aae1-429e-add4-8b76fdf5b7ef) | ![The runes back, the cap needs a repair](https://github.com/user-attachments/assets/5ba2c808-f973-431a-929e-25a6806018ae) |
-
 ### Achievements
 
 Your characters collect achievements, 60 of them in eight groups: kills, the acts and difficulties, kill streaks and act bosses, Greater Rifts, the cube and the smith, rare treasures and the mercenaries. A short line above the action bar tells you when you unlock one. The Achievements page in the quick menu shows the day you got each one, or how far along you are, for the character you play or for all your characters together. Characters you already have get most of what they have done before filled in quietly the first time you play them. The achievements are kept in a small file next to each save and move with save export and import.
-
-| This character | All characters |
-|:---:|:---:|
-| ![The campaign achievements of one character](https://github.com/user-attachments/assets/eea38ba8-eb51-40e7-b7f9-dd6e4c7e549a) | ![Hell with every class, counted over all characters](https://github.com/user-attachments/assets/915d3902-f74e-4437-804a-67826e4a7097) |
-
-![An achievement unlocked in the field](https://github.com/user-attachments/assets/682d46d3-a1aa-4ba2-8e61-4b8b0724f961)
 
 ### Your real DPS
 
 The fight log measures your own damage per second over your last 50 fights with your current gear and skills, shows the range, and splits it between your skills, your mercenary and your summons. Solo kills are compared with what the simulation expected. A curve shows how your DPS changed over time, with a marker wherever you changed gear, levelled up or spent points.
 
-![Measured DPS with range and history](https://github.com/user-attachments/assets/c09fd8a4-1b77-473d-8dd7-782ac08d3d3f)
-
 ### Melee splash (optional)
 
 Melee hits also hit the enemies in a cone in front of you. How much they take depends on your weapon, your class and your strength, and each of those hits shows its own damage number.
-
-![One swing, a damage number on every enemy in the cone](https://github.com/user-attachments/assets/f3250c09-daf0-466b-9bfd-72430960a07d)
 
 ### Shrine stacking (optional)
 
 Shrines no longer replace each other. Each one keeps its own timer, picking up the same shrine again adds to its time, and the symbols sit next to each other above your head. The stamina shrine can also make you run and walk 50 % faster.
 
-| One shrine | Three shrines |
-|:---:|:---:|
-| ![One shrine](https://github.com/user-attachments/assets/e5ba4f12-73da-451f-b947-5ad6649744e5) | ![Three shrines side by side](https://github.com/user-attachments/assets/eb1326d8-04e2-45d2-9082-915396abfea3) |
-
 ### Item comparison in the tooltip
 
 When you look at an item, the tooltip also tells you what it would change for your character. Resistances show up as how much less damage you take, attack and cast speed as animation frames, and you see the difference in life, block chance and skill levels (skill tab bonuses included). At the bottom is the combat simulation's verdict.
-
-| Game tooltip | With comparison |
-|:---:|:---:|
-| ![Game tooltip](https://github.com/user-attachments/assets/72ae23f0-ba25-4672-9398-71ae09ed96b3) | ![Tooltip with comparison](https://github.com/user-attachments/assets/138ab8ee-699a-4f58-b09a-10323e5baf69) |
 
 ### Fight log
 
 Each character keeps its last 50 fights, also across sessions. Every fight has a graph of your life during the fight, and where the simulation can compare, its version of the fight is drawn on top.
 
-![Last fights with life graph and simulated fight](https://github.com/user-attachments/assets/5909785e-2c46-4609-9284-bb4b163ca14e)
-
 ### Kill streak (optional)
 
 A small counter above the action bar. Keep hitting things to keep it going, climb through the tier titles, and get bonus experience when the streak ends.
 
-![Kill streak counter with tier title](https://github.com/user-attachments/assets/6a0d45e0-e108-4d34-a0b8-74f016ead16b)
-
 ### Build guides, recipe book and glossary
 
 There are 28 build guides with skill and stat plans. The cube recipe book is searchable and knows which recipes your stash can make right now. The glossary explains game mechanics using your character's current values.
-
-| | |
-|:---:|:---:|
-| ![Build guide](https://github.com/user-attachments/assets/b2bd4685-74ce-4b7b-a419-3d62c9388d09) | ![Cube recipe book](https://github.com/user-attachments/assets/b378063a-3eb2-47ae-b09c-e5a90831d90e) |
-| ![Glossary with your live values](https://github.com/user-attachments/assets/10058d00-240e-4dad-b2fd-c588ba390dc9) | |
 
 ### Smaller things
 
@@ -138,15 +79,6 @@ The added pages work with a controller. You can map the phone's shoulder trigger
 The game saves every minute, when you leave the app and after stash actions. It pauses in the background instead of being closed. If Android closes it anyway while you are out in the field, the next start takes you straight back to that spot. The game waits there, paused, with a To camp button, and after you continue, direct hits cost no life for up to 3 seconds. After a boss kill you start at the nearest waypoint you have instead.
 
 The shared stash tabs have a Sort button too.
-
-| | |
-|:---:|:---:|
-| ![The Extras page](https://github.com/user-attachments/assets/f258e228-a7d9-4254-9738-400ac9572000) | ![Driver picker in the Video tab](https://github.com/user-attachments/assets/67655f94-73db-4f69-bb0d-f6bcd55ee486) |
-| ![Back where Android closed the game](https://github.com/user-attachments/assets/ba6a6753-a20a-49e2-8351-f182b3b17f21) | |
-
-| Shared tab | After Sort |
-|:---:|:---:|
-| ![A shared stash tab before sorting](https://github.com/user-attachments/assets/598b5f9c-6069-4db0-bffc-e84f32e4f74d) | ![The same tab after Sort](https://github.com/user-attachments/assets/6a92ced7-112b-4ae1-86f4-466da5c3054a) |
 
 From upstream, with thanks to jhaizhou and the people around the community port: the ARM64 and Vulkan runtime, touch and controller controls, Greater Rift, Boss Rush, Elysium mode and the Kill Board, the Chronicle stash, Trove and Pouch, auto-recast, auto-potions, the loot filter, auto-pickup, the runeword helper, save export and import, and the home screen widgets. From d2r-mobile 2.3.4 also come the lighting fix for Adreno 8xx GPUs, start fixes for Samsung Xclipse GPUs, older Adreno 650 and Huawei Maleoon drivers and ARMv8.0 CPUs, sorting the shared stash tabs with a long press, the mercenary's skills when you hold a row in the hire list, and auto-pickup leaving a rune on the ground once its stack in the stash holds 99.
 
@@ -179,10 +111,6 @@ Bring three files from your own copy of the game, saved in the phone's own stora
 The build needs about 8 GB of free space besides those two game files. It reads them on the phone and nothing leaves it; the key file is only held in memory while it is read and is never stored.
 
 On the first page, tap **Build on this phone**. Pick each file with the button in its row, check the space on the next page and tap **Start**. The bar shows how far the build is, and when it is full you tap **Start game**. It took 4:39 minutes on a RedMagic 10 Pro and about 5.5 minutes on a RedMagic 8 Pro. Stay on the page while it runs; the screen stays on.
-
-| Your files | The build |
-|:---:|:---:|
-| ![The game files page with three files picked](https://github.com/user-attachments/assets/e61f0863-7123-48a2-b646-8c6e5728d5b8) | ![The pack build running](https://github.com/user-attachments/assets/7ed5846c-c6c4-45a4-bf6f-2fccd98938bf) |
 
 After that you can delete the two game files and the key file. The game archives the build unpacked stay in `Download/S2X/D2R Mobile/data/`, where the game reads them. When an app update needs a new pack, the first page says so, and one tap on **Rebuild game pack** makes it again from what the phone kept, without your files. Only a reinstall or a rare large update asks for them again.
 

@@ -73,6 +73,10 @@ void dm_ui_map_full(int on) { (void)on; unexpected_host_call(__func__); }
 
 static int test_full, test_real_w = 1000, test_real_h = 500, test_ui_x, test_ui_y = 150, test_ui_w = 1000, test_ui_h = 350;
 int front_android_full(void) { return test_full; }
+
+static int test_haptic_pending, test_haptic_handed[4], test_haptic_calls;
+int dm_drop_haptic_take(void) { int t = test_haptic_pending; test_haptic_pending = 0; return t; }
+void front_android_drop_haptic(int tier) { if (tier >= 0 && tier < 4) test_haptic_handed[tier]++; test_haptic_calls++; }
 int dm_screen_real(int *w, int *h) { if (w) *w = test_real_w; if (h) *h = test_real_h; return test_real_h > 0; }
 void dm_ui_rect(int *x, int *y, int *w, int *h) { if (x) *x = test_ui_x; if (y) *y = test_ui_y; if (w) *w = test_ui_w; if (h) *h = test_ui_h; }
 static int map_tap_ok; static float tap_ux, tap_uy, tap_wx, tap_wy, map_wx, map_wy;
@@ -505,6 +509,18 @@ static void test_android_view_rect_coordinates(void) {
     REQUIRE(seen_safe_left == 0 && seen_safe_right == 0);
 }
 
+static void test_android_drop_haptic_handoff(void) {
+    fixture(0); uint64_t buttons = 0; int32_t lx = 0, ly = 0, rx = 0, ry = 0;
+    memset(test_haptic_handed, 0, sizeof test_haptic_handed); test_haptic_calls = 0;
+    dm_android_touch_step(test_clock_ns, &buttons, &lx, &ly, &rx, &ry);
+    REQUIRE(test_haptic_calls == 0);
+    test_haptic_pending = 1;
+    dm_android_touch_step(test_clock_ns, &buttons, &lx, &ly, &rx, &ry);
+    dm_android_touch_step(test_clock_ns, &buttons, &lx, &ly, &rx, &ry);
+    REQUIRE(test_haptic_calls == 1 && test_haptic_handed[1] == 1 && test_haptic_pending == 0);
+}
+
+
 static void test_android_world_tap_fullscreen(void) {
     fixture(0); dm_android_touch_resize(1000, 500, 0, 0, 0); dm_android_touch_view(100, 150, 800, 350); queue_sample();
     test_full = 1; world_tap_ok = 1; map_tap_ok = 1;
@@ -541,6 +557,7 @@ int main(void) {
     run_case("navigation_and_resize", test_navigation_and_resize);
     run_case("android_view_rect_coordinates", test_android_view_rect_coordinates);
     run_case("android_world_tap_fullscreen", test_android_world_tap_fullscreen);
+    run_case("android_drop_haptic_handoff", test_android_drop_haptic_handoff);
     run_case("android_queue_ten_short_taps", test_android_queue_ten_short_taps);
     run_case("android_focus_cancel", test_android_focus_cancel);
     run_case("android_cancelled_latch", test_android_cancelled_latch);

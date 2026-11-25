@@ -159,8 +159,11 @@ python3 "$root/dm/android/tests/test_gen_recipe_card.py"
 
 if command -v cc > /dev/null; then
   t=$(mktemp -d)
-  cc -O1 -I "$root" -o "$t/fv" "$root/dm/android/tests/test_front_view.c" -lm && "$t/fv"
-  cc -O1 -I "$root" -o "$t/ts" "$root/dm/android/tests/test_touch_snapshot.c" -lm && "$t/ts" > "$t/ts.log" && tail -1 "$t/ts.log"
+  cc -O1 -I "$root" -o "$t/fv" "$root/dm/android/tests/test_front_view.c" -lm
+  "$t/fv"
+  cc -O1 -I "$root" -o "$t/ts" "$root/dm/android/tests/test_touch_snapshot.c" -lm
+  "$t/ts" > "$t/ts.log"
+  tail -1 "$t/ts.log"
 
   cc -std=gnu11 -O1 -Wall -Wno-unused-function -fno-strict-aliasing -D_GNU_SOURCE -D__ANDROID__ -I "$root/dm/android/tests/fake_aaudio" -I "$root/dm/android/compat/include" \
     -I "$root/dm/host" -o "$t/ar" "$root/dm/android/tests/test_audio_reopen.c" -lpthread

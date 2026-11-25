@@ -447,8 +447,8 @@ static void load_locked(void) {
     v[K_MERC] = merc < 0 ? k_def[K_MERC] : merc; atomic_store(&g_merc_explicit, merc);
     for (int i = 0; i < NK; i++) { atomic_store(&g_val[i], v[i]); atomic_store(&g_pend[i], -1); }
     atomic_store(&g_loaded, 1);
-    LOG("自定义设置：读盘 %s%s lang=%d%s%s auto_mana=%d merc_pot=%d drop_light=%d map_mark=%d item_notes=%d icloud=%d pot_pick=%d drop_haptic=%d gem_pick=%d store_btn=%d fps=%d（生效 %d）status=%d res_pct=%d（%s）s3d=%d shoulder=%d/%d",
-        p, f ? "" : "（没有文件，全按缺省）", v[0], lang < 0 ? "（没写，按当前语言）" : "", vlog, v[1 + VOICE_ROW], v[2 + VOICE_ROW], v[3 + VOICE_ROW], v[4 + VOICE_ROW], v[5 + VOICE_ROW], v[6 + VOICE_ROW], v[7 + VOICE_ROW], v[8 + VOICE_ROW], v[9 + VOICE_ROW], v[10 + VOICE_ROW],
+    LOG("自定义设置：读盘 %s%s lang=%d%s%s auto_mana=%d merc_pot=%d drop_light=%d map_mark=%d item_notes=%d item_cmp=%d icloud=%d pot_pick=%d drop_haptic=%d gem_pick=%d store_btn=%d fps=%d（生效 %d）status=%d res_pct=%d（%s）s3d=%d shoulder=%d/%d",
+        p, f ? "" : "（没有文件，全按缺省）", v[0], lang < 0 ? "（没写，按当前语言）" : "", vlog, v[1 + VOICE_ROW], v[2 + VOICE_ROW], v[3 + VOICE_ROW], v[4 + VOICE_ROW], v[5 + VOICE_ROW], v[6 + VOICE_ROW], v[7 + VOICE_ROW], v[8 + VOICE_ROW], v[9 + VOICE_ROW], v[10 + VOICE_ROW], v[11 + VOICE_ROW],
         v[K_FPS], eff(K_FPS, v[K_FPS]), v[K_STATUS], v[K_RESP], v[K_RESP] == RES_AUTO ? "auto" : "%", v[K_S3D], v[K_SHL], v[K_SHR]);
     apply_side_effects(K_CAM, v[K_CAM], 1); apply_side_effects(K_Q3D, v[K_Q3D], 1); apply_side_effects(K_BRIGHT, v[K_BRIGHT], 1); apply_side_effects(K_DMG, v[K_DMG], 1);
     apply_side_effects(K_FPS, v[K_FPS], 1); apply_side_effects(K_S3D, v[K_S3D], 1);

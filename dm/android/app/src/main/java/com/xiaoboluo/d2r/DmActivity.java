@@ -1098,6 +1098,27 @@ public class DmActivity extends Activity implements SurfaceHolder.Callback, Disp
         showStartError(AppText.get(this, bootFailure == -6 ? R.string.dmAndroidGraphicsFailed : R.string.dmAndroidHostStopped));
     }
 
+
+
+
+
+
+
+
+    private static void dropHaptic(int tier) {
+        DmActivity activity = current.get();
+        if (activity == null) return;
+        android.os.VibratorManager manager = activity.getSystemService(android.os.VibratorManager.class);
+        android.os.Vibrator vibrator = manager != null ? manager.getDefaultVibrator() : null;
+        if (vibrator == null || !vibrator.hasVibrator()) { android.util.Log.i("dm", "drop haptic tier=" + tier + ": no vibrator"); return; }
+        android.os.VibrationEffect effect = android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_HEAVY_CLICK);
+        if (android.os.Build.VERSION.SDK_INT >= 33)
+            vibrator.vibrate(effect, android.os.VibrationAttributes.createForUsage(android.os.VibrationAttributes.USAGE_MEDIA));
+        else
+            vibrator.vibrate(effect, new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_GAME).build());
+        android.util.Log.i("dm", "drop haptic tier=" + tier);
+    }
+
     private static void showNativeInput(long id, String title, String sub, String guide, String initial,
                                         int maxChars, int nameRule, int numericMax) {
         DmActivity activity = current.get();

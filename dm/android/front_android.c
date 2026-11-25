@@ -398,6 +398,8 @@ void front_android_view_rect(int ww, int wh, int out[8]) {
 __attribute__((weak)) int front_android_text_input(const char *title, const char *sub, const char *guide, const char *initial, int max_chars, char *out, int out_cap) {
     (void)title; (void)sub; (void)guide; (void)initial; (void)max_chars; (void)out; (void)out_cap; return -1;
 }
+
+__attribute__((weak)) void front_android_drop_haptic(int tier) { (void)tier; }
 int front_text_input(const char *title, const char *sub, const char *guide, const char *initial, int max_chars, char *out, int out_cap) {
     if (!front_metal_layer()) return -1;
     return front_android_text_input(title, sub, guide, initial, max_chars, out, out_cap);

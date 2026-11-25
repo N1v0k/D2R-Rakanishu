@@ -13,7 +13,7 @@ def signingFallback = false
 
 def dmUnsigned = (project.findProperty('dmUnsigned') ?: '').toString() in ['true', '1']
 def allowDebugSigning = (project.findProperty('dmAllowDebugSigning') ?: System.getenv('DM_ALLOW_DEBUG_SIGNING') ?: '').toString() in ['true', '1']
-def dmVersionName = (project.findProperty('dmVersionName') ?: '1.0.0').toString()
+def dmVersionName = (project.findProperty('dmVersionName') ?: '1.0.1').toString()
 
 if (dmVersionName.endsWith('-player') && dmVariant != 'player') throw new GradleException("version name ${dmVersionName} is reserved for -PdmVariant=player")
 if (dmVariant == 'player' && !dmVersionName.endsWith('-player')) dmVersionName += '-player'
@@ -97,7 +97,7 @@ android {
 
 
 
-        versionCode((project.findProperty('dmVersionCode') ?: '30002') as int)
+        versionCode((project.findProperty('dmVersionCode') ?: '30003') as int)
         versionName dmVersionName
 
 
