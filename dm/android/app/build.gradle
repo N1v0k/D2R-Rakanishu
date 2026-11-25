@@ -1,0 +1,188 @@
+
+
+
+plugins { id 'com.android.application' }
+apply from: '../release-signing.gradle'
+
+def prebuilt = project.findProperty('dmPrebuiltJni')
+def dmVariant = (project.findProperty('dmVariant') ?: 'qa').toString()
+if (!(dmVariant in ['qa', 'player'])) throw new GradleException("-PdmVariant must be qa or player, got '${dmVariant}'")
+
+if (prebuilt && dmVariant == 'player') throw new GradleException('-PdmVariant=player cannot be combined with -PdmPrebuiltJni')
+def signingFallback = false
+
+def dmUnsigned = (project.findProperty('dmUnsigned') ?: '').toString() in ['true', '1']
+def allowDebugSigning = (project.findProperty('dmAllowDebugSigning') ?: System.getenv('DM_ALLOW_DEBUG_SIGNING') ?: '').toString() in ['true', '1']
+def dmVersionName = (project.findProperty('dmVersionName') ?: '1.0.0').toString()
+
+if (dmVersionName.endsWith('-player') && dmVariant != 'player') throw new GradleException("version name ${dmVersionName} is reserved for -PdmVariant=player")
+if (dmVariant == 'player' && !dmVersionName.endsWith('-player')) dmVersionName += '-player'
+
+
+
+def startupStrings = layout.buildDirectory.dir('generated/androidStrings')
+def generateStartupStrings = tasks.register('generateStartupStrings', Exec) {
+    inputs.files('../tools/gen_strings.py', '../../i18n/ui_text.tsv', '../../ios/tools/dm_i18n.py')
+    outputs.dir(startupStrings)
+    commandLine(project.findProperty('dmPython') ?: 'python3', '../tools/gen_strings.py', '--output', startupStrings.get().asFile)
+}
+
+
+
+def buildGuides = layout.buildDirectory.dir('generated/buildGuides')
+def copyBuildGuides = tasks.register('copyBuildGuides', Sync) {
+    from('../builds') { include '*.json'; exclude 'schema.json' }
+    into(buildGuides.map { it.dir('builds') })
+}
+
+
+def copyGlossary = tasks.register('copyGlossary', Sync) {
+    from('../glossary') { include 'terms.json' }
+    into(buildGuides.map { it.dir('glossary') })
+}
+
+
+def copyNotices = tasks.register('copyNotices', Sync) {
+    from('../../../THIRD-PARTY-NOTICES.md') { rename { 'THIRD-PARTY-NOTICES.txt' } }
+    into(buildGuides.map { it.dir('licenses') })
+}
+
+
+
+
+
+def pyRuntime = project.findProperty('dmPythonRuntime')
+if (pyRuntime && !new File(pyRuntime.toString(), 'RECIPE').isFile()) throw new GradleException("-PdmPythonRuntime=${pyRuntime} is not a finished runtime (no RECIPE)")
+
+
+def shaderXlate = project.findProperty('dmShaderXlate')
+if (shaderXlate && !pyRuntime) throw new GradleException("-PdmShaderXlate needs -PdmPythonRuntime")
+if (shaderXlate && !new File(shaderXlate.toString(), 'jni/arm64-v8a/libdmsh_xlate.so').isFile()) throw new GradleException("-PdmShaderXlate=${shaderXlate} holds no jni/arm64-v8a/libdmsh_xlate.so")
+def pyAssets = layout.buildDirectory.dir('generated/pyAssets')
+def packPython = tasks.register('packPython', Exec) {
+    outputs.dir(pyAssets)
+    outputs.upToDateWhen { false }
+    commandLine(project.findProperty('dmPython') ?: 'python3', '../python/pack_assets.py', '../../..', pyRuntime ?: '', pyAssets.get().dir('py').asFile, dmVariant)
+}
+
+
+
+def defaultSharedRoot = 'S2X/D2R Mobile'
+def dmSharedRoot = (project.findProperty('dmSharedRoot') ?: defaultSharedRoot).toString()
+if (!(dmSharedRoot ==~ /[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*(\/[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*)*/)) throw new GradleException("-PdmSharedRoot=${dmSharedRoot} is not a plain folder below Download")
+def dmAppId = (project.findProperty('dmAppId') ?: 'com.xiaoboluo.d2r').toString()
+if (dmSharedRoot != defaultSharedRoot && dmAppId == 'io.r4k4n1shu.d2r') throw new GradleException("-PdmSharedRoot=${dmSharedRoot} is for test apps; the release application ID ${dmAppId} uses ${defaultSharedRoot}")
+
+
+
+def launcherIcon = layout.buildDirectory.dir('generated/launcherIcon')
+def generateLauncherIcon = tasks.register('generateLauncherIcon', Sync) {
+    from('../../ios/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png')
+    into(launcherIcon.map { it.dir('mipmap-nodpi') })
+    rename { 'ic_launcher_art.png' }
+}
+
+android {
+    namespace 'com.xiaoboluo.d2r'
+    compileSdk 36
+    ndkVersion '29.0.14206865'
+    defaultConfig {
+        applicationId dmAppId
+
+
+        buildConfigField 'String', 'DM_PRODUCT', "\"${file('../../PRODUCT').readLines()[0].trim()}\""
+        minSdk 31
+        targetSdk 36
+
+
+
+
+        versionCode((project.findProperty('dmVersionCode') ?: '30002') as int)
+        versionName dmVersionName
+
+
+        buildConfigField 'String', 'DM_VARIANT', "\"${dmVariant}\""
+        buildConfigField 'boolean', 'DM_QA_BUILD', dmVariant == 'qa' ? 'true' : 'false'
+
+
+        buildConfigField 'boolean', 'DM_PACK_BUILDER', pyRuntime && shaderXlate ? 'true' : 'false'
+        buildConfigField 'String', 'DM_SHARED_ROOT', "\"${dmSharedRoot}\""
+        buildConfigField 'boolean', 'DM_OWN_SHARED_ROOT', dmSharedRoot != defaultSharedRoot ? 'true' : 'false'
+        manifestPlaceholders = [dmQaDocs: dmVariant == 'qa' ? 'true' : 'false', dmSharedRoot: dmSharedRoot]
+        ndk { abiFilters 'arm64-v8a' }
+        if (!prebuilt) externalNativeBuild { cmake {
+            arguments "-DDM_GEN_DIR=${project.findProperty('dmGenDir') ?: ''}", "-DDM_VARIANT=${dmVariant}"
+            if (project.findProperty('dmPython')) arguments "-DPython3_EXECUTABLE=${project.property('dmPython')}"
+
+
+
+
+            targets(*(['dm', 'dm_driverload', 'hook_impl', 'main_hook', 'packbuild', 'deswizzle'] + (shaderXlate ? ['dmsh_shaders'] : []) + (pyRuntime ? ['monpic'] : [])))
+        } }
+    }
+    if (!prebuilt) externalNativeBuild { cmake { path '../CMakeLists.txt'; version '3.31.6' } }
+    if (prebuilt) sourceSets { main { jniLibs.srcDirs = [prebuilt] } }
+    if (pyRuntime) sourceSets { main { jniLibs.srcDir(new File(pyRuntime.toString(), 'jni')); assets.srcDir(pyAssets.get().asFile) } }
+    if (shaderXlate) sourceSets { main { jniLibs.srcDir(new File(shaderXlate.toString(), 'jni')) } }
+    sourceSets { main { res.srcDir(startupStrings.get().asFile); res.srcDir(launcherIcon.get().asFile); assets.srcDir(buildGuides.get().asFile) } }
+
+    sourceSets { main { java.srcDir("src/${dmVariant}/java") } }
+    packaging { jniLibs { useLegacyPackaging(pyRuntime != null); keepDebugSymbols += ['**/*.so'] } }
+    buildFeatures { buildConfig true }
+    signingConfigs {
+        if (!dmUnsigned) release {
+            def settingsPath = project.findProperty('dmSigningProperties') ?: System.getenv('DM_SIGNING_PROPERTIES') ?:
+                new File(System.getProperty('user.home'), '.config/d2r-release/signing.properties').path
+            def resolved = dmResolveSigning(rootProject.projectDir.parentFile.parentFile,
+                signingConfigs.debug.storeFile, System.getenv(), settingsPath.toString())
+            signingFallback = resolved.fallback
+            if (!resolved.fallback) {
+                storeFile resolved.storeFile
+                storePassword resolved.storePassword
+                keyAlias resolved.keyAlias
+                keyPassword resolved.keyPassword
+                storeType resolved.storeType
+            } else {
+                logger.warn('WARNING: No release signing configuration; using the existing Android debug key. Do not publish this APK.')
+                def debugKey = signingConfigs.debug.storeFile
+                if (!debugKey.isFile()) throw new GradleException('The existing debug keystore is missing; no key will be created')
+                storeFile debugKey
+                storePassword signingConfigs.debug.storePassword
+                keyAlias signingConfigs.debug.keyAlias
+                keyPassword signingConfigs.debug.keyPassword
+                storeType signingConfigs.debug.storeType
+            }
+        }
+    }
+    buildTypes {
+        debug { debuggable dmVariant == 'qa'; if (!dmUnsigned) signingConfig signingConfigs.release }
+
+        release { debuggable false; minifyEnabled false; vcsInfo { include = false }; if (!dmUnsigned) signingConfig signingConfigs.release }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+tasks.named('preBuild').configure {
+    dependsOn(generateStartupStrings, generateLauncherIcon, copyBuildGuides, copyGlossary, copyNotices)
+    if (pyRuntime) dependsOn(packPython)
+}
+
+tasks.register('writeSigningFingerprint') {
+    def output = layout.buildDirectory.file('signing.sha256')
+    def mode = layout.buildDirectory.file('signing.mode')
+    outputs.files(output, mode)
+    outputs.upToDateWhen { false }
+    doLast {
+        def config = android.signingConfigs.release
+        def keys = java.security.KeyStore.getInstance(config.storeType ?: 'JKS')
+        config.storeFile.withInputStream { keys.load(it, config.storePassword.toCharArray()) }
+        def certificate = keys.getCertificate(config.keyAlias)
+        if (certificate == null) throw new GradleException('The signing alias has no certificate')
+        def digest = java.security.MessageDigest.getInstance('SHA-256').digest(certificate.encoded).encodeHex().toString()
+        output.get().asFile.text = digest + '\n'
+        mode.get().asFile.text = signingFallback ? 'debug-fallback\n' : 'release\n'
+    }
+}
+
+tasks.configureEach {
+    if (name == 'preReleaseBuild') doFirst { dmCheckSigning(signingFallback, true, allowDebugSigning) }
+}

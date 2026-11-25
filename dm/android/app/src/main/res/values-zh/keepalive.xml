@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">运行中的游戏</string>
+    <string name="dmAndroidKeepChannelInfo">应用在后台时，把暂停的游戏留在内存里。</string>
+    <string name="dmAndroidKeepRunning">游戏运行中</string>
+    <string name="dmAndroidKeepStays">切到后台也保留</string>
+    <string name="dmAndroidKeepPaused">游戏已暂停</string>
+    <string name="dmAndroidKeepBackground">游戏在后台</string>
+    <string name="dmAndroidKeepTap">点按继续游戏</string>
+    <string name="dmAndroidKeepQuit">保存并退出</string>
+    <string name="dmAndroidKeepOk">后台保护已开启</string>
+    <string name="dmAndroidKeepNoNotify">后台保护已开启 · 通知已关闭</string>
+    <string name="dmAndroidKeepBattery">电池优化已开启：保护受限</string>
+    <string name="dmAndroidKeepAllow">立即允许</string>
+    <string name="dmAndroidKeepRestricted">后台使用受限：保护受限</string>
+    <string name="dmAndroidKeepFailed">后台保护未开启：被安卓拒绝</string>
+</resources>

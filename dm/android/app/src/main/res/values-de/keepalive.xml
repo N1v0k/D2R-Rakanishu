@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">Laufendes Spiel</string>
+    <string name="dmAndroidKeepChannelInfo">Hält das pausierte Spiel im Speicher, solange die App im Hintergrund ist.</string>
+    <string name="dmAndroidKeepRunning">Spiel läuft</string>
+    <string name="dmAndroidKeepStays">Bleibt im Hintergrund erhalten</string>
+    <string name="dmAndroidKeepPaused">Spiel pausiert</string>
+    <string name="dmAndroidKeepBackground">Spiel im Hintergrund</string>
+    <string name="dmAndroidKeepTap">Tippen zum Weiterspielen</string>
+    <string name="dmAndroidKeepQuit">Speichern und verlassen</string>
+    <string name="dmAndroidKeepOk">Hintergrundschutz aktiv</string>
+    <string name="dmAndroidKeepNoNotify">Hintergrundschutz aktiv · Benachrichtigungen aus</string>
+    <string name="dmAndroidKeepBattery">Akku-Optimierung an: Schutz eingeschränkt</string>
+    <string name="dmAndroidKeepAllow">Jetzt erlauben</string>
+    <string name="dmAndroidKeepRestricted">Hintergrundnutzung eingeschränkt: Schutz eingeschränkt</string>
+    <string name="dmAndroidKeepFailed">Hintergrundschutz aus: von Android abgelehnt</string>
+</resources>

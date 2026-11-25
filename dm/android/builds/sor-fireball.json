@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "id": "sor-fireball",
+  "version": 2,
+  "class": "sor",
+  "classIndex": 1,
+  "title": {"de": "Feuerball-/Meteor-Zauberin", "en": "Fire Ball / Meteor Sorceress"},
+  "summary": {
+    "de": "Feuerball für schnelle Flächen, Meteor für Bosse und Champions: der Einschlag brennt nach und verhindert, dass Gegner heilen. Feuerblitz, Feuerball und Meteor stärken sich gegenseitig. Leveln komplett mit Feuer ohne Umskillen; beliebter Start in eine neue Saison und gut für Magic Find.",
+    "en": "Fire Ball for fast area damage, Meteor for bosses and champions: the impact keeps burning and stops monsters from healing. Fire Bolt, Fire Ball and Meteor boost each other. Level fully with fire and no respec; a popular season starter and good for magic find."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Hoher Feuerschaden; Feuerblitz stärkt beide Hauptzauber", "Mit wenig Ausrüstung stark gegen Andariel, Mephisto, Steingrab", "Ohne Umskillen von Stufe 1 bis 99", "Viel Platz für Magic Find"],
+      "en": ["High fire damage; Fire Bolt boosts both main spells", "Strong against Andariel, Mephisto, Stony Tomb with little gear", "No respec from level 1 to 99", "Plenty of room for magic find"]
+    },
+    "weaknesses": {
+      "de": ["Sehr zerbrechlich: Abstand halten, Erholung nach Treffer wichtig", "Feuer-Immune: Flammenspalt; Unendlichkeit bricht nur manche, sonst Söldner oder überspringen", "Meteor schlägt verzögert ein: vorhalten", "Ohne Unendlichkeit und Flammenspalt wenige Farmgebiete"],
+      "en": ["Very fragile: keep your distance, hit recovery matters", "Fire immunes: Flame Rift; Infinity breaks only some, else the merc or skip them", "Meteor lands with a delay: lead your target", "Few farming spots without Infinity and Flame Rift"]
+    },
+    "notes": {
+      "de": ["Leveln mit Feuerblitz, Feuerball ab 12, Meteor ab 24 wie bei DiabloBytes; Maxroll levelt mit Nova und Blizzard", "Feuerblitz, Feuerball und Meteor stärken sich gegenseitig (Spieltabellen 3.3)", "Icy Veins führt diese Zauberin nur auf Stufe B", "Ziele: 63 oder 105 % schnelleres Zaubern, mindestens 60 % schnellere Erholung (Geist gibt 55)", "Quellen Stand 3.2 (S14); 3.3 brachte keine Zauberin-Änderung"],
+      "en": ["Level with Fire Bolt, Fire Ball from 12, Meteor from 24 as DiabloBytes does; Maxroll levels with Nova and Blizzard", "Fire Bolt, Fire Ball and Meteor boost each other (game tables 3.3)", "Icy Veins rates this Sorceress only tier B", "Targets: 63 or 105% faster cast rate, at least 60% faster hit recovery (Spirit gives 55)", "Sources as of 3.2 (S14); 3.3 brought no Sorceress change"]
+    }
+  },
+  "tags": ["leveling", "endgame", "bosses", "magicfind", "fire", "caster"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [56, 47, 61],
+  "trees": [1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.6},
+    "damage": ["fire"],
+    "keySkills": [
+      {"skill": 56, "w": 1.0},
+      {"skill": 47, "w": 1.0},
+      {"skill": 61, "w": 0.8},
+      {"skill": 36, "w": 0.5},
+      {"skill": 42, "w": 0.3},
+      {"skill": 54, "w": 0.3}
+    ],
+    "tabs": [{"class": 1, "page": 1, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0,
+      "item_addclassskills": 1.0,
+      "item_addskill_tab": {"param": "sor/1", "w": 1.0},
+      "item_singleskill": {"param": 47, "w": 0.6},
+      "item_fastercastrate": 0.8,
+      "item_fastergethitrate": 0.5,
+      "passive_fire_mastery": 0.7,
+      "passive_fire_pierce": 0.9,
+      "item_pierce_fire_immunity": 0.6,
+      "fireresist": 0.3,
+      "coldresist": 0.3,
+      "lightresist": 0.3,
+      "poisonresist": 0.2,
+      "maxhp": 0.4,
+      "item_magicbonus": 0.5
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {
+      "item_fastercastrate": [63, 105],
+      "source": "https://maxroll.gg/d2/guides/meteor-sorceress ; https://www.diablobytes.com/d2-resurrected/builds/fireball-meteor-sorc/",
+      "verified": false
+    },
+    "requirements": {"str": 156, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 23],
+      "plan": "cumulative",
+      "note": {
+        "de": "DiabloBytes: Feuerblitz bis 11, ab 12 Feuerball; Teleport mit 18; Voraussetzungen für Meteor sammeln.",
+        "en": "DiabloBytes: Fire Bolt until 11, Fire Ball from 12; Teleport at 18; collect the prerequisites for Meteor."
+      },
+      "skills": [
+        {"lvl": 2, "skill": 36, "key": "Fire Bolt", "to": 4, "note": {"de": "Startzauber; später Synergie", "en": "Starter spell; a synergy later"}},
+        {"lvl": 6, "skill": 42, "key": "Static Field", "to": 1, "note": {"de": "Gegen Bosse und zähe Gegner", "en": "For bosses and tough monsters"}},
+        {"lvl": 6, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 6, "skill": 37, "key": "Warmth", "to": 1, "note": {"de": "Mana-Regeneration", "en": "Mana regeneration"}},
+        {"lvl": 7, "skill": 36, "key": "Fire Bolt", "to": 6},
+        {"lvl": 11, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 12, "skill": 47, "key": "Fire Ball", "to": 1, "save": true, "note": {"de": "Hauptzauber ab jetzt (DiabloBytes)", "en": "Main spell from now on (DiabloBytes)"}},
+        {"lvl": 12, "skill": 41, "key": "Inferno", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 12, "skill": 46, "key": "Blaze", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 12, "skill": 47, "key": "Fire Ball", "to": 5},
+        {"lvl": 18, "skill": 54, "key": "Teleport", "to": 1, "save": true, "note": {"de": "Radament-Punkt dafür aufheben", "en": "Keep the Radament point for it"}},
+        {"lvl": 18, "skill": 51, "key": "Fire Wall", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 18, "skill": 47, "key": "Fire Ball", "to": 10}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 55, "why": {"de": "Erst etwas Leben", "en": "Some life first"}},
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust", "en": "Magefist"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "fire",
+      "name": {"de": "Meteor", "en": "Meteor"},
+      "levels": [24, 74],
+      "plan": "cumulative",
+      "note": {
+        "de": "Meteor jede Stufe bis 20, daneben Feuerbeherrschung; dann Feuerball voll, dann Feuerblitz.",
+        "en": "Meteor each level to 20, Fire Mastery beside it; then Fire Ball maxed, then Fire Bolt."
+      },
+      "skills": [
+        {"lvl": 24, "skill": 56, "key": "Meteor", "to": 1, "save": true, "note": {"de": "Für Bosse und Champions", "en": "For bosses and champions"}},
+        {"lvl": 24, "skill": 56, "key": "Meteor", "to": 20, "note": {"de": "Ein Punkt je Stufe bis 43", "en": "One point per level until 43"}},
+        {"lvl": 24, "skill": 47, "key": "Fire Ball", "to": 12, "note": {"de": "Nimmt die Questpunkte", "en": "Takes the quest points"}},
+        {"lvl": 30, "skill": 61, "key": "Fire Mastery", "to": 20, "note": {"de": "Bekommt die Punkte neben Meteor, voll um 59", "en": "Gets the points beside Meteor, maxed around 59"}},
+        {"lvl": 30, "skill": 47, "key": "Fire Ball", "to": 20, "note": {"de": "Synergie für Meteor", "en": "Synergy for Meteor"}},
+        {"lvl": 30, "skill": 36, "key": "Fire Bolt", "to": 15, "note": {"de": "Synergie für Feuerball und Meteor", "en": "Synergy for Fire Ball and Meteor"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust, Geist im Kristallschwert", "en": "Magefist, Spirit in a Crystal Sword"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {
+        "de": "Maxroll-Reihenfolge: Feuerblitz voll, dann Inferno, die letzten Punkte in Verzaubern.",
+        "en": "Maxroll order: Fire Bolt maxed, then Inferno, the last points into Enchant."
+      },
+      "skills": [
+        {"lvl": 75, "skill": 36, "key": "Fire Bolt", "to": 20, "note": {"de": "Synergie für Feuerball und Meteor", "en": "Synergy for Fire Ball and Meteor"}},
+        {"lvl": 75, "skill": 41, "key": "Inferno", "to": 20, "note": {"de": "Maxroll: als Fünftes voll", "en": "Maxroll: maxed fifth"}},
+        {"lvl": 75, "skill": 52, "key": "Enchant", "to": 3, "note": {"de": "Feuerschaden für den Söldner", "en": "Fire damage for the mercenary"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 156, "why": {"de": "Geist-Monarch; fester Wert, mit Boni reicht weniger", "en": "Spirit Monarch; fixed value, less with gear bonuses"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige (beide Quellen)", "en": "Everything else (both sources)"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Mit +Feuerblitz oder +Feuerfertigkeiten (Akara)", "en": "With +Fire Bolt or +fire skills (Akara)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword72"}, "base": {"type": "staf", "sockets": 2}, "note": {"de": "Ab 19; Tir und Ral (DiabloBytes)", "en": "From 19; Tir and Ral (DiabloBytes)"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}, "note": {"de": "Nur mit einhändiger Waffe", "en": "Only with a one-handed weapon"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Runen von der Gräfin", "en": "Runes from the Countess"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "lvl", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "lvl", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "fire", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "fire", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Ab 55", "en": "From 55"}},
+    {"phase": "fire", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}},
+    {"phase": "fire", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "fire", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "fire", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "fire", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "fire", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Widerstände und schnellere Erholung", "en": "Resistances and faster hit recovery"}},
+    {"phase": "fire", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Widerstände, schneller laufen", "en": "Resistances, faster run"}},
+    {"phase": "fire", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Fertigkeiten oder schnelleres Zaubern", "en": "+Skills or faster cast rate"}},
+    {"phase": "fire", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "fire", "slot": "switch", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Ladungen Resistenz senken (Drognan, Albtraum)", "en": "Lower Resist charges (Drognan, Nightmare)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Maxroll nennt es zuerst", "en": "Maxroll lists it first"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"unique": "Eschuta's temper"}, "note": {"de": "DiabloBytes: bestes für reinen Feuerschaden", "en": "DiabloBytes: best for pure fire damage"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "Monarch braucht 156 Stärke", "en": "A Monarch needs 156 strength"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword40"}, "base": {"item": "ci3", "sockets": 3}, "note": {"de": "Senkt Feuerwiderstand der Gegner (Eigenschaft, nicht die Aura)", "en": "Lowers enemy fire resistance (a property, not the aura)"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}, "note": {"de": "Für Magic Find", "en": "For magic find"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword14"}, "base": {"type": "tors", "sockets": 4}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skullder's Ire"}, "note": {"de": "Für Magic Find", "en": "For magic find"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "boots", "tier": "alt", "ref": {"unique": "Sandstorm Trek"}, "note": {"de": "Schnellere Erholung", "en": "Faster hit recovery"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Zwei Stück", "en": "Two of them"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Flame Rift"}, "note": {"de": "Bricht Feuer-Immunität", "en": "Breaks fire immunity"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "charm", "tier": "budget", "ref": {"type": "scha", "quality": "magic"}, "note": {"de": "5 % schnellere Erholung für die 60 %", "en": "5% faster hit recovery for the 60%"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {
+      "de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht gegen Feuer-Immune; mit Unendlichkeit sinken die Widerstände",
+      "en": "Act 2 desert mercenary (Nightmare) with Might against fire immunes; with Infinity resistances drop"
+    },
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation für Mana", "en": "Meditation for mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "budget", "ref": {"unique": "Vampiregaze"}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Fire Ball Meteor Sorceress Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/meteor-sorceress",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Zieltempo",
+        "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, breakpoints"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Fire Ball / Meteor Sorceress Build Guide (Highest Fire DPS)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/fireball-meteor-sorc/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Juni 2026; gleiche Reihenfolge, Leveln mit Feuer, Ausrüstung, Söldner",
+        "en": "Read in full; June 2026; same order, fire leveling, gear, mercenary"
+      }
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-05",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; keine Änderung an Zauberin-Fertigkeiten", "en": "Read in full; no change to Sorceress skills"}
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

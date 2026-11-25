@@ -1,0 +1,49 @@
+# The repository files the pack build's Python steps read (dm/tools/pack_steps.py, the shader step's dm/gfx/tools/dmsh_native.py), shipped in
+# the APK as assets/py/tools.zip at these paths.
+# One path or glob per line, relative to the repository root; ** spans folders; __pycache__ and .pyc are never taken. The art step's tools import
+# freely within dm/ios/tools, so that folder goes whole, except that the player's zip leaves out its test-only files (dm/ios/tools/test_only.txt).
+# A line starting with "qa " is for the qa variant only. Every line must match at least one file.
+dm/PRODUCT
+dm/tools/pack_steps.py
+dm/tools/pack_steps.tsv
+dm/tools/d2rm_pack.py
+dm/tools/patch_nso.py
+qa dm/tools/patch_nso_qa.py
+dm/tools/casc_overlay.py
+dm/tools/dmx.py
+dm/gfx/tools/dmsh_native.py
+dm/gfx/tools/dmsh_vk.py
+dm/gfx/tools/dmsh_facts.py
+dm/gfx/tools/pack_builtin_queries.py
+dm/gfx/tools/pack_game_shaders.py
+dm/gfx/nvn/shader_map.tsv
+dm/gfx/nvn/shader_facts.tsv
+dm/gfx/nvn/nvn_builtin.h
+dm/verify/nsoimg.py
+dm/tools/winlf/*.py
+dm/android/tools/dcc.py
+dm/android/tools/gen_app_art.py
+dm/android/tools/gen_book_data.py
+dm/android/tools/gen_build_names.py
+dm/android/tools/gen_effect_data.py
+dm/android/tools/gen_exp_rail.py
+dm/android/tools/gen_glossary_data.py
+dm/android/tools/gen_inv_pics.py
+dm/android/tools/gen_mon_pics.py
+dm/android/tools/gen_recipe_data.py
+dm/android/tools/gen_style.py
+dm/android/tools/profile_hd.py
+dm/android/tools/stage_touch_assets.py
+dm/ios/tools/**
+dm/data/casc_overlay/borrowed_paths.tsv
+dm/gfx/nvn/nvn_tex.c
+dm/gfx/nvn/nvn_tex.h
+dm/gfx/tex/nvn_deswizzle.c
+dm/gfx/tex/nvn_deswizzle.h
+dm/host/dm_kills.c
+dm/i18n/ui_text.tsv
+dm/ios/NativeHUD/touch/close.png
+dm/ios/Sources/ControlArt/dm_mobile_socket.png
+dm/ios/Sources/TouchArt/native_art_manifest.json
+dm/ios/docs/native_art_v1_geometry.json
+dm/ios/docs/touch_layout_spec_native_binding_v5.json

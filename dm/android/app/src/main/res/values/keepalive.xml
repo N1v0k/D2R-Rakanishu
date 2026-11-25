@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">Running game</string>
+    <string name="dmAndroidKeepChannelInfo">Keeps the paused game in memory while the app is in the background.</string>
+    <string name="dmAndroidKeepRunning">Game running</string>
+    <string name="dmAndroidKeepStays">Stays open in the background</string>
+    <string name="dmAndroidKeepPaused">Game paused</string>
+    <string name="dmAndroidKeepBackground">Game in the background</string>
+    <string name="dmAndroidKeepTap">Tap to continue playing</string>
+    <string name="dmAndroidKeepQuit">Save and Exit</string>
+    <string name="dmAndroidKeepOk">Background protection on</string>
+    <string name="dmAndroidKeepNoNotify">Background protection on · notifications off</string>
+    <string name="dmAndroidKeepBattery">Battery optimisation on: protection limited</string>
+    <string name="dmAndroidKeepAllow">Allow now</string>
+    <string name="dmAndroidKeepRestricted">Background use restricted: protection limited</string>
+    <string name="dmAndroidKeepFailed">Background protection off: refused by Android</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">自选驱动</string>
+    <string name="dmAndroidDriverPackage">驱动包</string>
+    <string name="dmAndroidDriverRunning">运行中</string>
+    <string name="dmAndroidDriverIdle">已选，这次没有载入</string>
+    <string name="dmAndroidDriverFellBack">自选图形驱动连续两次没能启动完成，游戏重新使用系统驱动。要再试：到技术页的图形驱动里重新选择。</string>
+    <string name="dmAndroidDriverLoadFailed">自选图形驱动载入失败（%1$s），游戏使用系统驱动。</string>
+    <string name="dmAndroidDriverRejected">驱动 ZIP 不载入（%1$s），游戏使用系统驱动。</string>
+    <string name="dmAndroidDriverSafe">安全启动：这次用系统驱动。</string>
+    <string name="dmAndroidDriverSafeShort">系统驱动</string>
+    <string name="dmAndroidDriverSafeLong">用系统驱动启动</string>
+    <string name="dmAndroidDriverPage">图形驱动</string>
+    <string name="dmAndroidDriverSystem">系统驱动</string>
+    <string name="dmAndroidDriverActive">运行中</string>
+    <string name="dmAndroidDriverChosen">已选择</string>
+    <string name="dmAndroidDriverBlocked">已锁定</string>
+    <string name="dmAndroidDriverAdd">添加</string>
+    <string name="dmAndroidDriverDelete">删除</string>
+    <string name="dmAndroidDriverRestart">重新启动</string>
+    <string name="dmAndroidDriverAdded">已添加驱动：%1$s</string>
+    <string name="dmAndroidDriverInvalid">无效驱动：%1$s</string>
+    <string name="dmAndroidDriverAfterRestart">重启后生效</string>
+</resources>

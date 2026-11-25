@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "id": "nec-summon",
+  "version": 2,
+  "class": "nec",
+  "classIndex": 2,
+  "title": {"de": "Beschwörer-Totenbeschwörer", "en": "Summoner Necromancer"},
+  "summary": {
+    "de": "Herbeirufung: Skelett erwecken und Skelettbeherrschung bilden die Armee, Kadaverexplosion räumt die Gruppen, Verstärkter Schaden bricht die meisten physischen Immunitäten. Golems, Reanimation und Flüche helfen. Sicher, billig, ohne Umskillen.",
+    "en": "Summoning: Raise Skeleton and Skeleton Mastery build the army, Corpse Explosion clears the packs, Amplify Damage breaks most physical immunities. Golems, Revive and curses help. Safe, cheap, no respec needed."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sehr sicher: die Armee steht zwischen dir und den Gegnern", "Kadaverexplosion räumt ganze Gruppen, halb physisch, halb Feuer", "Schafft die Hölle mit billiger Ausrüstung; Magiefund zählt auch für Diener"],
+      "en": ["Very safe: the army stands between you and the monsters", "Corpse Explosion clears whole packs, half physical, half fire", "Clears Hell on cheap gear; magic find also counts for minion kills"]
+    },
+    "weaknesses": {
+      "de": ["Langsamer Start; Bosse dauern ohne guten Söldner lange", "Flächenschaden braucht Leichen; die Diener zu lenken kostet Aufmerksamkeit", "Schnelles Farmen erst mit Rätsel (Teleport); hängt an der Ausrüstung"],
+      "en": ["Slow start; bosses take long without a good mercenary", "Area damage needs corpses; steering the minions takes attention", "Fast farming only with Enigma (Teleport); depends on gear"]
+    },
+    "notes": {
+      "de": ["Leveln ist unsere Anpassung; Maxroll levelt mit Knochen, Beschwörer erst ab 75", "Nach Kadaverexplosion uneins: Knochengefängnis, Monsterwiderstand oder Skelettmagier", "Laut Patchnotes 3.2 und 3.3 unverändert; D2Runewizard ist von 07/2025 (vor 3.2)", "Der Plan zählt nur Basispunkte; mit allen Quests bleibt kein Punkt frei"],
+      "en": ["Leveling is our adaptation; Maxroll levels with Bone, the summoner starts at 75", "After Corpse Explosion sources differ: Bone Prison, Summon Resist or Skeletal Mage", "Unchanged per the 3.2 and 3.3 patch notes; D2Runewizard dates from 07/2025 (before 3.2)", "The plan counts base points only; with all quests no point stays free"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "summon", "physical", "magicfind"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [70, 69, 74],
+  "trees": [3, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 10, "bossShare": 0.4},
+    "damage": ["physical", "fire"],
+    "keySkills": [{"skill": 70, "w": 1.0}, {"skill": 69, "w": 0.9}, {"skill": 74, "w": 0.8}, {"skill": 95, "w": 0.4}, {"skill": 66, "w": 0.3}, {"skill": 75, "w": 0.2}],
+    "tabs": [{"class": 2, "page": 3, "w": 1.0}, {"class": 2, "page": 2, "w": 0.4}, {"class": 2, "page": 1, "w": 0.2}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "nec/3", "w": 1.0},
+      "item_singleskill": {"param": 70, "w": 0.6}, "item_fastercastrate": 0.5, "item_fastergethitrate": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [75, 125], "source": "https://maxroll.gg/d2/guides/summoner-necromancer-guide", "verified": false},
+    "requirements": {"str": 118}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Unsere Anpassung nach Runewizard und DiabloBytes: Skelette ab Stufe 2, Kadaverexplosion ab 18.", "en": "Our adaptation of Runewizard and DiabloBytes: skeletons from level 2, Corpse Explosion from 18."},
+      "skills": [
+        {"lvl": 2, "skill": 70, "key": "Raise Skeleton", "to": 1, "note": {"de": "Hauptfertigkeit, Skelette aus Leichen", "en": "Main skill, skeletons from corpses"}},
+        {"lvl": 3, "skill": 69, "key": "Skeleton Mastery", "to": 1},
+        {"lvl": 4, "skill": 70, "key": "Raise Skeleton", "to": 3},
+        {"lvl": 6, "skill": 66, "key": "Amplify Damage", "to": 1, "note": {"de": "Fluch: bricht meist physische Immunität", "en": "Curse: breaks most physical immunity"}},
+        {"lvl": 6, "skill": 75, "key": "Clay Golem", "to": 1, "note": {"de": "Tank, bremst Gegner", "en": "Tank, slows enemies"}},
+        {"lvl": 8, "skill": 69, "key": "Skeleton Mastery", "to": 3},
+        {"lvl": 8, "skill": 70, "key": "Raise Skeleton", "to": 6},
+        {"lvl": 12, "skill": 69, "key": "Skeleton Mastery", "to": 6},
+        {"lvl": 12, "skill": 70, "key": "Raise Skeleton", "to": 9, "note": {"de": "5 Skelette bis Stufe 17 (DiabloBytes)", "en": "5 skeletons by level 17 (DiabloBytes)"}},
+        {"lvl": 18, "skill": 67, "key": "Teeth", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 18, "skill": 74, "key": "Corpse Explosion", "to": 1, "note": {"de": "Sprengt Leichen, halb Feuer", "en": "Blows up corpses, half fire"}},
+        {"lvl": 19, "skill": 70, "key": "Raise Skeleton", "to": 12},
+        {"lvl": 19, "skill": 74, "key": "Corpse Explosion", "to": 3},
+        {"lvl": 24, "skill": 79, "key": "Golem Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 24, "skill": 89, "key": "Summon Resist", "to": 1, "note": {"de": "Widerstände für alle Diener", "en": "Resistances for all minions"}},
+        {"lvl": 24, "skill": 69, "key": "Skeleton Mastery", "to": 8},
+        {"lvl": 24, "skill": 74, "key": "Corpse Explosion", "to": 5},
+        {"lvl": 24, "skill": 70, "key": "Raise Skeleton", "to": 14}
+      ],
+      "stats": [
+        {"stat": "str", "to": 43, "why": {"de": "Geist im Kristallschwert", "en": "Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana: Tränke, Einsicht beim Söldner", "en": "Mana: potions, Insight on the mercenary"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Leben vor allem anderen", "en": "Life above everything else"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [30, 99],
+      "plan": "cumulative",
+      "note": {"de": "Ziele nach Maxroll (Skelette, Beherrschung, Kadaverexplosion voll); wann die Einzelpunkte kommen, ist unsere Wahl.", "en": "Targets after Maxroll (skeletons, Mastery, Corpse Explosion maxed); when the one-pointers come is our choice."},
+      "skills": [
+        {"lvl": 30, "skill": 80, "key": "Raise Skeletal Mage", "to": 1, "note": {"de": "Voraussetzung für Reanimation", "en": "Prerequisite for Revive"}},
+        {"lvl": 30, "skill": 85, "key": "BloodGolem", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 90, "key": "IronGolem", "to": 1, "note": {"de": "Verbraucht einen Metall-Gegenstand, z. B. Einsicht", "en": "Consumes a metal item, e.g. Insight"}},
+        {"lvl": 30, "skill": 95, "key": "Revive", "to": 1, "note": {"de": "Belebt Monster, gut gegen Bosse", "en": "Revives monsters, good for bosses"}},
+        {"lvl": 30, "skill": 72, "key": "Weaken", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 77, "key": "Terror", "to": 1, "note": {"de": "Verjagt normale Gegner", "en": "Scares off normal monsters"}},
+        {"lvl": 30, "skill": 87, "key": "Decrepify", "to": 1, "note": {"de": "Fluch für Bosse", "en": "Curse for bosses"}},
+        {"lvl": 30, "skill": 70, "key": "Raise Skeleton", "to": 20},
+        {"lvl": 30, "skill": 69, "key": "Skeleton Mastery", "to": 20},
+        {"lvl": 30, "skill": 71, "key": "Dim Vision", "to": 1, "note": {"de": "Einzelpunkt nach Maxroll", "en": "One point per Maxroll"}},
+        {"lvl": 30, "skill": 76, "key": "Iron Maiden", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 82, "key": "Life Tap", "to": 1, "note": {"de": "Heilt Angreifer; für Uber-Bosse", "en": "Heals attackers; for Uber bosses"}},
+        {"lvl": 30, "skill": 91, "key": "Lower Resist", "to": 1, "note": {"de": "Gegen Feuer-Immune (Kadaverexplosion)", "en": "Against fire immunes (Corpse Explosion)"}},
+        {"lvl": 30, "skill": 74, "key": "Corpse Explosion", "to": 20},
+        {"lvl": 30, "skill": 68, "key": "Bone Armor", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 84, "key": "Bone Spear", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 78, "key": "Bone Wall", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 88, "key": "Bone Prison", "to": 20, "note": {"de": "Schutz über Knochenrüstung (Maxroll)", "en": "Protection via Bone Armor (Maxroll)"}},
+        {"lvl": 30, "skill": 78, "key": "Bone Wall", "to": 12, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 75, "why": {"de": "Knochensteig 118: Rest über Ausrüstung", "en": "Marrowwalk 118: the rest from gear"}},
+        {"stat": "dex", "none": true, "why": {"de": "Hardcore: ~128 für 75 % Block (99, Homunkulus)", "en": "Hardcore: ~128 for 75% block (99, Homunculus)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Mit +Skelett erwecken / +Skelettbeherrschung", "en": "With +Raise Skeleton / +Skeleton Mastery"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25, wenn die Basis da ist", "en": "From level 25 if you have the base"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "shie", "sockets": 3}, "note": {"de": "Widerstände", "en": "Resistances"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword120"}, "base": {"type": "head", "sockets": 2}, "note": {"de": "In einem Totenbeschwörer-Kopf", "en": "In a Necromancer head"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab Stufe 17, schnelleres Zaubern", "en": "From level 17, faster cast rate"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"type": "mace", "sockets": 4}, "note": {"de": "Schnelleres Zaubern; Basis z. B. Flegel", "en": "Faster cast rate; base e.g. a Flail"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword162"}, "base": {"type": "wand", "sockets": 2}, "note": {"de": "In einem Zauberstab mit +3 Skelett erwecken", "en": "In a wand with +3 Raise Skeleton"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"unique": "Homunculus"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport; die Armee kommt mit", "en": "Teleport; the army comes along"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Trang-Oul's Claws"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Marrowwalk"}, "note": {"de": "Braucht 118 Stärke", "en": "Needs 118 strength"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor dem Beschwören", "en": "Battle Orders before summoning"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht für die Skelette; in Normal reicht Gebet", "en": "Act 2 desert mercenary (Nightmare) with Might for the skeletons; Prayer is fine in Normal"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation: fast unbegrenzt Mana", "en": "Meditation: near-unlimited mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4, "eth": true}, "note": {"de": "Verurteilung senkt Widerstände", "en": "Conviction lowers resistances"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Mit Rubin-Juwel der Inbrunst (Maxroll)", "en": "With a Ruby Jewel of Fervor (Maxroll)"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Summoner Necromancer Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/summoner-necromancer-guide", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Zauberrate 75/125", "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, cast rate 75/125"}},
+    {"site": "D2Runewizard", "title": "Summonmancer Build Guide", "url": "https://d2runewizard.com/guides/summonmancer", "seen": "2026-11-03", "patch": "nicht genannt", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.07.2025 (vor 3.2); Punkte, grobes Leveln, Ausrüstung in 3 Stufen, Söldner", "en": "Read in full; updated 2025-07-22 (before 3.2); points, rough leveling, gear in 3 tiers, mercenary"}},
+    {"site": "DiabloBytes", "title": "Summon Necromancer Build Guide (Army of the Dead)", "url": "https://www.diablobytes.com/d2-resurrected/builds/summon-necro/", "seen": "2026-11-03", "patch": "3.2 / 3.3 (unklar)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Juni 2026; Text sagt 3.2, Kopfzeile 3.3; Leveln, Endgame, Ausrüstung; teils widersprüchlich", "en": "Read in full; June 2026; text says 3.2, header 3.3; leveling, endgame, gear; partly inconsistent"}},
+    {"site": "Maxroll", "title": "Necromancer Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/necromancer-leveling", "seen": "2026-11-03", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; levelt mit Knochen; nur Leveln-Runenwörter übernommen", "en": "Read in full; updated 2026-05-22; levels with Bone; only leveling rune words taken"}},
+    {"site": "Blizzard News", "title": "Ladder Season 14 (patch 3.2 notes)", "url": "https://news.blizzard.com/en-us/article/24261478/diablo-ii-resurrected-ladder-season-14-now-live", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Totenbeschwörer", "en": "Read in full; no Necromancer changes"}},
+    {"site": "Blizzard News", "title": "Ladder Season 15 Now Live (patch 3.3 notes)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Totenbeschwörer", "en": "Read in full; no Necromancer changes"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

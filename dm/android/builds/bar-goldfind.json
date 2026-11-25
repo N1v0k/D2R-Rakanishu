@@ -1,0 +1,315 @@
+{
+  "schema": 1,
+  "id": "bar-goldfind",
+  "version": 1,
+  "class": "bar",
+  "classIndex": 4,
+  "title": {"de": "Goldfund-Barbar", "en": "Gold Find Barbarian"},
+  "summary": {
+    "de": "Farmt Travincal für Gold und Runen: viel Gold-Fund auf jedem Teil, der Söldner landet die tödlichen Treffer, Amok hilft nach, Gegenstand finden plündert die Leichen der Ratsmitglieder. Bis 74 wie der Amok-Barbar, mit 75 neu verteilen: Kampfbefehle, Amok, Trank suchen, Heulen voll.",
+    "en": "Farms Travincal for gold and runes: lots of gold find on every piece, the mercenary lands the killing blows, Berserk helps out, Find Item loots the Council corpses. Up to 74 like the Berserk Barbarian, redistribute at 75: Battle Orders, Berserk, Find Potion, Howl maxed."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Schnellster Weg zu Gold zum Glücksspielen", "Ratsmitglieder in Travincal lassen viele Runen fallen", "Einfach zu spielen, Söldner erledigt die Arbeit", "Gold-Fund von Barbar und Söldner zählt zusammen, wenn der Söldner tötet"],
+      "en": ["Fastest way to gold for gambling", "Council members in Travincal drop many runes", "Easy to play, the mercenary does the work", "Your and the merc's gold find add up when the merc kills"]
+    },
+    "weaknesses": {
+      "de": ["Gold-Fund-Teile geben wenig Schutz: eher zerbrechlich", "Kaum andere Farmgebiete als Travincal", "Eintönig; ohne Teleportieren etwas umständlich", "Teure Teile (Wohlstand, Ruf zu den Waffen) für das volle Ergebnis"],
+      "en": ["Gold find gear gives little protection: rather fragile", "Few farming spots besides Travincal", "Repetitive; a bit clunky without Teleport", "Pricey pieces (Wealth, Call to Arms) for the full result"]
+    },
+    "notes": {
+      "de": ["Bis 74 wie der Amok-Barbar; mit 75 neu verteilen nach Maxroll (Punkte und Werte)", "Maxroll und DiabloBytes führen ihn als eigenen Build, deshalb eigener Guide", "Klingenbeherrschung bekommt nur die letzten Punkte (Maxroll)", "Keine Kälte: zerschmetterte Leichen kann man nicht plündern", "Quellen Stand 3.2 (S14); 3.3: keine Balance-Änderung, nur ein Fehler bei Sprung behoben"],
+      "en": ["Up to 74 like the Berserk Barbarian; redistribute at 75 per Maxroll (points and stats)", "Maxroll and DiabloBytes list it as a build of its own, hence its own guide", "Blade Mastery only gets the last points (Maxroll)", "No cold: shattered corpses cannot be looted", "Sources as of 3.2 (S14); 3.3: no balance change, only a Leap bug fixed"]
+    }
+  },
+  "tags": ["endgame", "magicfind", "magic", "melee"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [152, 142, 149],
+  "trees": [3, 1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 20, "bossShare": 0.4},
+    "damage": ["magic", "physical"],
+    "keySkills": [
+      {"skill": 149, "w": 1.0},
+      {"skill": 152, "w": 0.8},
+      {"skill": 142, "w": 0.7},
+      {"skill": 131, "w": 0.6},
+      {"skill": 130, "w": 0.4},
+      {"skill": 132, "w": 0.3}
+    ],
+    "tabs": [{"class": 4, "page": 3, "w": 1.0}, {"class": 4, "page": 1, "w": 0.7}, {"class": 4, "page": 2, "w": 0.4}],
+    "stats": {
+      "item_goldbonus": 1.0,
+      "item_magicbonus": 0.6,
+      "item_allskills": 0.8,
+      "item_addclassskills": 0.8,
+      "item_addskill_tab": {"param": "bar/3", "w": 0.6},
+      "item_fasterattackrate": 0.4,
+      "item_fastercastrate": 0.3,
+      "tohit": 0.3,
+      "maxdamage": 0.3,
+      "item_cannotbefrozen": 0.4,
+      "fireresist": 0.4,
+      "coldresist": 0.3,
+      "lightresist": 0.4,
+      "poisonresist": 0.2,
+      "maxhp": 0.5,
+      "damageresist": 0.3,
+      "strength": 0.2,
+      "dexterity": 0.1
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [105], "source": "https://maxroll.gg/d2/guides/gold-find-barbarian", "verified": false},
+    "requirements": {"str": 103, "dex": 136}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {
+        "de": "Maxroll-Reihenfolge: Doppelschwung mit zwei Szeptern, dann Flegel, Raserei und Kampfbefehle. Werte vereinfacht.",
+        "en": "Maxroll order: Double Swing with two scepters, then flails, Frenzy and Battle Orders. Stats simplified."
+      },
+      "skills": [
+        {"lvl": 2, "skill": 126, "key": "Bash", "to": 1},
+        {"lvl": 3, "skill": 129, "key": "Mace Mastery", "to": 2, "note": {"de": "Szepter und Flegel sind Streitkolben", "en": "Scepters and flails are maces"}},
+        {"lvl": 6, "skill": 133, "key": "Double Swing", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 5 aufheben", "en": "Keep the point from level 5"}},
+        {"lvl": 6, "skill": 132, "key": "Leap", "to": 1, "note": {"de": "Voraussetzung für Sprungangriff", "en": "Prerequisite for Leap Attack"}},
+        {"lvl": 7, "skill": 133, "key": "Double Swing", "to": 6, "note": {"de": "Hauptangriff mit zwei Waffen", "en": "Main attack with two weapons"}},
+        {"lvl": 12, "skill": 126, "key": "Bash", "to": 6},
+        {"lvl": 16, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 16, "skill": 137, "key": "Taunt", "to": 1, "note": {"de": "Voraussetzung für Schlachtruf", "en": "Prerequisite for Battle Cry"}},
+        {"lvl": 18, "skill": 143, "key": "Leap Attack", "to": 1, "save": true, "note": {"de": "Fortbewegung über Hindernisse", "en": "Movement over obstacles"}},
+        {"lvl": 18, "skill": 146, "key": "Battle Cry", "to": 1},
+        {"lvl": 19, "skill": 129, "key": "Mace Mastery", "to": 3},
+        {"lvl": 20, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 21, "skill": 138, "key": "Shout", "to": 1},
+        {"lvl": 22, "skill": 140, "key": "Double Throw", "to": 1, "note": {"de": "Voraussetzung für Raserei", "en": "Prerequisite for Frenzy"}},
+        {"lvl": 24, "skill": 147, "key": "Frenzy", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 23 aufheben", "en": "Keep the point from level 23"}},
+        {"lvl": 24, "skill": 149, "key": "Battle Orders", "to": 1, "note": {"de": "Ständig aktiv halten", "en": "Keep it up all the time"}},
+        {"lvl": 24, "skill": 148, "key": "Increased Speed", "to": 1},
+        {"lvl": 25, "skill": 149, "key": "Battle Orders", "to": 2},
+        {"lvl": 25, "skill": 147, "key": "Frenzy", "to": 2},
+        {"lvl": 26, "skill": 126, "key": "Bash", "to": 9}
+      ],
+      "stats": [
+        {"stat": "str", "to": 41, "why": {"de": "Flegel für Boshaftigkeit (Maxroll)", "en": "Flail for Malice (Maxroll)"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel (Maxroll)", "en": "Flail (Maxroll)"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "zerk",
+      "name": {"de": "Amok", "en": "Berserk"},
+      "levels": [30, 74],
+      "plan": "respec",
+      "note": {
+        "de": "Mit 30 umskillen (DiabloBytes): Einzelpunkte, Amok je Stufe, Rest in Klingenbeherrschung, dann Kampfbefehle, Heulen.",
+        "en": "Respec at 30 (DiabloBytes): single points, Berserk each level, the rest into Blade Mastery, then Battle Orders, Howl."
+      },
+      "skills": [
+        {"lvl": 30, "skill": 126, "key": "Bash", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 139, "key": "Stun", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 144, "key": "Concentrate", "to": 1, "note": {"de": "Physisch gegen Magie-Immune", "en": "Physical damage for magic immunes"}},
+        {"lvl": 30, "skill": 152, "key": "Berserk", "to": 1, "note": {"de": "Hauptangriff, Magieschaden", "en": "Main attack, magic damage"}},
+        {"lvl": 30, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Verscheucht normale Gegner", "en": "Scares normal monsters away"}},
+        {"lvl": 30, "skill": 138, "key": "Shout", "to": 1, "note": {"de": "Voraussetzung, mehr Verteidigung", "en": "Prerequisite, more defense"}},
+        {"lvl": 30, "skill": 149, "key": "Battle Orders", "to": 1, "note": {"de": "Mehr Leben und Mana", "en": "More life and mana"}},
+        {"lvl": 30, "skill": 155, "key": "Battle Command", "to": 1, "note": {"de": "+1 auf alle Fertigkeiten", "en": "+1 to all skills"}},
+        {"lvl": 30, "skill": 131, "key": "Find Potion", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 142, "key": "Find Item", "to": 1, "note": {"de": "Zweite Chance auf Beute aus Leichen", "en": "Second chance at loot from corpses"}},
+        {"lvl": 30, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 148, "key": "Increased Speed", "to": 1, "note": {"de": "Schneller laufen", "en": "Run faster"}},
+        {"lvl": 30, "skill": 145, "key": "Iron Skin", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 153, "key": "Natural Resistance", "to": 1, "note": {"de": "Alle Widerstände", "en": "All resistances"}},
+        {"lvl": 30, "skill": 152, "key": "Berserk", "to": 20, "note": {"de": "Ein Punkt je Stufe, voll mit 49", "en": "One point per level, maxed at 49"}},
+        {"lvl": 30, "skill": 127, "key": "Blade Mastery", "to": 20, "note": {"de": "Für Schwerter; nimmt den Rest", "en": "For swords; takes the rest"}},
+        {"lvl": 30, "skill": 149, "key": "Battle Orders", "to": 10, "note": {"de": "Maxroll: 10 Punkte reichen", "en": "Maxroll: 10 points are enough"}},
+        {"lvl": 30, "skill": 130, "key": "Howl", "to": 20, "note": {"de": "Synergie für Amok (Tabellen 3.3)", "en": "Synergy for Berserk (tables 3.3)"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Goldwrap; Kristallschwert 43", "en": "Goldwrap; Crystal Sword 43"}},
+        {"stat": "dex", "none": true, "why": {"de": "Unsere Wahl: kaum Blocken, alles ins Leben", "en": "Our choice: little blocking, all into life"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "gold",
+      "name": {"de": "Goldfund", "en": "Gold find"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {
+        "de": "Mit 75 neu verteilen (Maxroll): Einzelpunkte, dann Kampfbefehle, Amok, Trank suchen, Heulen voll.",
+        "en": "Redistribute at 75 (Maxroll): single points, then Battle Orders, Berserk, Find Potion, Howl maxed."
+      },
+      "skills": [
+        {"lvl": 75, "skill": 126, "key": "Bash", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 139, "key": "Stun", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 144, "key": "Concentrate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 152, "key": "Berserk", "to": 1, "note": {"de": "Hilft dem Söldner, Magieschaden", "en": "Helps the merc, magic damage"}},
+        {"lvl": 75, "skill": 130, "key": "Howl", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 138, "key": "Shout", "to": 1, "note": {"de": "Mehr Verteidigung", "en": "More defense"}},
+        {"lvl": 75, "skill": 149, "key": "Battle Orders", "to": 1},
+        {"lvl": 75, "skill": 155, "key": "Battle Command", "to": 1, "note": {"de": "+1 auf alle Fertigkeiten", "en": "+1 to all skills"}},
+        {"lvl": 75, "skill": 131, "key": "Find Potion", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 142, "key": "Find Item", "to": 1, "note": {"de": "Leichen der Ratsmitglieder plündern", "en": "Loot the Council corpses"}},
+        {"lvl": 75, "skill": 141, "key": "Increased Stamina", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 148, "key": "Increased Speed", "to": 1, "note": {"de": "Schneller laufen", "en": "Run faster"}},
+        {"lvl": 75, "skill": 145, "key": "Iron Skin", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 153, "key": "Natural Resistance", "to": 1, "note": {"de": "Alle Widerstände", "en": "All resistances"}},
+        {"lvl": 75, "skill": 132, "key": "Leap", "to": 1, "note": {"de": "Kurze Sprünge auf der Stelle werfen Gegner zurück", "en": "Short hops on the spot knock monsters back"}},
+        {"lvl": 75, "skill": 149, "key": "Battle Orders", "to": 20, "note": {"de": "Maxroll: zuerst voll, auch für den Söldner", "en": "Maxroll: maxed first, also for the merc"}},
+        {"lvl": 75, "skill": 152, "key": "Berserk", "to": 20},
+        {"lvl": 75, "skill": 131, "key": "Find Potion", "to": 20, "note": {"de": "Synergie für Gegenstand finden", "en": "Synergy for Find Item"}},
+        {"lvl": 75, "skill": 130, "key": "Howl", "to": 20, "note": {"de": "Synergie für Amok (Tabellen 3.3)", "en": "Synergy for Berserk (tables 3.3)"}},
+        {"lvl": 75, "skill": 127, "key": "Blade Mastery", "to": 19, "note": {"de": "Maxroll: zuletzt, so weit es reicht", "en": "Maxroll: last, as far as it goes"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 103, "why": {"de": "Krone der Diebe, Archonplatte", "en": "Crown of Thieves, Archon Plate"}},
+        {"stat": "dex", "to": 136, "why": {"de": "Phasenklinge; mit zwei Ali Baba weniger", "en": "Phase Blade; less with two Ali Babas"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige: Leben gleicht schwache Teile aus", "en": "Everything else: life makes up for weak gear"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "normal"}, "note": {"de": "Zwei Szepter von Akara (Maxroll)", "en": "Two scepters from Akara (Maxroll)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword81"}, "base": {"item": "fla", "sockets": 3}, "note": {"de": "Ab 15; zweiter Flegel mit 3 Tal (Maxroll)", "en": "From 15; second flail with 3 Tal (Maxroll)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"unique": "SuperKhalimFlail"}, "note": {"de": "Akt 3: nutzen, bis die Kugel in Travincal zerschlagen wird (Maxroll)", "en": "Act 3: use it until you smash the Orb in Travincal (Maxroll)"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword88"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "lvl", "slot": "gloves", "tier": "budget", "ref": {"unique": "Bloodfist"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"set": "Death's Hand"}, "note": {"de": "Mit Wächter des Todes: Tempo, Widerstände", "en": "With Death's Guard: speed, resistances"}},
+    {"phase": "lvl", "slot": "belt", "tier": "bis", "ref": {"set": "Death's Guard"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleportieren-Ladungen, bei Ormus (Maxroll)", "en": "Teleport charges, from Ormus (Maxroll)"}},
+    {"phase": "zerk", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword139"}, "base": {"item": "crs", "sockets": 2}, "note": {"de": "Ab 25; ohne Kälteschaden (unsere Wahl)", "en": "From 25; no cold damage (our choice)"}},
+    {"phase": "zerk", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword151"}, "base": {"item": "crs", "sockets": 6}, "note": {"de": "Ab 41; Kristallschwert ist unsere Wahl (43 Stärke), Quellen: Phasenklinge", "en": "From 41; Crystal Sword is our choice (43 Str), sources: Phase Blade"}},
+    {"phase": "zerk", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword120"}, "base": {"item": "bsh", "sockets": 2}, "note": {"de": "Kann nicht eingefroren werden, Magic Find", "en": "Cannot be frozen, magic find"}},
+    {"phase": "zerk", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "zerk", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Widerstände für Albtraum", "en": "Resistances for Nightmare"}},
+    {"phase": "zerk", "slot": "gloves", "tier": "budget", "ref": {"unique": "Bloodfist"}},
+    {"phase": "zerk", "slot": "belt", "tier": "budget", "ref": {"unique": "Goldwrap"}, "note": {"de": "Angriffstempo, Magic Find", "en": "Attack speed, magic find"}},
+    {"phase": "zerk", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen und Widerstände", "en": "Faster run and resistances"}},
+    {"phase": "zerk", "slot": "switch", "tier": "budget", "ref": {"runeword": "Runeword49"}, "base": {"type": "bow", "sockets": 4}, "note": {"de": "Lebenskraft-Aura zum Reisen (Maxroll)", "en": "Vigor aura for travel (Maxroll)"}},
+    {"phase": "gold", "slot": "weapon", "tier": "bis", "ref": {"unique": "Blade of Ali Baba"}, "note": {"de": "Viel Gold-Fund; mit 2 Lem gesockelt", "en": "Lots of gold find; socketed with 2 Lem"}},
+    {"phase": "gold", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword47"}, "base": {"item": "7cr", "sockets": 5}, "note": {"de": "Mehr Schaden für schnellere Läufe", "en": "More damage for faster runs"}},
+    {"phase": "gold", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword151"}, "base": {"item": "7cr", "sockets": 6}, "note": {"de": "Günstiger als Trauer (Maxroll)", "en": "Cheaper than Grief (Maxroll)"}},
+    {"phase": "gold", "slot": "offhand", "tier": "bis", "ref": {"unique": "Blade of Ali Baba"}, "note": {"de": "Zweite Klinge für noch mehr Gold-Fund", "en": "Second blade for even more gold find"}},
+    {"phase": "gold", "slot": "offhand", "tier": "alt", "ref": {"item": "crs"}, "note": {"de": "Kristallschwert mit Lem gesockelt", "en": "Crystal Sword socketed with Lem"}},
+    {"phase": "gold", "slot": "helm", "tier": "bis", "ref": {"unique": "Crown of Thieves"}},
+    {"phase": "gold", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "gold", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword160"}, "base": {"type": "tors", "sockets": 3}, "note": {"de": "Viel Gold-Fund in einem Teil", "en": "Lots of gold find in one piece"}},
+    {"phase": "gold", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword33"}, "base": {"item": "utp", "sockets": 3}, "note": {"de": "Teleportieren, um den Söldner zu versetzen", "en": "Teleport to move the mercenary"}},
+    {"phase": "gold", "slot": "armor", "tier": "budget", "ref": {"unique": "Goldskin"}},
+    {"phase": "gold", "slot": "gloves", "tier": "bis", "ref": {"unique": "Chance Guards"}},
+    {"phase": "gold", "slot": "belt", "tier": "bis", "ref": {"unique": "Goldwrap"}},
+    {"phase": "gold", "slot": "boots", "tier": "bis", "ref": {"unique": "Infernostride"}},
+    {"phase": "gold", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "gold", "slot": "amulet", "tier": "alt", "ref": {"set": "Telling of Beads"}},
+    {"phase": "gold", "slot": "ring", "tier": "bis", "ref": {"unique": "Dwarf Star"}, "note": {"de": "Zwei Stück (DiabloBytes)", "en": "Two of them (DiabloBytes)"}},
+    {"phase": "gold", "slot": "ring", "tier": "alt", "ref": {"unique": "Nagelring"}, "note": {"de": "Magic Find; keine Kälte", "en": "Magic find; no cold"}},
+    {"phase": "gold", "slot": "charm", "tier": "bis", "ref": {"unique": "Gheed's Fortune"}},
+    {"phase": "gold", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}},
+    {"phase": "gold", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {
+      "de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht: er soll die Gegner töten, damit sein Gold-Fund mitzählt",
+      "en": "Act 2 desert mercenary (Nightmare) with Might: he should land the kills so his gold find counts too"
+    },
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword11"}, "base": {"item": "7p7", "sockets": 6}, "note": {"de": "Kriegspike: Tempo, Schaden, Leben stehlen", "en": "War Pike: speed, damage, life steal"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword160"}, "base": {"item": "uar", "sockets": 3}, "note": {"de": "Sein Gold-Fund zählt mit (Maxroll)", "en": "His gold find counts too (Maxroll)"}},
+      {"slot": "helm", "tier": "budget", "ref": {"set": "Tal Rasha's Horadric Crest"}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Crown of Thieves"}}
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Gold Find Barbarian Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/gold-find-barbarian",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Punkte, Varianten, Ausrüstung, Söldner, Spielweise",
+        "en": "Read in full; updated 2026-05-22; points, variants, gear, mercenary, play"
+      }
+    },
+    {
+      "site": "Maxroll",
+      "title": "Barbarian Leveling Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/barbarian-leveling",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte und Werte bis 29", "en": "Read in full; updated 2026-05-22; points and stats to 29"}
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Gold Find Barbarian Build Guide (Berserk + Find Item)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/gold-find-barb/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Juni 2026; gleiche Kern-Punkte, Gold-Fund-Teile, Söldner mit Macht",
+        "en": "Read in full; June 2026; same core points, gold find gear, Might mercenary"
+      }
+    },
+    {
+      "site": "Maxroll",
+      "title": "Berserk Barbarian Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/berserk-barbarian",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Amok-Punkte für die Phase 30–74",
+        "en": "Read in full; updated 2026-05-22; Berserk points for the 30-74 phase"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Berserk Barbarian Build Guide (Pit Zerker + Find Item)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/berserk-barb/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; Juni 2026; Amok ab 30 für die Phase 30–74", "en": "Read in full; June 2026; Berserk from 30 for the 30-74 phase"}
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-05",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; keine Barbaren-Balance-Änderung, Fehler bei Sprung behoben",
+        "en": "Read in full; no Barbarian balance change, Leap bug fixed"
+      }
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

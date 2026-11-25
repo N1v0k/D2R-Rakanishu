@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "id": "war-fire",
+  "version": 3,
+  "class": "war",
+  "classIndex": 7,
+  "title": {"de": "Feuer-Hexenmeister", "en": "Fire Warlock"},
+  "summary": {
+    "de": "Chaos-Baum: Feuerring, Flammenwelle und Apokalypse stärken sich gegenseitig. Früh stark und billig auszurüsten, später mit Rätsel und Ars Al'Diabolos. Ohne Umskillen von Stufe 1 bis zum Endgame.",
+    "en": "Chaos tree: Ring of Fire, Flame Wave and Apocalypse boost each other. Strong early and cheap to gear, later with Enigma and Ars Al'Diabolos. No respec needed from level 1 to the endgame."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Große Flächen mit Feuer, gut für Gruppen und Horden", "Kommt mit Runenwörtern aus dem Normal-Modus gut durch", "Kein Umskillen nötig; nur die 4 Startpunkte bleiben liegen"],
+      "en": ["Large areas of fire, good against groups and packs", "Gets through Normal well with early rune words", "No respec needed; only the 4 starting points stay unused"]
+    },
+    "weaknesses": {
+      "de": ["Feuer-immune Gegner in der Hölle brauchen Söldner-Aura oder Feuer-Brecher-Zauber", "Endgame-Schuhe und Nebenhand brauchen viel Stärke", "Patch 3.2 hat Feuerring und Flammenwelle leicht abgeschwächt"],
+      "en": ["Fire-immune monsters in Hell need the mercenary's aura or a fire sunder charm", "Endgame boots and off-hand need a lot of strength", "Patch 3.2 slightly weakened Ring of Fire and Flame Wave"]
+    },
+    "notes": {
+      "de": ["Apokalypse ab Stufe 30: einen Punkt aus Stufe 29 dafür aufheben", "Der Plan zählt nur Basispunkte, +Fertigkeiten von Gegenständen zählen nicht", "Ab Patch 3.2 geht ein Zweihand-Stab zusammen mit einem Grimoire", "Andere Variante (Odealo, Game Rant): Verzehrung auf einem Besudelten statt Bluteid", "Etwa 7 Punkte bis Stufe 99 bleiben frei"],
+      "en": ["Apocalypse from level 30: keep one point from level 29 for it", "The plan counts base points only, +skills from items do not count", "Since patch 3.2 a two-handed staff can be used together with a grimoire", "Other variant (Odealo, Game Rant): Consume on a Tainted instead of Blood Oath", "About 7 points stay free by level 99"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "fire", "caster"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [394, 398, 401],
+  "trees": [3, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["fire"],
+    "keySkills": [{"skill": 401, "w": 1.0}, {"skill": 398, "w": 0.8}, {"skill": 394, "w": 0.8}, {"skill": 374, "w": 0.3}],
+    "tabs": [{"class": 7, "page": 3, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "war/3", "w": 1.0},
+      "item_singleskill": {"param": 401, "w": 0.6}, "item_fastercastrate": 0.6, "passive_fire_pierce": 0.9, "passive_fire_mastery": 0.7,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [9, 18, 30, 48, 75, 125], "source": "https://maxroll.gg/d2/resources/warlock-overview", "verified": false},
+    "requirements": {"str": 163}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Feuer von Anfang an, Flammenwelle ab 18, Siegel als Weg zur Apokalypse.", "en": "Fire from the start, Flame Wave from 18, sigils as the path to Apocalypse."},
+      "skills": [
+        {"lvl": 2, "skill": 395, "key": "Miasma Bolt", "to": 4, "note": {"de": "Startfertigkeit bis Feuerring", "en": "Starter until Ring of Fire"}},
+        {"lvl": 6, "skill": 394, "key": "Ring of Fire", "to": 1},
+        {"lvl": 6, "skill": 393, "key": "Sigil Lethargy", "to": 1, "note": {"de": "Verlangsamt; Weg zur Apokalypse", "en": "Slows; path to Apocalypse"}},
+        {"lvl": 7, "skill": 394, "key": "Ring of Fire", "to": 10},
+        {"lvl": 18, "skill": 398, "key": "Flame Wave", "to": 1, "save": true, "note": {"de": "Punkte aus Stufe 16 und 17 aufheben", "en": "Keep the points from levels 16 and 17"}},
+        {"lvl": 18, "skill": 398, "key": "Flame Wave", "to": 6},
+        {"lvl": 18, "skill": 394, "key": "Ring of Fire", "to": 13, "note": {"de": "Synergie für Flammenwelle", "en": "Synergy for Flame Wave"}},
+        {"lvl": 24, "skill": 396, "key": "Sigil Rancor", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 24, "skill": 400, "key": "Sigil Death", "to": 1, "note": {"de": "Voraussetzung für Apokalypse", "en": "Prerequisite for Apocalypse"}},
+        {"lvl": 24, "skill": 398, "key": "Flame Wave", "to": 11}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Geist im Kristallschwert, Magierfaust", "en": "Spirit in a Crystal Sword, Magefist"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Tränke und Ausrüstung", "en": "Mana from potions and gear"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Leben vor allem anderen", "en": "Life above everything else"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [30, 99],
+      "plan": "cumulative",
+      "note": {"de": "Apokalypse zuerst, dann die beiden anderen Feuer-Fertigkeiten; danach drei Dämonen und Bluteid.", "en": "Apocalypse first, then the other two fire skills; after that three demons and Blood Oath."},
+      "skills": [
+        {"lvl": 30, "skill": 401, "key": "Apocalypse", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 29 aufheben", "en": "Keep the point from level 29"}},
+        {"lvl": 30, "skill": 401, "key": "Apocalypse", "to": 20},
+        {"lvl": 30, "skill": 398, "key": "Flame Wave", "to": 20},
+        {"lvl": 30, "skill": 394, "key": "Ring of Fire", "to": 20},
+        {"lvl": 40, "skill": 373, "key": "Summon Goatman", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 374, "key": "Demonic Mastery", "to": 10, "note": {"de": "Drei Dämonen (seit 3.2)", "en": "Three demons (since 3.2)"}},
+        {"lvl": 40, "skill": 376, "key": "Summon Tainted", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 377, "key": "Summon Defiler", "to": 1, "note": {"de": "Freie Punkte am Ende gern hierher", "en": "Spare points at the end may go here"}},
+        {"lvl": 40, "skill": 385, "key": "Hex Bane", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 389, "key": "Hex Purge", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 386, "key": "Hex Siphon", "to": 1, "note": {"de": "Leben und Mana pro Tötung", "en": "Life and mana per kill"}},
+        {"lvl": 40, "skill": 378, "key": "Blood Oath", "to": 20, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 106, "why": {"de": "Ars Al'Diabolos; Gespensterschritt: 163 mit Ausrüstung", "en": "Ars Al'Diabolos; Wraithstep needs 163 with gear"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"type": "staf", "sockets": 2}, "note": {"de": "Früh: +Feuer-Fertigkeiten", "en": "Early: +fire skills"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25: Fertigkeiten, schnelleres Zaubern", "en": "From level 25: skills, faster cast rate"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"type": "grim", "quality": "magic"}, "note": {"de": "Mit +Chaos-Fertigkeiten, so viel wie möglich", "en": "With +Chaos skills, as many as possible"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Mang Song's Lesson"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword51"}, "base": {"type": "staf", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"unique": "Ars Al'Diablolos"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword40"}, "base": {"type": "helm", "sockets": 3}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wraithstep"}},
+    {"phase": "end", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "rare"}, "note": {"de": "Widerstände und schnelleres Laufen", "en": "Resistances and faster run"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Hellfire Torch"}, "note": {"de": "Die Hexenmeister-Variante", "en": "The Warlock variant"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit senkt Feuer-Immunitäten", "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity breaks fire immunities"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Fire Warlock Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/fire-warlock-guide", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 27.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner", "en": "Read in full; updated 2026-05-27; endgame points, stats, gear, mercenary"}},
+    {"site": "Maxroll", "title": "Fire Warlock Leveling Build Guide (Season 13, archived)", "url": "https://maxroll.gg/d2/guides/fire-warlock-leveling-build-guide", "seen": "2026-11-03", "patch": "S13", "kind": "guide", "lang": "en",
+     "note": {"de": "Archiviert am 22.05.2026; Reihenfolge beim Leveln", "en": "Archived 2026-05-22; leveling order"}},
+    {"site": "Mein-MMO", "title": "Diablo 2: Hexenmeister-Build", "url": "https://mein-mmo.de/diablo-2-warlock-build-hexenmeister/", "seen": "2026-11-03", "patch": "vor 3.2", "kind": "guide", "lang": "de",
+     "note": {"de": "Ganz gelesen; 16.02.2026: Feuerring in Normal, dann Flammenwelle und Apokalypse; erst Feuerring und Apokalypse voll", "en": "Read in full; 2026-02-16: Ring of Fire in Normal, then Flame Wave and Apocalypse; Ring of Fire, Apocalypse maxed first"}},
+    {"site": "Game Rant", "title": "Fire Warlock Build for Beginners", "url": "https://gamerant.com/diablo-2-resurrected-fire-warlock-build-beginner/", "seen": "2026-11-03", "patch": "vor 3.2", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; 18.02.2026: erst Feuerring, dann Flammenwelle; Apokalypse braucht Siegel: Tod; Verzehrung auf Besudeltem", "en": "Read in full; 2026-02-18: Ring of Fire, then Flame Wave; Apocalypse needs Sigil: Death; Consume on a Tainted"}},
+    {"site": "Odealo", "title": "Fire Warlock Build for Diablo 2 Resurrected", "url": "https://odealo.com/articles/fire-warlock-build-for-diablo-2-resurrected", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "vendor", "lang": "en",
+     "note": {"de": "Ganz gelesen; Händlerseite, nur Nebenquelle: Ausrüstung, Söldner, 125 % schnelleres Zaubern", "en": "Read in full; a shop, secondary only: gear, mercenary, 125% faster cast rate"}},
+    {"site": "Maxroll", "title": "Warlock Class Overview", "url": "https://maxroll.gg/d2/resources/warlock-overview", "seen": "2026-11-03", "patch": "S13", "kind": "database", "lang": "en",
+     "note": {"de": "Zauber-Tempo-Stufen (FCR), Hexenmeister-Gegenstände", "en": "Faster cast rate breakpoints, Warlock items"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

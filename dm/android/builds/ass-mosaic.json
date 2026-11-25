@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "id": "ass-mosaic",
+  "version": 1,
+  "class": "ass",
+  "classIndex": 6,
+  "title": {"de": "Mosaik-Assassine (Phönixschlag)", "en": "Mosaic Assassin (Phoenix Strike)"},
+  "summary": {
+    "de": "Kampfkünste mit zwei Mosaik-Klauen: Phönixschlag, Donnerklauen und Eisklingen sammeln Ladungen, Drachenkralle entlädt sie bei jedem Tritt, ohne sie zu verbrauchen. Feuer, Blitz, Kälte und Physisch. Leveln mit Fallen, mit 75 umskillen. Nur Nicht-Ladder.",
+    "en": "Martial arts with two Mosaic claws: Phoenix Strike, Claws of Thunder and Blades of Ice build charges, Dragon Talon releases them with every kick without using them up. Fire, lightning, cold and physical. Level with traps, respec at 75. Non-Ladder only."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Vier Schadensarten: kaum ein Gegner ist gegen alle immun", "Zwei Mosaik halten alle Ladungen; ein Finisher-Treffer alle 15 s genügt", "Zäh: Verblassen, Waffenblock, Schattenmantel und Gedankenschlag", "Stark gegen Akt-Bosse und Uber-Bosse"],
+      "en": ["Four damage types: hardly any monster is immune to all of them", "Two Mosaics keep every charge; one finisher hit every 15 s is enough", "Tanky: Fade, Weapon Block, Cloak of Shadows and Mind Blast", "Strong against act bosses and Uber bosses"]
+    },
+    "weaknesses": {
+      "de": ["Mosaik ist im Ladder gesperrt: nur Nicht-Ladder und offline", "Erst aufladen, dann Schaden; viele Tasten belegt", "Teuer: zwei Mosaik (je Mal, Gul, Amn), Rätsel für Teleport", "Lange Wartezeiten (Diablo, Baal) lassen Ladungen verfallen"],
+      "en": ["Mosaic is disabled on Ladder: Non-Ladder and offline only", "Charge up first, then damage; many hotkeys in use", "Expensive: two Mosaics (Mal, Gul, Amn each), Enigma for Teleport", "Long waits (Diablo, Baal) let the charges run out"]
+    },
+    "notes": {
+      "de": ["Leveln wie der Fallen-Guide (Maxroll): Feuer bis 37, Fallen ab 38, mit 75 auf Phönixschlag", "DiabloBytes skillt früher um, sobald beide Mosaik da sind (Mosaik braucht Stufe 53)", "Maxroll-Reihenfolge: Phönixschlag, Drachenkralle, Donnerklauen, Tigerschlag, Eisklingen", "Optional: Schattenkrieger kostet 1, Drachenflug 3 Punkte (mit Voraussetzungen), beides von Eisklingen", "Laufen: Ladungen aufbauen, dann Drachenkralle; Kobraschlag nur 2 Ladungen (Maxroll)", "Maxroll Stand 3.2, DiabloBytes 3.3; laut 3.3-Patchnotes keine Änderung an Assassine oder Mosaik"],
+      "en": ["Leveling as in the trap guide (Maxroll): fire to 37, traps from 38, Phoenix Strike at 75", "DiabloBytes respecs earlier, once both Mosaics are ready (Mosaic needs level 53)", "Maxroll order: Phoenix Strike, Dragon Talon, Claws of Thunder, Tiger Strike, Blades of Ice", "Optional: Shadow Warrior costs 1 point, Dragon Flight 3 (with prerequisites), both taken from Blades of Ice", "While moving: build charges, then Dragon Talon; Cobra Strike only 2 charges (Maxroll)", "Maxroll as of 3.2, DiabloBytes 3.3; per the 3.3 patch notes no change to the Assassin or Mosaic"]
+    }
+  },
+  "tags": ["leveling", "endgame", "bosses", "melee", "fire", "lightning", "cold", "physical"],
+  "difficulty": 3,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [280, 255, 269],
+  "trees": [3, 2, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 20, "bossShare": 0.6},
+    "damage": ["fire", "lightning", "cold", "physical"],
+    "keySkills": [{"skill": 280, "w": 1.0}, {"skill": 255, "w": 0.9}, {"skill": 269, "w": 0.7}, {"skill": 254, "w": 0.5}, {"skill": 274, "w": 0.5}, {"skill": 267, "w": 0.3}, {"skill": 263, "w": 0.2}],
+    "tabs": [{"class": 6, "page": 3, "w": 1.0}, {"class": 6, "page": 2, "w": 0.3}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "ass/3", "w": 1.0}, "item_singleskill": {"param": 280, "w": 0.6},
+      "item_charge_noconsume": 0.9, "item_fasterattackrate": 0.7, "item_crushingblow": 0.3, "lifedrainmindam": 0.4,
+      "item_cannotbefrozen": 0.5, "item_fastergethitrate": 0.3, "item_fastercastrate": 0.2, "damageresist": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2,
+      "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "requirements": {"str": 79, "dex": 79}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln (Feuer)", "en": "Leveling (fire)"},
+      "levels": [1, 37],
+      "plan": "cumulative",
+      "note": {"de": "Wie im Fallen-Guide nach Maxroll, an unsere Quest-Annahme angepasst. Werte vereinfacht.", "en": "As in the trap guide after Maxroll, fitted to our quest assumption. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 251, "key": "Fire Trauma", "to": 4, "note": {"de": "Hauptangriff bis Feuerwelle", "en": "Main attack until Wake of Fire"}},
+        {"lvl": 2, "skill": 252, "key": "Claw Mastery", "to": 1, "note": {"de": "Punkt aus der Höhle des Bösen", "en": "Den of Evil point; prerequisite"}},
+        {"lvl": 6, "skill": 258, "key": "Quickness", "to": 2, "note": {"de": "Vor dem Ablaufen erneuern", "en": "Recast before it runs out"}},
+        {"lvl": 8, "skill": 251, "key": "Fire Trauma", "to": 5},
+        {"lvl": 9, "skill": 258, "key": "Quickness", "to": 5},
+        {"lvl": 12, "skill": 262, "key": "Wake of Fire Sentry", "to": 20, "note": {"de": "Ein Punkt je Stufe (Obergrenze)", "en": "One point per level (level cap)"}},
+        {"lvl": 12, "skill": 251, "key": "Fire Trauma", "to": 14, "note": {"de": "Questpunkte, ab 32 alle Punkte", "en": "Quest points, all points from 32"}}
+      ],
+      "stats": [
+        {"stat": "ene", "to": 35, "why": {"de": "Stufe 2-3: Mana zum Start", "en": "Levels 2-3: mana at the start"}},
+        {"stat": "vit", "to": 105, "why": {"de": "Bis etwa Stufe 20 (Maxroll)", "en": "Until about level 20 (Maxroll)"}},
+        {"stat": "str", "to": 43, "why": {"de": "Geist im Kristallschwert", "en": "Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "trap",
+      "name": {"de": "Fallen ab 38", "en": "Traps from 38"},
+      "levels": [38, 74],
+      "plan": "respec",
+      "note": {"de": "Umskillen mit 38 wie im Fallen-Guide; nebenbei Mal, Gul und Amn für zwei Mosaik sammeln.", "en": "Respec at 38 as in the trap guide; meanwhile collect Mal, Gul and Amn for two Mosaics."},
+      "skills": [
+        {"lvl": 38, "skill": 251, "key": "Fire Trauma", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 256, "key": "Shock Field", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 271, "key": "Lightning Sentry", "to": 15, "note": {"de": "Hauptschaden; 15 mit Stufe 38", "en": "Main damage; 15 at level 38"}},
+        {"lvl": 38, "skill": 276, "key": "Death Sentry", "to": 9, "note": {"de": "Kadaverexplosion; 9 mit Stufe 38", "en": "Corpse explosion; 9 at level 38"}},
+        {"lvl": 38, "skill": 252, "key": "Claw Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 258, "key": "Quickness", "to": 3},
+        {"lvl": 38, "skill": 253, "key": "Psychic Hammer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 38, "skill": 264, "key": "Cloak of Shadows", "to": 1, "note": {"de": "Blendet Gegner auf Abstand", "en": "Blinds ranged enemies"}},
+        {"lvl": 38, "skill": 273, "key": "Mind Blast", "to": 1, "note": {"de": "Betäubt und bekehrt Gegner", "en": "Stuns and converts enemies"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 10, "note": {"de": "Synergie für Blitzwächter", "en": "Synergy for Lightning Sentry"}},
+        {"lvl": 38, "skill": 271, "key": "Lightning Sentry", "to": 20, "note": {"de": "Zuerst voll", "en": "Max first"}},
+        {"lvl": 38, "skill": 261, "key": "Charged Bolt Sentry", "to": 20},
+        {"lvl": 38, "skill": 256, "key": "Shock Field", "to": 20, "note": {"de": "Synergie für Blitzwächter", "en": "Synergy for Lightning Sentry"}},
+        {"lvl": 38, "skill": 251, "key": "Fire Trauma", "to": 7, "note": {"de": "Rest bis Stufe 74", "en": "The rest up to level 74"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust 45, Kristallschwert 43", "en": "Magefist 45, Crystal Sword 43"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Nach dem Umskillen alles in Leben", "en": "After the respec, all into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Phönixschlag", "en": "Phoenix Strike"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {"de": "Mit 75 umskillen (Maxroll), aber erst mit zwei Mosaik; bis dahin Fallen weiter. Dann Phönixschlag, Drachenkralle voll.", "en": "Respec at 75 (Maxroll), but only with two Mosaics; until then keep traps. Then max Phoenix Strike, Dragon Talon."},
+      "skills": [
+        {"lvl": 75, "skill": 252, "key": "Claw Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 258, "key": "Quickness", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 267, "key": "Fade", "to": 1, "note": {"de": "Immer aktiv: Widerstände, Schadensreduktion", "en": "Always on: resistances, damage reduction"}},
+        {"lvl": 75, "skill": 253, "key": "Psychic Hammer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 264, "key": "Cloak of Shadows", "to": 1, "note": {"de": "Blendet Fernkämpfer", "en": "Blinds ranged enemies"}},
+        {"lvl": 75, "skill": 273, "key": "Mind Blast", "to": 1, "note": {"de": "Betäubt; bekehrte Gegner halten Ladungen", "en": "Stuns; converted enemies keep charges up"}},
+        {"lvl": 75, "skill": 254, "key": "Tiger Strike", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 259, "key": "Fists of Fire", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 269, "key": "Claws of Thunder", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 274, "key": "Blades of Ice", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 265, "key": "Cobra Strike", "to": 1, "note": {"de": "Leben und Mana aus Treffern", "en": "Life and mana from hits"}},
+        {"lvl": 75, "skill": 280, "key": "Royal Strike", "to": 20, "note": {"de": "Hauptfertigkeit: Feuer, Blitz, Kälte", "en": "Main skill: fire, lightning, cold"}},
+        {"lvl": 75, "skill": 255, "key": "Dragon Talon", "to": 20, "note": {"de": "Finisher: entlädt alle Ladungen", "en": "Finisher: releases every charge"}},
+        {"lvl": 75, "skill": 263, "key": "Weapon Block", "to": 2, "note": {"de": "Blocken mit zwei Klauen", "en": "Blocking with two claws"}},
+        {"lvl": 75, "skill": 269, "key": "Claws of Thunder", "to": 20, "note": {"de": "Zweite Blitz-Ladung", "en": "Second lightning charge"}},
+        {"lvl": 75, "skill": 254, "key": "Tiger Strike", "to": 20, "note": {"de": "Physischer Schaden der Tritte", "en": "Physical damage of the kicks"}},
+        {"lvl": 75, "skill": 274, "key": "Blades of Ice", "to": 20, "note": {"de": "Rest; voll mit 99", "en": "The rest; maxed at 99"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 79, "why": {"de": "Richtwert; mehr für Beinschienen (208) oder Monarch (156)", "en": "Guide value; more for Greaves (208) or Monarch (156)"}},
+        {"stat": "dex", "to": 79, "why": {"de": "Basis-Richtwert; Rabenfrost spart Punkte", "en": "Base guide value; Raven Frost saves points"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles andere in Leben", "en": "Everything else into life"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"item": "sst", "sockets": 2}, "note": {"de": "Ab 19; Kurzstab von Akara", "en": "From 19; Short Staff from Akara"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Runen von der Gräfin im Albtraum", "en": "Runes from the Nightmare Countess"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "shie", "sockets": 3}, "note": {"de": "Großer oder eckiger Schild (Farah)", "en": "Large or Kite Shield (Farah)"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab 17; Runen von der Gräfin (Normal)", "en": "From 17; runes from the Countess (Normal)"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen, Widerstände", "en": "Faster run, resistances"}},
+    {"phase": "trap", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Bleibt bis zum Umskillen", "en": "Kept until the respec"}},
+    {"phase": "trap", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "shie", "sockets": 3}},
+    {"phase": "trap", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "trap", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Günstige Widerstände", "en": "Cheap resistances"}},
+    {"phase": "trap", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "trap", "slot": "switch", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Widerstandsschwund-Ladungen (Drognan)", "en": "Lower Resist charges (Drognan)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword173"}, "base": {"item": "9tw", "sockets": 3}, "note": {"de": "Nur Nicht-Ladder; je Mosaik 50 % Ladungen behalten", "en": "Non-Ladder only; each Mosaic 50% to keep charges"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword173"}, "base": {"item": "9tw", "sockets": 3}, "note": {"de": "Zweites Mosaik: zusammen 100 %", "en": "Second Mosaic: 100% together"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Griffon's Eye"}, "note": {"de": "Mehr Blitzschaden", "en": "More lightning damage"}},
+    {"phase": "end", "slot": "helm", "tier": "budget", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport, Stärke je Stufe", "en": "Teleport, strength per level"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}, "note": {"de": "45 % Angriffstempo; Verblassen, wenn man getroffen wird", "en": "45% attack speed; Fade when struck"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Dracul's Grasp"}, "note": {"de": "Chance auf Lebensspender bei Treffer", "en": "Chance to cast Life Tap on striking"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}, "note": {"de": "Oder Verdungos Herzensband (DiabloBytes)", "en": "Or Verdungo's Hearty Cord (DiabloBytes)"}},
+    {"phase": "end", "slot": "belt", "tier": "budget", "ref": {"unique": "String of Ears"}},
+    {"phase": "end", "slot": "boots", "tier": "budget", "ref": {"set": "Natalya's Soul"}, "note": {"de": "Aufgewertet (Maxroll)", "en": "Upgraded (Maxroll)"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"type": "boot", "quality": "rare"}, "note": {"de": "Myrmidonbeinschienen: Laufen, Erholung, Widerstände; Uber: aufgewerteter Blutreiter", "en": "Myrmidon Greaves: run, hit recovery, resists; Ubers: upgraded Gore Rider"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Nicht einfrierbar; zweiter Ring: Der Stein von Jordan", "en": "Cannot be frozen; second ring: The Stone of Jordan"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle; dazu Geist-Monarch", "en": "Battle Orders; plus a Spirit Monarch"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit senkt Widerstände", "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity lowers resistances"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation für Mana", "en": "Meditation for mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7s8", "sockets": 4, "eth": true}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Phoenix Strike Assassin Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/phoenix-strike-assassin", "seen": "2026-11-04", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte, Varianten, Ausrüstung, Söldner, Spielweise", "en": "Read in full; updated 2026-05-22; points, variants, gear, mercenary, play style"}},
+    {"site": "Maxroll", "title": "Assassin Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/assassin-leveling", "seen": "2026-11-04", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Feuer-Leveln, Umskillen mit 38, Fallen bis 75", "en": "Read in full; updated 2026-05-22; fire leveling, respec at 38, traps to 75"}},
+    {"site": "DiabloBytes", "title": "Mosaic Assassin Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/mosaic-assassin/", "seen": "2026-11-04", "patch": "3.3 / S15", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Juni 2026; Reihenfolge, Werte, Ausrüstung, Söldner; Freischaltstufen falsch", "en": "Read in full; June 2026; order, stats, gear, mercenary; its unlock levels are wrong"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-04", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung an Assassine oder Mosaik", "en": "Read in full; no change to the Assassin or Mosaic"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "id": "dru-fissure",
+  "version": 1,
+  "class": "dru",
+  "classIndex": 5,
+  "title": {"de": "Riss-Druide (Feuer)", "en": "Fissure Druid (fire)"},
+  "summary": {
+    "de": "Elementar-Baum, nur Feuer: Riss öffnet Lavaspalten unter Gegnergruppen, Feuersturm trifft Einzelziele, Vulkan und Felsenfeuer füllen die Abklingzeiten. Kein Umskillen nötig; im Endgame brechen ein Flammenspalt-Zauber und Unendlichkeit beim Söldner die Feuer-Immunität.",
+    "en": "Elemental tree, fire only: Fissure opens lava vents under packs, Firestorm hits single targets, Volcano and Molten Boulder fill the cooldowns. No respec needed; in the endgame a Flame Rift charm and Infinity on the mercenary break fire immunity."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sehr stark gegen dichte Gruppen (Kuhlevel, Steingrab, Flayer-Dschungel)", "Riss trägt schon ab Stufe 12 durch Normal und frühes Albtraum", "Vier Angriffe mit eigener Abklingzeit: es gibt immer etwas zu wirken", "Vulkan und Felsenfeuer machen auch physischen Schaden gegen Feuer-Immune"],
+      "en": ["Very strong against dense packs (Cow Level, Stony Tomb, Flayer Jungle)", "Fissure carries you from level 12 through Normal and early Nightmare", "Four attacks with their own cooldowns: there is always something to cast", "Volcano and Molten Boulder also deal physical damage to fire immunes"]
+    },
+    "weaknesses": {
+      "de": ["Viele Feuer-Immune in der Hölle: langsam, bis Flammenspalt und Unendlichkeit da sind", "Wenig Bewegung ohne Rätsel; gefährlich, weil man nah an den Gegnern steht", "Volle Stärke erst mit teurer Ausrüstung (Phönix, Herz der Eiche, Rabengarn)", "Riss trifft stehende Gegner kaum; Einzelziele mit Feuersturm"],
+      "en": ["Many fire immunes in Hell: slow until Flame Rift and Infinity", "Little mobility without Enigma; risky because you fight close to monsters", "Full power only with expensive gear (Phoenix, Heart of the Oak, Ravenlore)", "Fissure barely hurts standing monsters; use Firestorm on single targets"]
+    },
+    "notes": {
+      "de": ["Unsere Anpassung: Leveln wie Maxroll und DiabloBytes, aber ohne Umskillen; Riss 20 statt 19, Stärke zuerst", "Maxroll wechselt beim Leveln ab Albtraum Akt 3 auf Wind (eigener Leitfaden, Wind-Druide)", "Vor Flammenspalt: Stab mit Widerstandsschwund-Ladungen (Drognan) bricht manche Feuer-Immunität", "Icy Veins (Stand 2.8) maxt Eichbaumweiser statt Felsenfeuer und Armageddon", "Quellen Stand 3.2; die Patches 3.2 und 3.3 ändern den Druiden nicht"],
+      "en": ["Our adaptation: level like Maxroll and DiabloBytes, but without a respec; Fissure 20, not 19, strength first", "Maxroll switches to wind from Nightmare Act 3 while leveling (separate guide, Wind Druid)", "Before Flame Rift: a wand with Lower Resist charges (Drognan) breaks some fire immunities", "Icy Veins (as of 2.8) maxes Oak Sage instead of Molten Boulder and Armageddon", "Sources as of 3.2; patches 3.2 and 3.3 do not change the Druid"]
+    }
+  },
+  "tags": ["leveling", "endgame", "fire", "caster", "magicfind"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [234, 225, 244],
+  "trees": [3, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["fire"],
+    "keySkills": [{"skill": 234, "w": 1.0}, {"skill": 225, "w": 0.8}, {"skill": 244, "w": 0.6}, {"skill": 229, "w": 0.5}, {"skill": 249, "w": 0.5}, {"skill": 226, "w": 0.2}],
+    "tabs": [{"class": 5, "page": 3, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "dru/3", "w": 1.0},
+      "item_singleskill": {"param": 234, "w": 0.6}, "item_fastercastrate": 0.6, "item_fastergethitrate": 0.3, "passive_fire_pierce": 0.9, "passive_fire_mastery": 0.7,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "vitality": 0.3, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [4, 10, 19, 30, 46, 68, 99, 163], "source": "https://www.icy-veins.com/d2/fire-druid-build (99 % also https://maxroll.gg/d2/guides/fissure-druid)", "verified": false},
+    "requirements": {"str": 156, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 31],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll, vereinfacht: Feuersturm, Felsenfeuer, ab 12 Riss (20 statt 19); Questpunkte in Feuersturm.", "en": "After Maxroll, simplified: Firestorm, Molten Boulder, from 12 Fissure (20, not 19); quest points into Firestorm."},
+      "skills": [
+        {"lvl": 2, "skill": 225, "key": "Firestorm", "to": 4, "note": {"de": "Startangriff", "en": "Starter attack"}},
+        {"lvl": 6, "skill": 229, "key": "Molten Boulder", "to": 2, "note": {"de": "Gegen feuerresistente Gegner", "en": "Against fire-resistant monsters"}},
+        {"lvl": 8, "skill": 225, "key": "Firestorm", "to": 9, "note": {"de": "Mit dem Punkt der Höhle des Bösen", "en": "Includes the Den of Evil point"}},
+        {"lvl": 12, "skill": 234, "key": "Eruption", "to": 20, "note": {"de": "Riss: Hauptangriff, ein Punkt pro Stufe", "en": "Fissure: main attack, one point per level"}},
+        {"lvl": 12, "skill": 225, "key": "Firestorm", "to": 12, "note": {"de": "Questpunkte; Synergie für Riss", "en": "Quest points; synergy for Fissure"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild, Kristallschwert (Geist)", "en": "Kite Shield, Crystal Sword (Spirit)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Tränke und Ausrüstung", "en": "Mana from potions and gear"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige in Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "mid",
+      "name": {"de": "Albtraum und Hölle", "en": "Nightmare and Hell"},
+      "levels": [32, 74],
+      "plan": "cumulative",
+      "note": {"de": "Erst Begleiter als Schutz, dann Feuersturm, Vulkan und Felsenfeuer nach Maxroll-Reihenfolge.", "en": "Summons for protection first, then Firestorm, Volcano and Molten Boulder in Maxroll order."},
+      "skills": [
+        {"lvl": 32, "skill": 221, "key": "Raven", "to": 1, "note": {"de": "Voraussetzung; blendet Gegner", "en": "Prerequisite; blinds monsters"}},
+        {"lvl": 32, "skill": 227, "key": "Summon Spirit Wolf", "to": 1, "note": {"de": "Blocken Treffer ab", "en": "They soak hits"}},
+        {"lvl": 32, "skill": 226, "key": "Oak Sage", "to": 1, "note": {"de": "Mehr Leben für alle", "en": "More life for everyone"}},
+        {"lvl": 32, "skill": 237, "key": "Summon Fenris", "to": 1},
+        {"lvl": 32, "skill": 247, "key": "Summon Grizzly", "to": 1, "note": {"de": "Tank; bei Bossen neu rufen", "en": "Tank; recast on bosses"}},
+        {"lvl": 32, "skill": 244, "key": "Volcano", "to": 1, "note": {"de": "Voraussetzung für Armageddon", "en": "Prerequisite for Armageddon"}},
+        {"lvl": 32, "skill": 249, "key": "Armageddon", "to": 1, "note": {"de": "Vor dem Kampf wirken", "en": "Cast before the fight"}},
+        {"lvl": 32, "skill": 225, "key": "Firestorm", "to": 20},
+        {"lvl": 32, "skill": 244, "key": "Volcano", "to": 20, "note": {"de": "Synergie; auch physisch", "en": "Synergy; also physical"}},
+        {"lvl": 32, "skill": 229, "key": "Molten Boulder", "to": 17, "note": {"de": "Die letzten 3 Punkte ab 75", "en": "The last 3 points from 75"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild (Schwur der Urahnen)", "en": "Kite Shield (Ancients' Pledge)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Einsicht beim Söldner", "en": "Mana from the mercenary's Insight"}},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll-Standard: Felsenfeuer voll, dann Armageddon, übrige Punkte in Eichbaumweiser.", "en": "Maxroll standard: Molten Boulder maxed, then Armageddon, remaining points into Oak Sage."},
+      "skills": [
+        {"lvl": 75, "skill": 229, "key": "Molten Boulder", "to": 20, "note": {"de": "Synergie; Gruppen von Feuer-Immunen", "en": "Synergy; packs of fire immunes"}},
+        {"lvl": 75, "skill": 249, "key": "Armageddon", "to": 20, "note": {"de": "Meteore um dich herum", "en": "Meteors around you"}},
+        {"lvl": 75, "skill": 226, "key": "Oak Sage", "to": 6, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 100, "why": {"de": "Monarch 156 mit Rätsel und Ausrüstung", "en": "Monarch 156 with Enigma and gear"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"item": "sst", "sockets": 2}, "note": {"de": "Kurzstab von Akara; ab Stufe 19", "en": "Short Staff from Akara; from level 19"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab 25; Kristallschwert aus dem Kuhlevel", "en": "From 25; Crystal Sword from the Cow Level"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}, "note": {"de": "Zusammen mit Geist; nicht magischer Schild von Fara", "en": "Together with Spirit; non-magic shield from Fara"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "pelt", "sockets": 2}, "note": {"de": "Ab 27; am besten ein Fell mit +Riss", "en": "From 27; ideally a pelt with +Fissure"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab 17; nicht magische Rüstung", "en": "From 17; non-magic armor"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "+1 auf Feuer-Fertigkeiten", "en": "+1 to fire skills"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen und Widerstände", "en": "Faster run and resistances"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Stab mit Teleport-Ladungen (Ormus), ab 24", "en": "Staff with Teleport charges (Ormus), from 24"}},
+    {"phase": "mid", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "mid", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}},
+    {"phase": "mid", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "pelt", "sockets": 2}},
+    {"phase": "mid", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Billige Widerstände", "en": "Cheap resistances"}},
+    {"phase": "mid", "slot": "armor", "tier": "alt", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "mid", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "mid", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Leben und Widerstände", "en": "Life and resistances"}},
+    {"phase": "mid", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}},
+    {"phase": "mid", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit +Elementar-Fertigkeiten (nur Druide)", "en": "With +elemental skills (Druid only)"}},
+    {"phase": "mid", "slot": "ring", "tier": "budget", "ref": {"unique": "Nagelring"}, "note": {"de": "Magic Find (Maxroll, Einstieg)", "en": "Magic find (Maxroll, starter)"}},
+    {"phase": "mid", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleport-Ladungen bis Rätsel", "en": "Teleport charges until Enigma"}},
+    {"phase": "mid", "slot": "switch", "tier": "alt", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Widerstandsschwund-Ladungen: bricht manche Feuer-Immunität", "en": "Lower Resist charges: breaks some fire immunities"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Flegel braucht 35 Geschicklichkeit", "en": "A Flail needs 35 dexterity"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword103"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "Erlösungs-Aura, senkt Feuerwiderstand", "en": "Redemption aura, lowers fire resistance"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "156 Stärke erst mit Rätsel und Ausrüstung; bis dahin Schwur der Urahnen", "en": "156 strength only with Enigma and gear; until then Ancients' Pledge"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Ravenlore"}, "note": {"de": "Senkt Feuerwiderstand der Gegner", "en": "Lowers enemy fire resistance"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"runeword": "Runeword40"}, "base": {"type": "helm", "sockets": 3}, "note": {"de": "Aura gleicht den Feuerwiderstand des Spalt-Zaubers aus", "en": "Its aura offsets the fire resistance lost to the charm"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport: auf Gruppen springen", "en": "Teleport: jump onto packs"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "gloves", "tier": "alt", "ref": {"set": "Trang-Oul's Claws"}, "note": {"de": "Icy Veins", "en": "Icy Veins"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}, "note": {"de": "Magic Find (Maxroll)", "en": "Magic find (Maxroll)"}},
+    {"phase": "end", "slot": "boots", "tier": "alt", "ref": {"unique": "Sandstorm Trek"}, "note": {"de": "Ätherisch (Icy Veins)", "en": "Ethereal (Icy Veins)"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"type": "amul"}, "note": {"de": "Handwerk (Zauberer): +2 Druide, mind. 19 % schneller zaubern für 99 % (Maxroll)", "en": "Crafted (caster): +2 Druid, at least 19% faster cast rate for 99% (Maxroll)"}},
+    {"phase": "end", "slot": "amulet", "tier": "alt", "ref": {"unique": "Mara's Kaleidoscope"}, "note": {"de": "Ohne schneller zaubern: dann zwei Ringe mit 10 %", "en": "No faster cast rate: then two rings with 10%"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"type": "ring", "quality": "rare"}, "note": {"de": "10 % schneller zaubern, Leben, Widerstände (Icy Veins)", "en": "10% faster cast rate, life, resistances (Icy Veins)"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Flame Rift"}, "note": {"de": "Bricht Feuer-Immunität, senkt aber den eigenen Feuerwiderstand stark; Herold-Beute (Hölle)", "en": "Breaks fire immunity but strongly lowers your own fire resistance; Herald loot (Hell)"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "Crafted Flame Rift"}, "note": {"de": "Im Würfel erneuert, Zusatzwerte; auch hier eigener Feuerwiderstand -70", "en": "Renewed in the Cube, extra stats; also -70 to your own fire resistance"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Hellfire Torch"}, "note": {"de": "Die Druiden-Variante", "en": "The Druid variant"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfaufruf, beschwören, dann Kampfaufruf und Kampfbefehle", "en": "Battle Command, summon, then Battle Command and Battle Orders"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit senkt Feuerwiderstand, mit Flammenspalt auch bei Immunen", "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity lowers fire resistance, with Flame Rift also on immunes"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation: Mana für dich", "en": "Meditation: mana for you"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"type": "pole", "sockets": 4, "eth": true}, "note": {"de": "Ätherisch, z. B. Drescher", "en": "Ethereal, e.g. a Thresher"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"type": "tors", "sockets": 2}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Mit Ral-Rune", "en": "With a Ral rune"}},
+      {"slot": "helm", "tier": "alt", "ref": {"runeword": "Runeword40"}, "base": {"type": "helm", "sockets": 3, "eth": true}, "note": {"de": "Feuerwiderstands-Aura gegen den Nachteil des Flammenspalts (Maxroll)", "en": "Resist Fire aura against the Flame Rift drawback (Maxroll)"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Fissure Druid Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/fissure-druid", "seen": "2026-11-05", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen samt Planer; Stand 22.05.2026; Punkte, Werte, Ausrüstung, Söldner, Mechanik", "en": "Read in full including the planner; updated 2026-05-22; points, stats, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Druid Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/druid-leveling", "seen": "2026-11-05", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Feuer-Teil gelesen; Stand 22.05.2026; Reihenfolge und Ausrüstung bis Stufe 38", "en": "Fire part read; updated 2026-05-22; order and gear up to level 38"}},
+    {"site": "DiabloBytes", "title": "Fissure Druid Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/fissure-druid/", "seen": "2026-11-05", "patch": "3.3 / S15 (header)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; ohne Datum; Punkte, Werte, Ausrüstung, Söldner, Leveln ohne Umskillen", "en": "Read in full; no date; points, stats, gear, mercenary, leveling without a respec"}},
+    {"site": "Icy Veins", "title": "Fire Druid Build (introduction, skills, gear)", "url": "https://www.icy-veins.com/d2/fire-druid-build", "seen": "2026-11-05", "patch": "2.8", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen über die Archivkopie vom 19.07.2026 (Seite sperrt Abrufe); Inhalt Stand 2.8", "en": "Read in full via the archive copy of 2026-07-19 (site blocks fetches); content as of 2.8"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-05", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Nach Druiden-Änderungen durchsucht: keine", "en": "Searched for Druid changes: none"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-05", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Nach Druiden-Änderungen durchsucht: keine", "en": "Searched for Druid changes: none"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

@@ -1,0 +1,735 @@
+/*
+ * common_defs.h
+ *
+ * Copyright 2016 Eric Biggers
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#ifndef COMMON_DEFS_H
+#define COMMON_DEFS_H
+
+#include "libdeflate.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#ifdef _MSC_VER
+#  include <intrin.h>
+#  include <stdlib.h>
+
+
+#  pragma warning(disable : 4146)
+
+#  pragma warning(disable : 4018)
+#  pragma warning(disable : 4244)
+#  pragma warning(disable : 4267)
+#  pragma warning(disable : 4310)
+
+#  pragma warning(disable : 4100)
+#  pragma warning(disable : 4127)
+#  pragma warning(disable : 4189)
+#  pragma warning(disable : 4232)
+#  pragma warning(disable : 4245)
+#  pragma warning(disable : 4295)
+#endif
+#ifndef FREESTANDING
+#  include <string.h>
+#endif
+
+
+
+
+
+
+#undef ARCH_X86_64
+#undef ARCH_X86_32
+#undef ARCH_ARM64
+#undef ARCH_ARM32
+#undef ARCH_RISCV
+#ifdef _MSC_VER
+
+#  if defined(_M_X64) && !defined(_M_ARM64EC)
+#    define ARCH_X86_64
+#  elif defined(_M_IX86)
+#    define ARCH_X86_32
+#  elif defined(_M_ARM64)
+#    define ARCH_ARM64
+#  elif defined(_M_ARM)
+#    define ARCH_ARM32
+#  endif
+#else
+#  if defined(__x86_64__)
+#    define ARCH_X86_64
+#  elif defined(__i386__)
+#    define ARCH_X86_32
+#  elif defined(__aarch64__)
+#    define ARCH_ARM64
+#  elif defined(__arm__)
+#    define ARCH_ARM32
+#  elif defined(__riscv)
+#    define ARCH_RISCV
+#  endif
+#endif
+
+
+
+
+
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+
+
+#ifdef _MSC_VER
+#  ifdef _WIN64
+     typedef long long ssize_t;
+#  else
+     typedef long ssize_t;
+#  endif
+#endif
+
+
+
+
+
+
+typedef size_t machine_word_t;
+
+
+#define WORDBYTES	((int)sizeof(machine_word_t))
+
+
+#define WORDBITS	(8 * WORDBYTES)
+
+
+
+
+
+
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER)
+#  define GCC_PREREQ(major, minor)		\
+	(__GNUC__ > (major) ||			\
+	 (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#  if !GCC_PREREQ(4, 9)
+#    error "gcc versions older than 4.9 are no longer supported"
+#  endif
+#else
+#  define GCC_PREREQ(major, minor)	0
+#endif
+#ifdef __clang__
+#  ifdef __apple_build_version__
+#    define CLANG_PREREQ(major, minor, apple_version)	\
+	(__apple_build_version__ >= (apple_version))
+#  else
+#    define CLANG_PREREQ(major, minor, apple_version)	\
+	(__clang_major__ > (major) ||			\
+	 (__clang_major__ == (major) && __clang_minor__ >= (minor)))
+#  endif
+#  if !CLANG_PREREQ(3, 9, 8000000)
+#    error "clang versions older than 3.9 are no longer supported"
+#  endif
+#else
+#  define CLANG_PREREQ(major, minor, apple_version)	0
+#endif
+#ifdef _MSC_VER
+#  define MSVC_PREREQ(version)	(_MSC_VER >= (version))
+#  if !MSVC_PREREQ(1928)
+#    error "MSVC versions older than Visual Studio 2019 v16.8 are no longer supported"
+#  endif
+#else
+#  define MSVC_PREREQ(version)	0
+#endif
+
+
+
+
+
+
+#ifndef __has_attribute
+#  define __has_attribute(attribute)	0
+#endif
+
+
+
+
+
+
+#ifndef __has_builtin
+#  define __has_builtin(builtin)	0
+#endif
+
+
+#ifdef _MSC_VER
+#  define inline		__inline
+#endif
+
+
+#if defined(__GNUC__) || __has_attribute(always_inline)
+#  define forceinline		inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#  define forceinline		__forceinline
+#else
+#  define forceinline		inline
+#endif
+
+
+#if defined(__GNUC__) || __has_attribute(unused)
+#  define MAYBE_UNUSED		__attribute__((unused))
+#else
+#  define MAYBE_UNUSED
+#endif
+
+
+#if defined(__GNUC__) || __has_attribute(noreturn)
+#  define NORETURN		__attribute__((noreturn))
+#else
+#  define NORETURN
+#endif
+
+
+#if defined(__GNUC__) || __has_builtin(__builtin_expect)
+#  define likely(expr)		__builtin_expect(!!(expr), 1)
+#else
+#  define likely(expr)		(expr)
+#endif
+
+
+#if defined(__GNUC__) || __has_builtin(__builtin_expect)
+#  define unlikely(expr)	__builtin_expect(!!(expr), 0)
+#else
+#  define unlikely(expr)	(expr)
+#endif
+
+
+#undef prefetchr
+#if defined(__GNUC__) || __has_builtin(__builtin_prefetch)
+#  define prefetchr(addr)	__builtin_prefetch((addr), 0)
+#elif defined(_MSC_VER)
+#  if defined(ARCH_X86_32) || defined(ARCH_X86_64)
+#    define prefetchr(addr)	_mm_prefetch((addr), _MM_HINT_T0)
+#  elif defined(ARCH_ARM64)
+#    define prefetchr(addr)	__prefetch2((addr), 0x00                      )
+#  elif defined(ARCH_ARM32)
+#    define prefetchr(addr)	__prefetch(addr)
+#  endif
+#endif
+#ifndef prefetchr
+#  define prefetchr(addr)
+#endif
+
+
+#undef prefetchw
+#if defined(__GNUC__) || __has_builtin(__builtin_prefetch)
+#  define prefetchw(addr)	__builtin_prefetch((addr), 1)
+#elif defined(_MSC_VER)
+#  if defined(ARCH_X86_32) || defined(ARCH_X86_64)
+#    define prefetchw(addr)	_m_prefetchw(addr)
+#  elif defined(ARCH_ARM64)
+#    define prefetchw(addr)	__prefetch2((addr), 0x10                      )
+#  elif defined(ARCH_ARM32)
+#    define prefetchw(addr)	__prefetchw(addr)
+#  endif
+#endif
+#ifndef prefetchw
+#  define prefetchw(addr)
+#endif
+
+
+
+
+
+#undef _aligned_attribute
+#if defined(__GNUC__) || __has_attribute(aligned)
+#  define _aligned_attribute(n)	__attribute__((aligned(n)))
+#elif defined(_MSC_VER)
+#  define _aligned_attribute(n)	__declspec(align(n))
+#endif
+
+
+
+
+
+
+
+
+
+
+#if defined(__GNUC__) || __has_attribute(target)
+#  define _target_attribute(attrs)	__attribute__((target(attrs)))
+#else
+#  define _target_attribute(attrs)
+#endif
+
+
+
+
+
+#define ARRAY_LEN(A)		(sizeof(A) / sizeof((A)[0]))
+#define MIN(a, b)		((a) <= (b) ? (a) : (b))
+#define MAX(a, b)		((a) >= (b) ? (a) : (b))
+#define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
+#define STATIC_ASSERT(expr)	((void)sizeof(char[1 - 2 * !(expr)]))
+#define ALIGN(n, a)		(((n) + (a) - 1) & ~((a) - 1))
+#define ROUND_UP(n, d)		((d) * DIV_ROUND_UP((n), (d)))
+
+
+
+
+
+
+
+
+
+
+
+#if defined(__BYTE_ORDER__)
+#  define CPU_IS_LITTLE_ENDIAN()  (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#elif defined(_MSC_VER)
+#  define CPU_IS_LITTLE_ENDIAN()  true
+#else
+static forceinline bool CPU_IS_LITTLE_ENDIAN(void)
+{
+	union {
+		u32 w;
+		u8 b;
+	} u;
+
+	u.w = 1;
+	return u.b;
+}
+#endif
+
+
+static forceinline u16 bswap16(u16 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap16)
+	return __builtin_bswap16(v);
+#elif defined(_MSC_VER)
+	return _byteswap_ushort(v);
+#else
+	return (v << 8) | (v >> 8);
+#endif
+}
+
+
+static forceinline u32 bswap32(u32 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap32)
+	return __builtin_bswap32(v);
+#elif defined(_MSC_VER)
+	return _byteswap_ulong(v);
+#else
+	return ((v & 0x000000FF) << 24) |
+	       ((v & 0x0000FF00) << 8) |
+	       ((v & 0x00FF0000) >> 8) |
+	       ((v & 0xFF000000) >> 24);
+#endif
+}
+
+
+static forceinline u64 bswap64(u64 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_bswap64)
+	return __builtin_bswap64(v);
+#elif defined(_MSC_VER)
+	return _byteswap_uint64(v);
+#else
+	return ((v & 0x00000000000000FF) << 56) |
+	       ((v & 0x000000000000FF00) << 40) |
+	       ((v & 0x0000000000FF0000) << 24) |
+	       ((v & 0x00000000FF000000) << 8) |
+	       ((v & 0x000000FF00000000) >> 8) |
+	       ((v & 0x0000FF0000000000) >> 24) |
+	       ((v & 0x00FF000000000000) >> 40) |
+	       ((v & 0xFF00000000000000) >> 56);
+#endif
+}
+
+#define le16_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? (v) : bswap16(v))
+#define le32_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? (v) : bswap32(v))
+#define le64_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? (v) : bswap64(v))
+#define be16_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? bswap16(v) : (v))
+#define be32_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? bswap32(v) : (v))
+#define be64_bswap(v) (CPU_IS_LITTLE_ENDIAN() ? bswap64(v) : (v))
+
+
+
+
+
+
+
+
+
+#if (defined(__GNUC__) || defined(__clang__)) && \
+	(defined(ARCH_X86_64) || defined(ARCH_X86_32) || \
+	 defined(__ARM_FEATURE_UNALIGNED) || \
+	 defined(__powerpc64__) || defined(__powerpc__) || defined(__POWERPC__) || \
+	 defined(__riscv_misaligned_fast) || \
+	  \
+                                                                        \
+                                                                       \
+                                                                   \
+                                                                        \
+                                                                   \
+                                                                       \
+      defined(__wasm__))
+#  define UNALIGNED_ACCESS_IS_FAST	1
+#elif defined(_MSC_VER)
+#  define UNALIGNED_ACCESS_IS_FAST	1
+#else
+#  define UNALIGNED_ACCESS_IS_FAST	0
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef FREESTANDING
+#  define MEMCOPY	__builtin_memcpy
+#else
+#  define MEMCOPY	memcpy
+#endif
+
+
+
+#define DEFINE_UNALIGNED_TYPE(type)				\
+static forceinline type						\
+load_##type##_unaligned(const void *p)				\
+{								\
+	type v;							\
+								\
+	MEMCOPY(&v, p, sizeof(v));				\
+	return v;						\
+}								\
+								\
+static forceinline void						\
+store_##type##_unaligned(type v, void *p)			\
+{								\
+	MEMCOPY(p, &v, sizeof(v));				\
+}
+
+DEFINE_UNALIGNED_TYPE(u16)
+DEFINE_UNALIGNED_TYPE(u32)
+DEFINE_UNALIGNED_TYPE(u64)
+DEFINE_UNALIGNED_TYPE(machine_word_t)
+
+#undef MEMCOPY
+
+#define load_word_unaligned	load_machine_word_t_unaligned
+#define store_word_unaligned	store_machine_word_t_unaligned
+
+
+
+static forceinline u16
+get_unaligned_le16(const u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST)
+		return le16_bswap(load_u16_unaligned(p));
+	else
+		return ((u16)p[1] << 8) | p[0];
+}
+
+static forceinline u16
+get_unaligned_be16(const u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST)
+		return be16_bswap(load_u16_unaligned(p));
+	else
+		return ((u16)p[0] << 8) | p[1];
+}
+
+static forceinline u32
+get_unaligned_le32(const u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST)
+		return le32_bswap(load_u32_unaligned(p));
+	else
+		return ((u32)p[3] << 24) | ((u32)p[2] << 16) |
+			((u32)p[1] << 8) | p[0];
+}
+
+static forceinline u32
+get_unaligned_be32(const u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST)
+		return be32_bswap(load_u32_unaligned(p));
+	else
+		return ((u32)p[0] << 24) | ((u32)p[1] << 16) |
+			((u32)p[2] << 8) | p[3];
+}
+
+static forceinline u64
+get_unaligned_le64(const u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST)
+		return le64_bswap(load_u64_unaligned(p));
+	else
+		return ((u64)p[7] << 56) | ((u64)p[6] << 48) |
+			((u64)p[5] << 40) | ((u64)p[4] << 32) |
+			((u64)p[3] << 24) | ((u64)p[2] << 16) |
+			((u64)p[1] << 8) | p[0];
+}
+
+static forceinline machine_word_t
+get_unaligned_leword(const u8 *p)
+{
+	STATIC_ASSERT(WORDBITS == 32 || WORDBITS == 64);
+	if (WORDBITS == 32)
+		return get_unaligned_le32(p);
+	else
+		return get_unaligned_le64(p);
+}
+
+
+
+static forceinline void
+put_unaligned_le16(u16 v, u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST) {
+		store_u16_unaligned(le16_bswap(v), p);
+	} else {
+		p[0] = (u8)(v >> 0);
+		p[1] = (u8)(v >> 8);
+	}
+}
+
+static forceinline void
+put_unaligned_be16(u16 v, u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST) {
+		store_u16_unaligned(be16_bswap(v), p);
+	} else {
+		p[0] = (u8)(v >> 8);
+		p[1] = (u8)(v >> 0);
+	}
+}
+
+static forceinline void
+put_unaligned_le32(u32 v, u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST) {
+		store_u32_unaligned(le32_bswap(v), p);
+	} else {
+		p[0] = (u8)(v >> 0);
+		p[1] = (u8)(v >> 8);
+		p[2] = (u8)(v >> 16);
+		p[3] = (u8)(v >> 24);
+	}
+}
+
+static forceinline void
+put_unaligned_be32(u32 v, u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST) {
+		store_u32_unaligned(be32_bswap(v), p);
+	} else {
+		p[0] = (u8)(v >> 24);
+		p[1] = (u8)(v >> 16);
+		p[2] = (u8)(v >> 8);
+		p[3] = (u8)(v >> 0);
+	}
+}
+
+static forceinline void
+put_unaligned_le64(u64 v, u8 *p)
+{
+	if (UNALIGNED_ACCESS_IS_FAST) {
+		store_u64_unaligned(le64_bswap(v), p);
+	} else {
+		p[0] = (u8)(v >> 0);
+		p[1] = (u8)(v >> 8);
+		p[2] = (u8)(v >> 16);
+		p[3] = (u8)(v >> 24);
+		p[4] = (u8)(v >> 32);
+		p[5] = (u8)(v >> 40);
+		p[6] = (u8)(v >> 48);
+		p[7] = (u8)(v >> 56);
+	}
+}
+
+static forceinline void
+put_unaligned_leword(machine_word_t v, u8 *p)
+{
+	STATIC_ASSERT(WORDBITS == 32 || WORDBITS == 64);
+	if (WORDBITS == 32)
+		put_unaligned_le32(v, p);
+	else
+		put_unaligned_le64(v, p);
+}
+
+
+
+
+
+
+
+
+
+
+
+static forceinline unsigned
+bsr32(u32 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_clz)
+	return 31 - __builtin_clz(v);
+#elif defined(_MSC_VER)
+	unsigned long i;
+
+	_BitScanReverse(&i, v);
+	return i;
+#else
+	unsigned i = 0;
+
+	while ((v >>= 1) != 0)
+		i++;
+	return i;
+#endif
+}
+
+static forceinline unsigned
+bsr64(u64 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_clzll)
+	return 63 - __builtin_clzll(v);
+#elif defined(_MSC_VER) && defined(_WIN64)
+	unsigned long i;
+
+	_BitScanReverse64(&i, v);
+	return i;
+#else
+	unsigned i = 0;
+
+	while ((v >>= 1) != 0)
+		i++;
+	return i;
+#endif
+}
+
+static forceinline unsigned
+bsrw(machine_word_t v)
+{
+	STATIC_ASSERT(WORDBITS == 32 || WORDBITS == 64);
+	if (WORDBITS == 32)
+		return bsr32(v);
+	else
+		return bsr64(v);
+}
+
+
+
+
+
+
+
+static forceinline unsigned
+bsf32(u32 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_ctz)
+	return __builtin_ctz(v);
+#elif defined(_MSC_VER)
+	unsigned long i;
+
+	_BitScanForward(&i, v);
+	return i;
+#else
+	unsigned i = 0;
+
+	for (; (v & 1) == 0; v >>= 1)
+		i++;
+	return i;
+#endif
+}
+
+static forceinline unsigned
+bsf64(u64 v)
+{
+#if defined(__GNUC__) || __has_builtin(__builtin_ctzll)
+	return __builtin_ctzll(v);
+#elif defined(_MSC_VER) && defined(_WIN64)
+	unsigned long i;
+
+	_BitScanForward64(&i, v);
+	return i;
+#else
+	unsigned i = 0;
+
+	for (; (v & 1) == 0; v >>= 1)
+		i++;
+	return i;
+#endif
+}
+
+static forceinline unsigned
+bsfw(machine_word_t v)
+{
+	STATIC_ASSERT(WORDBITS == 32 || WORDBITS == 64);
+	if (WORDBITS == 32)
+		return bsf32(v);
+	else
+		return bsf64(v);
+}
+
+
+
+
+
+#undef rbit32
+#if (defined(__GNUC__) || defined(__clang__)) && defined(ARCH_ARM32) && \
+	(__ARM_ARCH >= 7 || (__ARM_ARCH == 6 && defined(__ARM_ARCH_6T2__)))
+static forceinline u32
+rbit32(u32 v)
+{
+	__asm__("rbit %0, %1" : "=r" (v) : "r" (v));
+	return v;
+}
+#define rbit32 rbit32
+#elif (defined(__GNUC__) || defined(__clang__)) && defined(ARCH_ARM64)
+static forceinline u32
+rbit32(u32 v)
+{
+	__asm__("rbit %w0, %w1" : "=r" (v) : "r" (v));
+	return v;
+}
+#define rbit32 rbit32
+#endif
+
+#endif

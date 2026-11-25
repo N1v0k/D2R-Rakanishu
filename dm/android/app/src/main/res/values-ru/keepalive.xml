@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">Запущенная игра</string>
+    <string name="dmAndroidKeepChannelInfo">Сохраняет приостановленную игру в памяти, пока приложение работает в фоне.</string>
+    <string name="dmAndroidKeepRunning">Игра запущена</string>
+    <string name="dmAndroidKeepStays">Остаётся открытой в фоне</string>
+    <string name="dmAndroidKeepPaused">Игра на паузе</string>
+    <string name="dmAndroidKeepBackground">Игра в фоне</string>
+    <string name="dmAndroidKeepTap">Нажмите, чтобы продолжить игру</string>
+    <string name="dmAndroidKeepQuit">Сохранить и выйти</string>
+    <string name="dmAndroidKeepOk">Фоновая защита включена</string>
+    <string name="dmAndroidKeepNoNotify">Фоновая защита включена · уведомления выключены</string>
+    <string name="dmAndroidKeepBattery">Оптимизация батареи включена: защита ограничена</string>
+    <string name="dmAndroidKeepAllow">Разрешить сейчас</string>
+    <string name="dmAndroidKeepRestricted">Фоновая работа ограничена: защита ограничена</string>
+    <string name="dmAndroidKeepFailed">Фоновая защита выключена: Android отказал</string>
+</resources>

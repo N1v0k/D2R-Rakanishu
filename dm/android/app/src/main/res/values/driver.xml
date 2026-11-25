@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">Own driver</string>
+    <string name="dmAndroidDriverPackage">Driver package</string>
+    <string name="dmAndroidDriverRunning">running</string>
+    <string name="dmAndroidDriverIdle">picked, not loaded this time</string>
+    <string name="dmAndroidDriverFellBack">The own graphics driver did not finish starting twice. The game uses the system driver again. To try again, choose the driver again under Graphics drivers on the Tech page.</string>
+    <string name="dmAndroidDriverLoadFailed">The own graphics driver could not be loaded (%1$s). The game uses the system driver.</string>
+    <string name="dmAndroidDriverRejected">The driver ZIP is not loaded (%1$s). The game uses the system driver.</string>
+    <string name="dmAndroidDriverSafe">Safe start: the system driver this time.</string>
+    <string name="dmAndroidDriverSafeShort">System driver</string>
+    <string name="dmAndroidDriverSafeLong">Start with the system driver</string>
+    <string name="dmAndroidDriverPage">Graphics drivers</string>
+    <string name="dmAndroidDriverSystem">System driver</string>
+    <string name="dmAndroidDriverActive">active</string>
+    <string name="dmAndroidDriverChosen">chosen</string>
+    <string name="dmAndroidDriverBlocked">blocked</string>
+    <string name="dmAndroidDriverAdd">Add</string>
+    <string name="dmAndroidDriverDelete">Delete</string>
+    <string name="dmAndroidDriverRestart">Restart</string>
+    <string name="dmAndroidDriverAdded">Driver added: %1$s</string>
+    <string name="dmAndroidDriverInvalid">Not a valid driver: %1$s</string>
+    <string name="dmAndroidDriverAfterRestart">Takes effect after the restart</string>
+</resources>

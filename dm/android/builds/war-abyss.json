@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "id": "war-abyss",
+  "version": 1,
+  "class": "war",
+  "classIndex": 7,
+  "title": {"de": "Abgrund-Hexenmeister (Magie)", "en": "Abyss Warlock (magic)"},
+  "summary": {
+    "de": "Chaos-Baum mit Magieschaden: Miasmaketten ziehen durch ganze Gruppen, Abgrund zieht Gegner zusammen und zerreißt Bosse, Miasmablitz für Einzelziele. Kaum Immunitäten; Verzehrung eines Entweihers stärkt die Magie. Leveln mit Ketten, Umskillen mit 40 und 75.",
+    "en": "Chaos tree with magic damage: Miasma Chains sweep through whole packs, Abyss pulls monsters together and shreds bosses, Miasma Bolt for single targets. Hardly any immunities; consuming a Defiler boosts magic. Level with chains, respec at 40 and 75."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Magieschaden: nur wenige Gegner sind immun", "Gute Kontrolle: Abgrund zieht Gegner, Ketten halten sie im Schaden", "Flächen- und Einzelziel-Schaden in einem Baum", "Sehr leichtes Leveln mit Miasmaketten ab Stufe 12"],
+      "en": ["Magic damage: only a few monsters are immune", "Good control: Abyss pulls monsters, chains keep them in the damage", "Area and single-target damage in one tree", "Very easy leveling with Miasma Chains from level 12"]
+    },
+    "weaknesses": {
+      "de": ["Viele Tasten: Ketten, Abgrund, Blitz, Siegel und Verzehrung abwechseln", "Am Controller schwerer zu spielen (Ketten richtig legen)", "Zweite Welle in Baals Thronsaal hat magie-immune Gegner", "Volle Stärke erst mit Leere, Rätsel und Ars Dul'Mephistos"],
+      "en": ["Many buttons: alternate chains, Abyss, bolt, sigil and Consume", "Harder to play on a controller (placing the chains)", "The second wave in Baal's throne room has magic-immune monsters", "Full power only with Void, Enigma and Ars Dul'Mephistos"]
+    },
+    "notes": {
+      "de": ["Zwei Umskillungen nach Maxroll: mit 40 für Dämonen und Siegel, ab 75 mit Rätsel für das Endgame", "Gegen Magie-Immune: Siegel: Tod (Feuer-Explosion), der Söldner oder ein Schwarze-Bresche-Zauber", "Icy Veins maxt Verbesserte Entropie und Verzehrung statt Dämonenbeherrschung, Entweiher und Bluteid", "Seit 3.2: höchstens 5 bis 10 Ketten, Miasmablitz schwächer, drei Dämonen mit 10 Basispunkten", "Zweihänder plus Nebenhand nur mit Grimoire (3.2); 3.3 behebt für diesen Build Fehler bei Siegel: Tod und Ketten"],
+      "en": ["Two respecs after Maxroll: at 40 for demons and sigils, from 75 with Enigma for the endgame", "Against magic immunes: Sigil: Death (fire explosion), the mercenary or a Black Cleft charm", "Icy Veins maxes Enhanced Entropy and Consume instead of Demonic Mastery, Defiler and Blood Oath", "Since 3.2: at most 5 to 10 chains, weaker Miasma Bolt, three demons with 10 base points", "A two-hander plus an off-hand only with a grimoire (3.2); for this build 3.3 fixes Sigil: Death and chain bugs"]
+    }
+  },
+  "tags": ["leveling", "endgame", "magic", "caster"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [402, 399, 395],
+  "trees": [3, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["magic"],
+    "keySkills": [{"skill": 402, "w": 1.0}, {"skill": 399, "w": 0.9}, {"skill": 395, "w": 0.7}, {"skill": 397, "w": 0.4}, {"skill": 381, "w": 0.3}, {"skill": 400, "w": 0.3}],
+    "tabs": [{"class": 7, "page": 3, "w": 1.0}, {"class": 7, "page": 1, "w": 0.2}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "war/3", "w": 1.0},
+      "item_singleskill": {"param": 402, "w": 0.6}, "item_fastercastrate": 0.7, "item_fastergethitrate": 0.3, "passive_mag_mastery": 0.8, "passive_mag_pierce": 0.8,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [9, 18, 30, 48, 75, 125], "source": "https://www.icy-veins.com/d2/magic-warlock-build (also https://d2emu.com/guides/builds/warlock-magic)", "verified": false},
+    "requirements": {"str": 163, "dex": 45}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 39],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll, angepasst: Blitz bis 11, ab 12 Ketten, Abgrund ab 30; Stärke zuerst für Geist.", "en": "After Maxroll, adapted: bolt to 11, chains from 12, Abyss from 30; strength first for Spirit."},
+      "skills": [
+        {"lvl": 2, "skill": 395, "key": "Miasma Bolt", "to": 11, "note": {"de": "Startangriff bis Stufe 12", "en": "Starter attack until level 12"}},
+        {"lvl": 12, "skill": 399, "key": "Miasma Chains", "to": 4, "note": {"de": "Ab hier der Hauptangriff", "en": "The main attack from here on"}},
+        {"lvl": 16, "skill": 393, "key": "Sigil Lethargy", "to": 1, "note": {"de": "Verlangsamt Bosse, etwa Duriel", "en": "Slows bosses such as Duriel"}},
+        {"lvl": 16, "skill": 383, "key": "Levitate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 17, "skill": 388, "key": "Echoing Strike", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 18, "skill": 390, "key": "Blade Warp", "to": 1, "note": {"de": "Bewegung bis zum Teleport-Stab", "en": "Movement until the Teleport staff"}},
+        {"lvl": 19, "skill": 399, "key": "Miasma Chains", "to": 9},
+        {"lvl": 24, "skill": 397, "key": "Enhanced Entropy", "to": 1, "note": {"de": "Größerer Radius der Miasma-Fertigkeiten", "en": "Larger radius for the Miasma skills"}},
+        {"lvl": 24, "skill": 399, "key": "Miasma Chains", "to": 16},
+        {"lvl": 30, "skill": 402, "key": "Abyss", "to": 1, "save": true, "note": {"de": "Gegen Bosse und Elite-Gruppen", "en": "Against bosses and elite packs"}},
+        {"lvl": 30, "skill": 399, "key": "Miasma Chains", "to": 20},
+        {"lvl": 30, "skill": 402, "key": "Abyss", "to": 6}
+      ],
+      "stats": [
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild, Kristallschwert (Geist)", "en": "Kite Shield, Crystal Sword (Spirit)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Tränke und Geist", "en": "Mana from potions and Spirit"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige in Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "hell",
+      "name": {"de": "Hölle (umskillen)", "en": "Hell (respec)"},
+      "levels": [40, 74],
+      "plan": "respec",
+      "note": {"de": "Umskillen mit 40 (Maxroll: nach allen Albtraum-Quests; sonst Rest bis 43). Dann Abgrund, Blitz, Siegel: Tod.", "en": "Respec at 40 (Maxroll: after all Nightmare quests; else the rest by 43). Then Abyss, bolt, Sigil: Death."},
+      "skills": [
+        {"lvl": 40, "skill": 395, "key": "Miasma Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 399, "key": "Miasma Chains", "to": 20, "note": {"de": "Hauptangriff gegen Gruppen", "en": "Main attack against packs"}},
+        {"lvl": 40, "skill": 397, "key": "Enhanced Entropy", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 402, "key": "Abyss", "to": 10},
+        {"lvl": 40, "skill": 383, "key": "Levitate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 388, "key": "Echoing Strike", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 390, "key": "Blade Warp", "to": 1, "note": {"de": "Bewegung bis Rätsel", "en": "Movement until Enigma"}},
+        {"lvl": 40, "skill": 393, "key": "Sigil Lethargy", "to": 1},
+        {"lvl": 40, "skill": 396, "key": "Sigil Rancor", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 400, "key": "Sigil Death", "to": 1, "note": {"de": "Feuer-Explosionen gegen Magie-Immune", "en": "Fire explosions against magic immunes"}},
+        {"lvl": 40, "skill": 373, "key": "Summon Goatman", "to": 1, "note": {"de": "Voraussetzung; lenkt Gegner ab", "en": "Prerequisite; distracts monsters"}},
+        {"lvl": 40, "skill": 374, "key": "Demonic Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 376, "key": "Summon Tainted", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 377, "key": "Summon Defiler", "to": 1, "note": {"de": "Futter für Verzehrung", "en": "Fuel for Consume"}},
+        {"lvl": 40, "skill": 378, "key": "Blood Oath", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 40, "skill": 381, "key": "Consume", "to": 1, "note": {"de": "Entweiher verzehren: mehr Magieschaden, mehr Leben", "en": "Consume a Defiler: more magic damage, more life"}},
+        {"lvl": 40, "skill": 395, "key": "Miasma Bolt", "to": 3},
+        {"lvl": 40, "skill": 397, "key": "Enhanced Entropy", "to": 2},
+        {"lvl": 41, "skill": 402, "key": "Abyss", "to": 20},
+        {"lvl": 41, "skill": 395, "key": "Miasma Bolt", "to": 20, "note": {"de": "Einzelziele, auch Baal", "en": "Single targets, Baal too"}},
+        {"lvl": 41, "skill": 400, "key": "Sigil Death", "to": 8},
+        {"lvl": 41, "skill": 397, "key": "Enhanced Entropy", "to": 4, "note": {"de": "Maxroll: 7 mit allen Quests der Hölle", "en": "Maxroll: 7 with all Hell quests"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild (Schwur der Urahnen)", "en": "Kite Shield (Ancients' Pledge)"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true, "why": {"de": "Mana über Einsicht beim Söldner", "en": "Mana from the mercenary's Insight"}},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame (umskillen)", "en": "Endgame (respec)"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {"de": "Erst mit Rätsel umskillen (ohne Klingenteleportation). Maxroll-Standard: Abgrund, Ketten, Blitz 20; Beherrschung 10.", "en": "Respec only with Enigma (no Blade Warp). Maxroll standard: Abyss, chains, bolt 20; Mastery 10."},
+      "skills": [
+        {"lvl": 75, "skill": 395, "key": "Miasma Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 399, "key": "Miasma Chains", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 397, "key": "Enhanced Entropy", "to": 1, "note": {"de": "Ein Punkt; Radius über +Fertigkeiten", "en": "One point; radius from +skills"}},
+        {"lvl": 75, "skill": 393, "key": "Sigil Lethargy", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 396, "key": "Sigil Rancor", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 400, "key": "Sigil Death", "to": 1, "note": {"de": "Unter Gruppen legen; Radius über +Fertigkeiten", "en": "Place under packs; radius from +skills"}},
+        {"lvl": 75, "skill": 385, "key": "Hex Bane", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 389, "key": "Hex Purge", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 386, "key": "Hex Siphon", "to": 1, "note": {"de": "Leben und Mana pro Tötung", "en": "Life and mana per kill"}},
+        {"lvl": 75, "skill": 373, "key": "Summon Goatman", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 374, "key": "Demonic Mastery", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 378, "key": "Blood Oath", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 376, "key": "Summon Tainted", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 377, "key": "Summon Defiler", "to": 1},
+        {"lvl": 75, "skill": 381, "key": "Consume", "to": 1, "note": {"de": "Vor jedem Lauf einen Entweiher verzehren", "en": "Consume a Defiler before every run"}},
+        {"lvl": 75, "skill": 402, "key": "Abyss", "to": 20, "note": {"de": "Bosse und Elite-Gruppen", "en": "Bosses and elite packs"}},
+        {"lvl": 75, "skill": 399, "key": "Miasma Chains", "to": 20, "note": {"de": "Gruppen räumen", "en": "Clearing packs"}},
+        {"lvl": 75, "skill": 395, "key": "Miasma Bolt", "to": 20},
+        {"lvl": 75, "skill": 374, "key": "Demonic Mastery", "to": 10, "note": {"de": "Drei Dämonen (seit 3.2)", "en": "Three demons (since 3.2)"}},
+        {"lvl": 75, "skill": 377, "key": "Summon Defiler", "to": 17, "note": {"de": "Zwei weitere Entweiher verteilen Schaden", "en": "Two more Defilers spread damage"}},
+        {"lvl": 75, "skill": 378, "key": "Blood Oath", "to": 13, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 82, "why": {"de": "Ars Dul'Mephistos; Gespensterschritt 163 nur mit Ausrüstung", "en": "Ars Dul'Mephistos; Wraithstep 163 only with gear"}},
+        {"stat": "dex", "to": 45, "why": {"de": "Kris für Leere", "en": "Kris for Void"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "knif", "quality": "magic"}, "note": {"de": "Dolch mit +Miasmablitz oder +Chaos-Fertigkeiten", "en": "Dagger with +Miasma Bolt or +Chaos skills"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab 25; Kristall- oder Breitschwert", "en": "From 25; Crystal or Broad Sword"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}, "note": {"de": "Nicht magischer Schild von Fara", "en": "Non-magic shield from Fara"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}, "note": {"de": "Ab 27; vorher Ral-Runen im Helm", "en": "From 27; Ral runes in the helm before"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"item": "hla", "sockets": 2}, "note": {"de": "Ab 17; nicht magische Lederrüstung", "en": "From 17; non-magic leather armor"}},
+    {"phase": "lvl", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "rare"}, "note": {"de": "Normale Stiefel bei Charsi verzaubern lassen (ab 19)", "en": "Plain boots imbued at Charsi (from 19)"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Stab mit Teleport-Ladungen (Ormus), ab 24", "en": "Staff with Teleport charges (Ormus), from 24"}},
+    {"phase": "hell", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "hell", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}},
+    {"phase": "hell", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "hell", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"item": "hla", "sockets": 2}},
+    {"phase": "hell", "slot": "armor", "tier": "alt", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "hell", "slot": "gloves", "tier": "budget", "ref": {"type": "glov", "quality": "magic"}, "note": {"de": "Widerstände, Blitz und Feuer zuerst", "en": "Resistances, lightning and fire first"}},
+    {"phase": "hell", "slot": "gloves", "tier": "alt", "ref": {"unique": "Magefist"}},
+    {"phase": "hell", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Widerstände und Leben", "en": "Resistances and life"}},
+    {"phase": "hell", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}},
+    {"phase": "hell", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit +Hexenmeister-Fertigkeiten", "en": "With +Warlock skills"}},
+    {"phase": "hell", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "10 % schneller zaubern; Ziel 75 %", "en": "10% faster cast rate; aim for 75%"}},
+    {"phase": "hell", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleport-Ladungen bis Rätsel", "en": "Teleport charges until Enigma"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword157"}, "base": {"item": "kri", "sockets": 3}, "note": {"de": "Mit +3 Abgrund oder +3 Miasmaketten", "en": "With +3 Abyss or +3 Miasma Chains"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"unique": "Ars Dul'Mephistos"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"type": "circ", "quality": "rare"}, "note": {"de": "Diadem: +2 Hexenmeister, 20 % schneller zaubern, 2 Fassungen (Maxroll)", "en": "Diadem: +2 Warlock, 20% faster cast rate, 2 sockets (Maxroll)"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}, "note": {"de": "Ohne schneller zaubern: dann Ars mit mind. 25 % und zwei Ringe mit 10 %", "en": "No faster cast rate: then Ars with at least 25% and two 10% rings"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Unique Warlock Helm"}, "note": {"de": "Icy Veins; 20 % schneller zaubern", "en": "Icy Veins; 20% faster cast rate"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport ersetzt Klingenteleportation", "en": "Teleport replaces Blade Warp"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Trang-Oul's Claws"}},
+    {"phase": "end", "slot": "gloves", "tier": "alt", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wraithstep"}, "note": {"de": "Mit +1 auf Chaos-Fertigkeiten", "en": "With +1 to Chaos skills"}},
+    {"phase": "end", "slot": "boots", "tier": "alt", "ref": {"unique": "Waterwalk"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "amulet", "tier": "alt", "ref": {"unique": "Entropy Locket"}, "note": {"de": "Icy Veins", "en": "Icy Veins"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Opalvein"}, "note": {"de": "Zwei davon (Maxroll); je 10 % schneller zaubern, Ziel 125 %", "en": "Two of them (Maxroll); 10% faster cast rate each, aim for 125%"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Nur wenn 125 % schon erreicht sind", "en": "Only if 125% is already reached"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"unique": "Sling"}, "note": {"de": "Icy Veins; senkt Magiewiderstand, 10 % schneller zaubern", "en": "Icy Veins; lowers magic resistance, 10% faster cast rate"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Hellfire Torch"}, "note": {"de": "Die Hexenmeister-Variante", "en": "The Warlock variant"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Crafted Black Cleft"}, "note": {"de": "Bricht Magie-Immunität; im Würfel aus der latenten Form erneuert (Maxroll)", "en": "Breaks magic immunity; renewed in the Cube from the latent form (Maxroll)"}},
+    {"phase": "end", "slot": "charm", "tier": "budget", "ref": {"unique": "PreCrafted Black Cleft"}, "note": {"de": "Latente Form: Herold-Beute in der Hölle, bricht die Immunität schon", "en": "Latent form: Herald loot in Hell, already breaks the immunity"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfaufruf, beschwören, dann Kampfaufruf und Kampfbefehle", "en": "Battle Command, summon, then Battle Command and Battle Orders"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Teleport-Ladungen, solange Rätsel fehlt", "en": "Teleport charges while Enigma is missing"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht: tötet Magie-Immune; Einsicht gibt dir Mana", "en": "Act 2 desert mercenary (Nightmare) with Might: kills magic immunes; Insight gives you mana"},
+    "gear": [
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4, "eth": true}, "note": {"de": "Ätherisch, z. B. Riesendrescher", "en": "Ethereal, e.g. a Giant Thresher"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Mit Ral-Rune", "en": "With a Ral rune"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Abyss Warlock Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/abyss-warlock-build-guide", "seen": "2026-11-05", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen samt Planer; Stand 22.05.2026; Punkte, Werte, Ausrüstung, Söldner, Mechanik", "en": "Read in full including the planner; updated 2026-05-22; points, stats, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Abyss Warlock Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/abyss-warlock-leveling-build-guide", "seen": "2026-11-05", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen samt Planer; Stand 14.07.2026; Punkte bis 75, Umskillen mit 40, Ausrüstung", "en": "Read in full including the planner; updated 2026-07-14; points to 75, respec at 40, gear"}},
+    {"site": "Icy Veins", "title": "Magic Warlock Build (introduction, skills, gear)", "url": "https://www.icy-veins.com/d2/magic-warlock-build", "seen": "2026-11-05", "patch": "3.2", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen über die Archivkopie vom 19.07.2026 (Seite sperrt Abrufe); Stand 22.05.2026", "en": "Read in full via the archive copy of 2026-07-19 (site blocks fetches); updated 2026-05-22"}},
+    {"site": "DiabloBytes", "title": "Abyss Warlock Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/abyss-warlock/", "seen": "2026-11-05", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; ohne Datum; Ausrüstung, Leveln; Punkte und Zauber-Stufen weichen ab, nicht übernommen", "en": "Read in full; no date; gear, leveling; its points and cast breakpoints differ, not used"}},
+    {"site": "D2Emu", "title": "Magic Warlock Build Guide", "url": "https://d2emu.com/guides/builds/warlock-magic", "seen": "2026-11-05", "patch": "keiner", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; ohne Datum und Patch; Stufen für schnelleres Zaubern, Ausrüstung", "en": "Read in full; no date or patch; faster cast rate breakpoints, gear"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-05", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Hexenmeister-Teil gelesen: Miasma, Ketten-Grenze, Abgrund-Radius, Dämonen, Grimoire", "en": "Warlock part read: Miasma, chain limit, Abyss radius, demons, grimoire"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-05", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Hexenmeister-Teil gelesen: Fehlerkorrekturen, für diesen Build Siegel: Tod und Miasmakette", "en": "Warlock part read: bug fixes, for this build Sigil: Death and Miasma Chain"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

@@ -1,0 +1,12 @@
+# Test-only files and folders of this tool tree (paths relative to dm/ios/tools; a folder ends with /). The player's pack builder does not carry
+# them (dm/android/python/pack_assets.py), so no pack step may read them. gen_assets.py's fingerprint still covers them: it only decides when a
+# machine regenerates its own art, while the overlay's source fingerprint that the app checks names its inputs one by one (overlay_contract.py).
+uireg/
+e2e/
+cloud_guard.sh
+lifecycle.sh
+make_fixture.sh
+rw_lvcheck.py
+smoke_mac.sh
+touch_e2e_mac.sh
+turn_trace.py

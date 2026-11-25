@@ -1,0 +1,32 @@
+#version 450
+
+
+
+
+
+
+
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(set = 0, binding = 0) uniform sampler3D src;
+layout(set = 0, binding = 1) writeonly uniform image3D dst;
+layout(push_constant) uniform Push { float k; } pc;
+
+
+
+const float m1 = 0.1593017578125, m2 = 78.84375, c1 = 0.8359375, c2 = 18.8515625, c3 = 18.6875;
+vec3 pq(vec3 v) { vec3 p = pow(abs(v), vec3(m1)); return pow((c1 + c2 * p) / (1.0 + c3 * p), vec3(m2)); }
+vec3 pq_inv(vec3 u) { vec3 q = pow(u, vec3(1.0 / m2)); return pow(max(q - c1, 0.0) / max(c2 - c3 * q, 1e-6), vec3(1.0 / m1)); }
+
+void main() {
+    ivec3 n = imageSize(dst), g = ivec3(gl_GlobalInvocationID);
+    if (any(greaterThanEqual(g, n))) return;
+    vec3 u = (vec3(g) + 0.5) / vec3(n), u2 = clamp(pq(pc.k * pq_inv(u)), 0.0, 1.0);
+
+
+    vec4 b = textureLod(src, u2, 0.0), o = texelFetch(src, g, 0);
+
+
+    float s = smoothstep(0.65, 1.0, dot(b.rgb, vec3(0.2126, 0.7152, 0.0722)));
+    imageStore(dst, g, vec4(max(mix(b.rgb, o.rgb, s), o.rgb), b.a));
+}

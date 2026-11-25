@@ -1,0 +1,985 @@
+{
+  "schema": 1,
+  "id": "war-echo",
+  "version": 3,
+  "class": "war",
+  "classIndex": 7,
+  "title": {
+    "de": "Hallender Schlag",
+    "en": "Echoing Strike"
+  },
+  "summary": {
+    "de": "Abscheulich-Baum: Abbilder der Waffe fliegen im Fächer hinaus und zurück. Läuterung entlädt dabei Magieschaden; im Endgame nach Maxroll der Hauptschaden. Stark, aber teuer: Leere-Dolch und Rätsel.",
+    "en": "Eldritch tree: copies of your weapon fly out in a fan and back. Hex: Purge adds bursts of magic damage on the way; in the Maxroll endgame it is the main damage. Strong but expensive: a Void dagger and Enigma."
+  },
+  "overview": {
+    "strengths": {
+      "de": [
+        "Großer Fächer mit Waffen-Abbildern, gut gegen Gruppen",
+        "Physisch und magisch zugleich, kaum Immunitätsprobleme",
+        "Gespiegelte Klingen für Bosse und einzelne Ziele"
+      ],
+      "en": [
+        "Wide fan of weapon copies, good against packs",
+        "Physical and magic at the same time, few immunity problems",
+        "Mirrored Blades for bosses and single targets"
+      ]
+    },
+    "weaknesses": {
+      "de": [
+        "Teure Endgame-Ausrüstung (Leere, Rätsel, Ars Dul'Mephistos)",
+        "Lebt von schnellerem Zaubern und Treffern: Angriffswert zählt seit Patch 3.2",
+        "Voller Schaden nur, wenn die Klingen hin und zurück treffen; Stellung zählt"
+      ],
+      "en": [
+        "Expensive endgame gear (Void, Enigma, Ars Dul'Mephistos)",
+        "Depends on faster cast rate and on hitting: attack rating matters since patch 3.2",
+        "Full damage only when the blades hit on the way out and back; positioning matters"
+      ]
+    },
+    "notes": {
+      "de": [
+        "Leveln bis 74 ist unsere Anpassung: Maxroll beginnt bei 75, Odealo levelt mit Hallender Schlag, bis Läuterung übernimmt",
+        "Ab 75 Umskillen auf die Maxroll-Verteilung: Hallender Schlag 1 Punkt löst Läuterung aus",
+        "Variante (Odealo, Händler): Hallender Schlag 20 statt Dämonenbeherrschung 10 und Bluteid 10",
+        "Seit 3.2: 90 % Waffenschaden, kein sicherer Treffer mehr; Zweihänder nur mit Grimoire",
+        "Vernichtender Schlag und Offene Wunden wirken nach Maxroll nicht; Patch 3.3 ändert diese Fertigkeiten nicht"
+      ],
+      "en": [
+        "Leveling to 74 is our adaptation: Maxroll starts at 75, Odealo levels with Echoing Strike until Purge takes over",
+        "From 75 respec to the Maxroll split: one point in Echoing Strike triggers Purge",
+        "Variant (Odealo, a shop): Echoing Strike 20 instead of Demonic Mastery 10 and Blood Oath 10",
+        "Since 3.2: 90% weapon damage, no guaranteed hit; two-handed weapons only with a grimoire",
+        "Crushing blow and open wounds do not apply according to Maxroll; patch 3.3 does not change these skills"
+      ]
+    }
+  },
+  "tags": [
+    "leveling",
+    "endgame",
+    "physical",
+    "magic",
+    "melee"
+  ],
+  "difficulty": 2,
+  "mode": {
+    "core": "softcore",
+    "ladder": "nonladder"
+  },
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [
+    388,
+    389,
+    392
+  ],
+  "trees": [
+    2,
+    1
+  ],
+  "profile": {
+    "bestgear": {"survivalHits": 20, "bossShare": 0.4},
+    "damage": [
+      "physical",
+      "magic"
+    ],
+    "keySkills": [
+      {
+        "skill": 388,
+        "w": 1.0
+      },
+      {
+        "skill": 389,
+        "w": 0.9
+      },
+      {
+        "skill": 392,
+        "w": 0.8
+      },
+      {
+        "skill": 385,
+        "w": 0.5
+      },
+      {
+        "skill": 384,
+        "w": 0.4
+      }
+    ],
+    "tabs": [
+      {
+        "class": 7,
+        "page": 2,
+        "w": 1.0
+      }
+    ],
+    "stats": {
+      "item_allskills": 1.0,
+      "item_addclassskills": 1.0,
+      "item_addskill_tab": {
+        "param": "war/2",
+        "w": 1.0
+      },
+      "item_singleskill": {
+        "param": 388,
+        "w": 0.6
+      },
+      "item_fastercastrate": 0.7,
+      "tohit": 0.4,
+      "item_maxdamage_percent": 0.5,
+      "fireresist": 0.3,
+      "coldresist": 0.3,
+      "lightresist": 0.3,
+      "poisonresist": 0.2,
+      "maxhp": 0.4,
+      "lifedrainmindam": 0.3
+    },
+    "caps": {
+      "fireresist": 75,
+      "coldresist": 75,
+      "lightresist": 75,
+      "poisonresist": 75
+    },
+    "breakpoints": {
+      "item_fastercastrate": [
+        9,
+        18,
+        30,
+        48,
+        75,
+        125
+      ],
+      "source": "https://d2runewizard.com/guides/echoing-strike-warlock-guide",
+      "verified": false
+    },
+    "requirements": {
+      "str": 163,
+      "dex": 67
+    }
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {
+        "de": "Leveln",
+        "en": "Leveling"
+      },
+      "levels": [
+        1,
+        29
+      ],
+      "plan": "cumulative",
+      "note": {
+        "de": "Unsere Anpassung: erst Spalten und Verderben, ab 12 Hallender Schlag, Läuterung früh mit einem Punkt.",
+        "en": "Our adaptation: Cleave and Bane first, Echoing Strike from 12, Purge early with one point."
+      },
+      "skills": [
+        {
+          "lvl": 2,
+          "skill": 383,
+          "key": "Levitate",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung für Spalten und Hallender Schlag",
+            "en": "Prerequisite for Cleave and Echoing Strike"
+          }
+        },
+        {
+          "lvl": 2,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 1
+        },
+        {
+          "lvl": 3,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 4,
+          "note": {
+            "de": "Synergie für Läuterung",
+            "en": "Synergy for Purge"
+          }
+        },
+        {
+          "lvl": 6,
+          "skill": 391,
+          "key": "Cleave",
+          "to": 1,
+          "note": {
+            "de": "Angriff bis Stufe 12",
+            "en": "Attack until level 12"
+          }
+        },
+        {
+          "lvl": 7,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 8
+        },
+        {
+          "lvl": 12,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 1,
+          "save": true,
+          "note": {
+            "de": "Ab hier der Hauptangriff",
+            "en": "The main attack from here on"
+          }
+        },
+        {
+          "lvl": 12,
+          "skill": 389,
+          "key": "Hex Purge",
+          "to": 1
+        },
+        {
+          "lvl": 12,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 7
+        },
+        {
+          "lvl": 18,
+          "skill": 390,
+          "key": "Blade Warp",
+          "to": 1,
+          "note": {
+            "de": "Fortbewegung bis Rätsel; Synergie",
+            "en": "Movement until Enigma; synergy"
+          }
+        },
+        {
+          "lvl": 18,
+          "skill": 387,
+          "key": "Psychic Ward",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung",
+            "en": "Prerequisite"
+          }
+        },
+        {
+          "lvl": 18,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 11
+        },
+        {
+          "lvl": 24,
+          "skill": 384,
+          "key": "Eldritch Blast",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung für Gespiegelte Klingen",
+            "en": "Prerequisite for Mirrored Blades"
+          }
+        },
+        {
+          "lvl": 24,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 18
+        }
+      ],
+      "stats": [
+        {
+          "stat": "str",
+          "to": 43,
+          "why": {
+            "de": "Geist im Kristallschwert",
+            "en": "Spirit in a Crystal Sword"
+          }
+        },
+        {
+          "stat": "dex",
+          "to": 50,
+          "why": {
+            "de": "Angriffswert (Maxroll, Einstieg)",
+            "en": "Attack rating (Maxroll, starter)"
+          }
+        },
+        {
+          "stat": "ene",
+          "none": true
+        },
+        {
+          "stat": "vit",
+          "rest": true
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": {
+        "de": "Hölle",
+        "en": "Hell"
+      },
+      "levels": [
+        30,
+        74
+      ],
+      "plan": "cumulative",
+      "note": {
+        "de": "Unsere Anpassung nach Odealo: Hallender Schlag und Gespiegelte Klingen auf 20, dann Läuterung.",
+        "en": "Our adaptation after Odealo: Echoing Strike and Mirrored Blades to 20, then Purge."
+      },
+      "skills": [
+        {
+          "lvl": 30,
+          "skill": 392,
+          "key": "Mirrored Blades",
+          "to": 1,
+          "save": true,
+          "note": {
+            "de": "Synergie und Einzelziel-Schaden",
+            "en": "Synergy and single target damage"
+          }
+        },
+        {
+          "lvl": 30,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 20
+        },
+        {
+          "lvl": 30,
+          "skill": 392,
+          "key": "Mirrored Blades",
+          "to": 20
+        },
+        {
+          "lvl": 30,
+          "skill": 389,
+          "key": "Hex Purge",
+          "to": 20,
+          "note": {
+            "de": "Magieschaden bei jedem Waffentreffer",
+            "en": "Magic damage on weapon hits"
+          }
+        },
+        {
+          "lvl": 30,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 18
+        }
+      ],
+      "stats": [
+        {
+          "stat": "str",
+          "to": 55,
+          "why": {
+            "de": "Rätsel in Magierplattenrüstung",
+            "en": "Enigma in a Mage Plate"
+          }
+        },
+        {
+          "stat": "dex",
+          "to": 50,
+          "why": {
+            "de": "Angriffswert (Maxroll, Einstieg)",
+            "en": "Attack rating (Maxroll, starter)"
+          }
+        },
+        {
+          "stat": "ene",
+          "none": true
+        },
+        {
+          "stat": "vit",
+          "rest": true
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "name": {
+        "de": "Endgame",
+        "en": "Endgame"
+      },
+      "levels": [
+        75,
+        99
+      ],
+      "plan": "respec",
+      "note": {
+        "de": "Maxroll-Standard: Läuterung, Gespiegelte Klingen, Verderben und Explosion auf 20, Beherrschung und Bluteid 10.",
+        "en": "Maxroll standard: Purge, Mirrored Blades, Bane and Eldritch Blast to 20, Mastery and Blood Oath 10."
+      },
+      "skills": [
+        {
+          "lvl": 75,
+          "skill": 383,
+          "key": "Levitate",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung",
+            "en": "Prerequisite"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 391,
+          "key": "Cleave",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung",
+            "en": "Prerequisite"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 388,
+          "key": "Echoing Strike",
+          "to": 1,
+          "note": {
+            "de": "Löst Läuterung aus",
+            "en": "Triggers Purge"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 389,
+          "key": "Hex Purge",
+          "to": 20,
+          "note": {
+            "de": "Hauptschaden",
+            "en": "Main damage"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 390,
+          "key": "Blade Warp",
+          "to": 1,
+          "note": {
+            "de": "Fortbewegung bis Rätsel",
+            "en": "Movement until Enigma"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 387,
+          "key": "Psychic Ward",
+          "to": 1,
+          "note": {
+            "de": "Voraussetzung",
+            "en": "Prerequisite"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 384,
+          "key": "Eldritch Blast",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 392,
+          "key": "Mirrored Blades",
+          "to": 20
+        },
+        {
+          "lvl": 75,
+          "skill": 385,
+          "key": "Hex Bane",
+          "to": 20,
+          "note": {
+            "de": "Synergie für Läuterung",
+            "en": "Synergy for Purge"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 373,
+          "key": "Summon Goatman",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 374,
+          "key": "Demonic Mastery",
+          "to": 10,
+          "note": {
+            "de": "Zwei Entweiher",
+            "en": "Two Defilers"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 376,
+          "key": "Summon Tainted",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 377,
+          "key": "Summon Defiler",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 378,
+          "key": "Blood Oath",
+          "to": 1
+        },
+        {
+          "lvl": 75,
+          "skill": 381,
+          "key": "Consume",
+          "to": 1,
+          "note": {
+            "de": "Auf Entweiher: mehr Magieschaden",
+            "en": "On a Defiler: more magic damage"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 393,
+          "key": "Sigil Lethargy",
+          "to": 1,
+          "note": {
+            "de": "Senkt die Verteidigung",
+            "en": "Lowers defense"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 384,
+          "key": "Eldritch Blast",
+          "to": 20,
+          "note": {
+            "de": "Synergie für Läuterung",
+            "en": "Synergy for Purge"
+          }
+        },
+        {
+          "lvl": 75,
+          "skill": 378,
+          "key": "Blood Oath",
+          "to": 10
+        }
+      ],
+      "stats": [
+        {
+          "stat": "str",
+          "to": 82,
+          "why": {
+            "de": "Ars Dul'Mephistos; Gespensterschritt 163 nur mit Ausrüstung",
+            "en": "Ars Dul'Mephistos; Wraithstep 163 only with gear"
+          }
+        },
+        {
+          "stat": "dex",
+          "to": 100,
+          "why": {
+            "de": "Angriffswert (Maxroll)",
+            "en": "Attack rating (Maxroll)"
+          }
+        },
+        {
+          "stat": "ene",
+          "none": true
+        },
+        {
+          "stat": "vit",
+          "rest": true
+        }
+      ]
+    }
+  ],
+  "gear": [
+    {
+      "phase": "lvl",
+      "slot": "weapon",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword130"
+      },
+      "base": {
+        "item": "crs",
+        "sockets": 4
+      },
+      "note": {
+        "de": "Ab Stufe 25",
+        "en": "From level 25"
+      }
+    },
+    {
+      "phase": "lvl",
+      "slot": "helm",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword75"
+      },
+      "base": {
+        "type": "helm",
+        "sockets": 2
+      }
+    },
+    {
+      "phase": "lvl",
+      "slot": "armor",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword133"
+      },
+      "base": {
+        "type": "tors",
+        "sockets": 2
+      }
+    },
+    {
+      "phase": "mid",
+      "slot": "weapon",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword130"
+      },
+      "base": {
+        "item": "crs",
+        "sockets": 4
+      }
+    },
+    {
+      "phase": "mid",
+      "slot": "offhand",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword120"
+      },
+      "base": {
+        "type": "grim",
+        "sockets": 2
+      },
+      "note": {
+        "de": "Reim im Grimoire (Maxroll, Einstieg)",
+        "en": "Rhyme in a grimoire (Maxroll, starter)"
+      }
+    },
+    {
+      "phase": "mid",
+      "slot": "helm",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword75"
+      },
+      "base": {
+        "type": "helm",
+        "sockets": 2
+      }
+    },
+    {
+      "phase": "mid",
+      "slot": "armor",
+      "tier": "bis",
+      "ref": {
+        "runeword": "Runeword33"
+      },
+      "base": {
+        "item": "xtp",
+        "sockets": 3
+      },
+      "note": {
+        "de": "Sobald verfügbar",
+        "en": "As soon as available"
+      }
+    },
+    {
+      "phase": "mid",
+      "slot": "armor",
+      "tier": "budget",
+      "ref": {
+        "runeword": "Runeword133"
+      },
+      "base": {
+        "type": "tors",
+        "sockets": 2
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "weapon",
+      "tier": "bis",
+      "ref": {
+        "runeword": "Runeword157"
+      },
+      "base": {
+        "item": "7bl",
+        "sockets": 3,
+        "eth": true
+      },
+      "note": {
+        "de": "Ätherischer Legendendorn (Maxroll)",
+        "en": "Ethereal Legend Spike (Maxroll)"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "weapon",
+      "tier": "alt",
+      "ref": {
+        "runeword": "Runeword51"
+      },
+      "base": {
+        "type": "staf",
+        "sockets": 4
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "offhand",
+      "tier": "bis",
+      "ref": {
+        "unique": "Ars Dul'Mephistos"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "helm",
+      "tier": "bis",
+      "ref": {
+        "type": "circ",
+        "quality": "rare"
+      },
+      "note": {
+        "de": "Diadem mit +2 Hexenmeister-Fertigkeiten, schnellerem Zaubern, 2 Fassungen (Maxroll)",
+        "en": "Diadem with +2 Warlock skills, faster cast rate, 2 sockets (Maxroll)"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "helm",
+      "tier": "alt",
+      "ref": {
+        "unique": "Harlequin Crest"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "armor",
+      "tier": "bis",
+      "ref": {
+        "runeword": "Runeword33"
+      },
+      "base": {
+        "item": "xtp",
+        "sockets": 3
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "gloves",
+      "tier": "bis",
+      "ref": {
+        "set": "Trang-Oul's Claws"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "belt",
+      "tier": "bis",
+      "ref": {
+        "unique": "Arachnid Mesh"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "boots",
+      "tier": "bis",
+      "ref": {
+        "unique": "Wraithstep"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "amulet",
+      "tier": "bis",
+      "ref": {
+        "unique": "Mara's Kaleidoscope"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "ring",
+      "tier": "bis",
+      "ref": {
+        "unique": "Opalvein"
+      },
+      "note": {
+        "de": "Dazu ein gefertigter Blutring (Maxroll)",
+        "en": "Plus a crafted Blood ring (Maxroll)"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "ring",
+      "tier": "alt",
+      "ref": {
+        "unique": "The Stone of Jordan"
+      },
+      "note": {
+        "de": "Odealo (Händler)",
+        "en": "Odealo (a shop)"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "charm",
+      "tier": "bis",
+      "ref": {
+        "unique": "Hellfire Torch"
+      }
+    },
+    {
+      "phase": "end",
+      "slot": "switch",
+      "tier": "bis",
+      "ref": {
+        "runeword": "Runeword13"
+      },
+      "base": {
+        "item": "crs",
+        "sockets": 5
+      }
+    }
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {
+      "de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Maxroll nimmt Gebet aus Normal / Hölle",
+      "en": "Act 2 desert mercenary (Nightmare) with Might; Maxroll takes Prayer from Normal / Hell"
+    },
+    "gear": [
+      {
+        "slot": "weapon",
+        "tier": "bis",
+        "ref": {
+          "runeword": "Runeword62"
+        },
+        "base": {
+          "type": "pole",
+          "sockets": 4
+        }
+      },
+      {
+        "slot": "armor",
+        "tier": "bis",
+        "ref": {
+          "runeword": "Runeword41"
+        },
+        "base": {
+          "type": "tors",
+          "sockets": 4
+        }
+      },
+      {
+        "slot": "armor",
+        "tier": "budget",
+        "ref": {
+          "runeword": "Runeword148"
+        },
+        "base": {
+          "type": "tors",
+          "sockets": 3
+        }
+      },
+      {
+        "slot": "helm",
+        "tier": "bis",
+        "ref": {
+          "unique": "Andariel's Visage"
+        }
+      }
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Echoing Strike Warlock Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/echoing-strike-warlock-guide",
+      "seen": "2026-11-03",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen samt Planer; Stand der Seite 26.08.2026; Punkte, Werte, Ausrüstung, Mechanik",
+        "en": "Read in full including the planner; page updated 2026-08-26; points, stats, gear, mechanics"
+      }
+    },
+    {
+      "site": "D2Runewizard",
+      "title": "Echoing Strike Warlock Guide",
+      "url": "https://d2runewizard.com/guides/echoing-strike-warlock-guide",
+      "seen": "2026-11-03",
+      "patch": "vor 3.2",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.02.2026, vor 3.2: Hallender Schlag und Gespiegelte Klingen auf 20",
+        "en": "Read in full; 2026-02-22, before 3.2: Echoing Strike and Mirrored Blades at 20"
+      }
+    },
+    {
+      "site": "diablo2.io",
+      "title": "My experience with ES Warlock after patch 3.2",
+      "url": "https://diablo2.io/forums/my-experience-with-es-warlock-after-patch-3-2-t1809810.html",
+      "seen": "2026-11-03",
+      "patch": "3.2",
+      "kind": "forum",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; nach 3.2: Läuterung voll, Hallender Schlag 1, Gespiegelte Klingen 20",
+        "en": "Read in full; after 3.2: Purge maxed, Echoing Strike 1, Mirrored Blades 20"
+      }
+    },
+    {
+      "site": "Odealo",
+      "title": "Echoing Strike Warlock Build for Diablo 2 Resurrected",
+      "url": "https://odealo.com/articles/echoing-strike-warlock-build-for-diablo-2-resurrected",
+      "seen": "2026-11-03",
+      "patch": "3.2 / S14",
+      "kind": "vendor",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Händlerseite, daher nur Nebenquelle: Endgame-Verteilung 20/20/20/20/20 und Ausrüstung",
+        "en": "Read in full; a shop, so a secondary source only: endgame split 20/20/20/20/20 and gear"
+      }
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)",
+      "url": "https://news.blizzard.com/en-us/article/24261478",
+      "seen": "2026-11-03",
+      "patch": "3.2",
+      "kind": "database",
+      "lang": "en",
+      "note": {
+        "de": "Hallender Schlag 90 % Waffenschaden, Treffer nicht mehr sicher, Zweihänder mit Grimoire",
+        "en": "Echoing Strike 90% weapon damage, hits no longer certain, two-handed weapons with a grimoire"
+      }
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-03",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; keine Änderung an Hallender Schlag, Klingen und Verhexungen",
+        "en": "Read in full; no change to Echoing Strike, the blades or the hexes"
+      }
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

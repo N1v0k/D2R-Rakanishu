@@ -1,0 +1,262 @@
+{
+  "schema": 1,
+  "id": "sor-light",
+  "version": 1,
+  "class": "sor",
+  "classIndex": 1,
+  "title": {"de": "Blitz-Zauberin", "en": "Lightning Sorceress"},
+  "summary": {
+    "de": "Blitzschlag durchschlägt ganze Reihen, Kettenblitz springt durch verteilte Gruppen, Comboblitz zerlegt Bosse aus nächster Nähe. Sehr schnelle Läufe zu Baal und den Schlüssel-Bossen. Leveln mit Nova wie bei Maxroll, mit 26 auf Blitzschlag umskillen; im Endgame Unendlichkeit beim Söldner und Himmelsriss.",
+    "en": "Lightning pierces whole rows, Chain Lightning jumps through spread-out packs, Charged Bolt shreds bosses up close. Very fast runs to Baal and the key bosses. Level with Nova as Maxroll does, respec to Lightning at 26; in the endgame Infinity on the merc and Crack of the Heavens."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sehr hoher Spitzenschaden, vielseitig in allen Hölle-Gebieten", "Bester Läufer für Baal, Schlüssel-Bosse und Arkanes Heiligtum", "Teleport von Haus aus, sehr schnelles Zaubern", "Statikfeld und Comboblitz gegen Bosse"],
+      "en": ["Very high peak damage, versatile in every Hell area", "Top runner for Baal, key bosses and the Arcane Sanctuary", "Native Teleport, very fast casting", "Static Field and Charged Bolt against bosses"]
+    },
+    "weaknesses": {
+      "de": ["Riesige Schadensspanne: mal ein Treffer, mal viele", "Nur ein Schadenstyp; viele Blitz-Immune in der Hölle", "Früh nur wenige gute Farmgebiete", "Volle Stärke erst mit teurer Ausrüstung"],
+      "en": ["Huge damage range: sometimes one hit, sometimes many", "Only one damage type; many lightning immunes in Hell", "Few good farming spots early", "Full power only with expensive gear"]
+    },
+    "notes": {
+      "de": ["Leveln bis 25 wie Maxroll (Nova); Umskillen mit 26 auf Blitzschlag ist unsere Anpassung (Maxroll: Blizzard)", "Comboblitz und Nova sind Synergien für Blitzschlag und Kettenblitz (Spieltabellen 3.3)", "117 % schnelleres Zaubern ist der Zielwert für Blitzschlag und Kettenblitz", "Quellen Stand 3.2 (S14); 3.3 brachte keine Zauberin-Änderung"],
+      "en": ["Level to 25 as Maxroll does (Nova); respec to Lightning at 26 is our adaptation (Maxroll goes Blizzard there)", "Charged Bolt and Nova are synergies for Lightning and Chain Lightning (game tables 3.3)", "117% faster cast rate is the target for Lightning and Chain Lightning", "Sources as of 3.2 (S14); 3.3 brought no Sorceress change"]
+    }
+  },
+  "tags": ["leveling", "endgame", "bosses", "lightning", "caster"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [49, 53, 63],
+  "trees": [2, 3],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.6},
+    "damage": ["lightning"],
+    "keySkills": [
+      {"skill": 49, "w": 1.0},
+      {"skill": 53, "w": 0.9},
+      {"skill": 63, "w": 0.8},
+      {"skill": 38, "w": 0.5},
+      {"skill": 48, "w": 0.4},
+      {"skill": 42, "w": 0.3}
+    ],
+    "tabs": [{"class": 1, "page": 2, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0,
+      "item_addclassskills": 1.0,
+      "item_addskill_tab": {"param": "sor/2", "w": 1.0},
+      "item_singleskill": {"param": 49, "w": 0.6},
+      "item_fastercastrate": 0.9,
+      "item_fastergethitrate": 0.3,
+      "passive_ltng_mastery": 0.8,
+      "passive_ltng_pierce": 0.9,
+      "item_pierce_light_immunity": 0.6,
+      "maxmana": 0.3,
+      "fireresist": 0.3,
+      "coldresist": 0.2,
+      "lightresist": 0.3,
+      "poisonresist": 0.2,
+      "maxhp": 0.4,
+      "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {
+      "item_fastercastrate": [78, 117],
+      "source": "https://maxroll.gg/d2/guides/lightning-sorceress ; https://www.diablobytes.com/d2-resurrected/builds/lightning-sorc/",
+      "verified": false
+    },
+    "requirements": {"str": 156, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 25],
+      "plan": "cumulative",
+      "note": {
+        "de": "Nach Maxroll: Comboblitz, Statikfeld, Nova; Teleport ab 18. Izual-Punkte erst danach (unsere Anpassung).",
+        "en": "Maxroll: Charged Bolt, Static Field, Nova; Teleport from 18. Izual points come later (our adaptation)."
+      },
+      "skills": [
+        {"lvl": 2, "skill": 38, "key": "Charged Bolt", "to": 4, "note": {"de": "Startzauber bis Nova", "en": "Starter until Nova"}},
+        {"lvl": 6, "skill": 44, "key": "Frost Nova", "to": 1, "note": {"de": "Verlangsamt; zum Freikommen", "en": "Slows; to break free"}},
+        {"lvl": 6, "skill": 42, "key": "Static Field", "to": 4, "note": {"de": "Gegen zähe Gegner und Bosse", "en": "For tough monsters and bosses"}},
+        {"lvl": 10, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 11, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 12, "skill": 48, "key": "Nova", "to": 6, "note": {"de": "Ab 13 Hauptzauber bis zum Umskillen (Maxroll)", "en": "Main spell from 13 until the respec (Maxroll)"}},
+        {"lvl": 18, "skill": 54, "key": "Teleport", "to": 1, "save": true, "note": {"de": "Radament-Punkt dafür aufheben", "en": "Keep the Radament point for it"}},
+        {"lvl": 18, "skill": 48, "key": "Nova", "to": 14}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 55, "why": {"de": "Maxroll: Stufe 2–10 in Vitalität", "en": "Maxroll: levels 2-10 into vitality"}},
+        {"stat": "str", "to": 47, "why": {"de": "Geist im Kristallschwert, Magierfaust", "en": "Spirit in a Crystal Sword, Magefist"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "light",
+      "name": {"de": "Blitzschlag", "en": "Lightning"},
+      "levels": [26, 74],
+      "plan": "respec",
+      "note": {
+        "de": "Mit 26 umskillen (unsere Anpassung): Blitzschlag 15, Kettenblitz 7; ab 30 Blitzbeherrschung.",
+        "en": "Respec at 26 (our adaptation): Lightning 15, Chain Lightning 7; from 30 Lightning Mastery."
+      },
+      "skills": [
+        {"lvl": 26, "skill": 38, "key": "Charged Bolt", "to": 1, "note": {"de": "Voraussetzung; später Synergie", "en": "Prerequisite; a synergy later"}},
+        {"lvl": 26, "skill": 42, "key": "Static Field", "to": 1, "note": {"de": "Gegen Bosse und zähe Gegner", "en": "For bosses and tough monsters"}},
+        {"lvl": 26, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 26, "skill": 54, "key": "Teleport", "to": 1},
+        {"lvl": 26, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 26, "skill": 49, "key": "Lightning", "to": 15, "note": {"de": "Hauptzauber ab jetzt", "en": "Main spell from now on"}},
+        {"lvl": 26, "skill": 53, "key": "Chain Lightning", "to": 7, "note": {"de": "Für verteilte Gruppen", "en": "For spread-out packs"}},
+        {"lvl": 27, "skill": 49, "key": "Lightning", "to": 20, "note": {"de": "Ein Punkt je Stufe bis 31", "en": "One point per level until 31"}},
+        {"lvl": 30, "skill": 63, "key": "Lightning Mastery", "to": 20, "note": {"de": "Ab 30; Blitzschlag hat Vorrang", "en": "From 30; Lightning comes first"}},
+        {"lvl": 30, "skill": 53, "key": "Chain Lightning", "to": 20, "note": {"de": "Nimmt die übrigen Punkte", "en": "Takes the remaining points"}},
+        {"lvl": 30, "skill": 37, "key": "Warmth", "to": 1, "note": {"de": "Mana-Regeneration", "en": "Mana regeneration"}},
+        {"lvl": 30, "skill": 48, "key": "Nova", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 57, "key": "Thunder Storm", "to": 1, "note": {"de": "Trifft nebenbei zufällige Gegner", "en": "Hits random monsters on the side"}},
+        {"lvl": 30, "skill": 38, "key": "Charged Bolt", "to": 16, "note": {"de": "Synergie; stark gegen Bosse aus der Nähe", "en": "Synergy; strong against bosses up close"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust, Geist im Kristallschwert", "en": "Magefist, Spirit in a Crystal Sword"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {
+        "de": "Maxroll-Reihenfolge: Comboblitz, dann Nova voll; die letzten Punkte in Wärme.",
+        "en": "Maxroll order: Charged Bolt, then Nova maxed; the last points into Warmth."
+      },
+      "skills": [
+        {"lvl": 75, "skill": 38, "key": "Charged Bolt", "to": 20, "note": {"de": "Synergie für Blitzschlag und Kettenblitz", "en": "Synergy for Lightning and Chain Lightning"}},
+        {"lvl": 75, "skill": 48, "key": "Nova", "to": 20, "note": {"de": "Synergie für Blitzschlag und Kettenblitz", "en": "Synergy for Lightning and Chain Lightning"}},
+        {"lvl": 75, "skill": 37, "key": "Warmth", "to": 5, "note": {"de": "Maxroll: der Rest in Wärme", "en": "Maxroll: the rest into Warmth"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 156, "why": {"de": "Geist-Monarch; fester Wert, mit Boni reicht weniger", "en": "Spirit Monarch; fixed value, less with gear bonuses"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Flegel für Herz der Eiche", "en": "Flail for Heart of the Oak"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige (beide Quellen)", "en": "Everything else (both sources)"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Mit +2–3 Comboblitz (Akara)", "en": "With +2-3 Charged Bolt (Akara)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "alt", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Mit schnellerem Zaubern (Akara, Drognan)", "en": "With faster cast rate (Akara, Drognan)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25; Basis aus dem Kuhlevel", "en": "From level 25; base from the Cow Level"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}, "note": {"de": "Großer Schild von Fara", "en": "Large Shield from Fara"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Runen von der Gräfin", "en": "Runes from the Countess"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "lvl", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "lvl", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "light", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "light", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Ab 55; viele Fertigkeiten und Widerstände", "en": "From 55; lots of skills and resistances"}},
+    {"phase": "light", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}},
+    {"phase": "light", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "light", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "light", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "light", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "light", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Widerstände und Leben", "en": "Resistances and life"}},
+    {"phase": "light", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Widerstände, schneller laufen", "en": "Resistances, faster run"}},
+    {"phase": "light", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Fertigkeiten oder schnelleres Zaubern", "en": "+Skills or faster cast rate"}},
+    {"phase": "light", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "light", "slot": "switch", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Ladungen Resistenz senken gegen Blitz-Immune (Maxroll)", "en": "Lower Resist charges against lightning immunes (Maxroll)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Beide Quellen", "en": "Both sources"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"unique": "Eschuta's temper"}, "note": {"de": "Mehr Blitzschaden", "en": "More lightning damage"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "Monarch braucht 156 Stärke", "en": "A Monarch needs 156 strength"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Griffon's Eye"}, "note": {"de": "Senkt Blitzwiderstand, mehr Blitzschaden", "en": "Lowers lightning resistance, more lightning damage"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "utp", "sockets": 3}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword14"}, "base": {"item": "utp", "sockets": 4}, "note": {"de": "Mehr Widerstände (DiabloBytes)", "en": "More resistances (DiabloBytes)"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "gloves", "tier": "alt", "ref": {"set": "Trang-Oul's Claws"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "boots", "tier": "alt", "ref": {"unique": "Sandstorm Trek"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Zwei Stück", "en": "Two of them"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Crack of the Heavens"}, "note": {"de": "Bricht Blitz-Immunität; senkt eigenen Blitzwiderstand stark; mit Widerstand-Zaubern ausgleichen", "en": "Breaks lightning immunity; lowers your own lightning resistance a lot, make up with charms"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {
+      "de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit senkt Blitzwiderstand und bricht Immunitäten",
+      "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity lowers lightning resistance and breaks immunities"
+    },
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation für Mana", "en": "Meditation for mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7s8", "sockets": 4, "eth": true}, "note": {"de": "Standard-Endgame beider Quellen", "en": "Standard endgame of both sources"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Lightning Sorceress Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/lightning-sorceress",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Immunitäten",
+        "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, immunities"
+      }
+    },
+    {
+      "site": "Maxroll",
+      "title": "Sorceress Leveling Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/sorceress-leveling",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Leveln mit Nova bis 25, Umskillen mit 26",
+        "en": "Read in full; updated 2026-05-22; Nova leveling to 25, respec at 26"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Lightning Sorceress Build Guide (Chain Lightning)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/lightning-sorc/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (3.3 geprüft)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Juni 2026; gleiche Reihenfolge, 117 % schnelleres Zaubern, Söldner",
+        "en": "Read in full; June 2026; same order, 117% faster cast rate, mercenary"
+      }
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-05",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; keine Änderung an Zauberin-Fertigkeiten", "en": "Read in full; no change to Sorceress skills"}
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "id": "nec-poison",
+  "version": 1,
+  "class": "nec",
+  "classIndex": 2,
+  "title": {"de": "Giftnova-Totenbeschwörer", "en": "Poison Nova Necromancer"},
+  "summary": {
+    "de": "Giftnova vergiftet getroffene Gegner im Umkreis, Kadaverexplosion sprengt danach die Leichen mit Feuer- und physischem Schaden; Widerstandsschwund und Verstärkter Schaden davor. Leveln mit Zähnen und Knochen bis 29, mit 30 Umskillen. Ziel: Todesnetz, Rätsel, Trang-Ouls Krallen, Söldner mit Unendlichkeit.",
+    "en": "Poison Nova poisons the nearby enemies it hits, then Corpse Explosion blows up the bodies with fire and physical damage; Lower Resist and Amplify Damage first. Level with Teeth and bone until 29, respec at 30. Goal: Death's Web, Enigma, Trang-Oul's Claws, an Infinity mercenary."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Drei Schadensarten (Gift, Feuer, physisch): kaum eine Immunität hält stand", "Riesige Flächen auf einmal, sehr stark in der Grube", "Wiederbelebte Monster und ein Golem schützen dich"],
+      "en": ["Three damage types (poison, fire, physical): few immunities hold out", "Huge areas at once, very strong in the Pit", "Revived monsters and a golem protect you"]
+    },
+    "weaknesses": {
+      "de": ["Schwach gegen einzelne Bosse", "Anspruchsvoll: Flüche, Nova und Explosion im Wechsel", "Beste Gegenstände sind sehr selten (Todesnetz)"],
+      "en": ["Weak against single bosses", "Demanding: curses, nova and explosion in turn", "Best items are very rare (Death's Web)"]
+    },
+    "notes": {
+      "de": ["Leveln: Ziele aus Maxroll (Zähne, Knochen), Zeitpunkte nach der Questannahme; 27 bis 29 Knochenspeer ist unsere Wahl", "Umskillen mit 30 wie DiabloBytes; Maxroll skillt erst mit 26 auf Knochen und mit 75 auf Gift", "Ablauf: Widerstandsschwund, Giftnova, Verstärkter Schaden, dann Kadaverexplosion", "Eisengolem aus Einsicht: Meditation über Spiele hinweg; stirbt er oder du, ist das Item weg (Maxroll)", "Quellen von 05/06 2026 (S14); Patch 3.3 ändert keine Totenbeschwörer-Fertigkeit"],
+      "en": ["Leveling: targets from Maxroll (Teeth, bone), timing per the quest assumption; Bone Spear 27 to 29 is our choice", "Respec at 30 like DiabloBytes; Maxroll goes to bone at 26 and to poison at 75", "Order: Lower Resist, Poison Nova, Amplify Damage, then Corpse Explosion", "Iron Golem from Insight: Meditation across games; if it or you die, the item is lost (Maxroll)", "Sources from 05/06 2026 (S14); patch 3.3 changes no Necromancer skill"]
+    }
+  },
+  "tags": ["leveling", "endgame", "poison", "fire", "caster", "magicfind"],
+  "difficulty": 3,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [92, 74, 91],
+  "trees": [2, 1],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["poison", "fire", "physical"],
+    "keySkills": [{"skill": 92, "w": 1.0}, {"skill": 74, "w": 0.7}, {"skill": 91, "w": 0.6}, {"skill": 83, "w": 0.5}, {"skill": 73, "w": 0.5}, {"skill": 66, "w": 0.3}, {"skill": 95, "w": 0.2}],
+    "tabs": [{"class": 2, "page": 2, "w": 1.0}, {"class": 2, "page": 1, "w": 0.3}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "nec/2", "w": 1.0},
+      "item_singleskill": {"param": 92, "w": 0.6}, "item_fastercastrate": 0.8, "item_fastergethitrate": 0.3,
+      "passive_pois_pierce": 0.9, "passive_pois_mastery": 0.7, "item_pierce_poison_immunity": 0.7,
+      "item_cannotbefrozen": 0.3, "maxhp": 0.5, "vitality": 0.3, "strength": 0.2,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [75, 125], "source": "https://maxroll.gg/d2/guides/poison-nova-necromancer", "verified": false},
+    "requirements": {"str": 156, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln (Knochen)", "en": "Leveling (bone)"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Angelehnt an Maxroll: Zähne bis Akt 1, dann Knochenrüstung, Kadaverexplosion, Knochenspeer. Mit 30 kommt alles zurück.", "en": "Based on Maxroll: Teeth through Act 1, then Bone Armor, Corpse Explosion, Bone Spear. At 30 all points come back."},
+      "skills": [
+        {"lvl": 2, "skill": 67, "key": "Teeth", "to": 4, "note": {"de": "Stufe 2 bis 5", "en": "Levels 2 to 5"}},
+        {"lvl": 6, "skill": 75, "key": "Clay Golem", "to": 1, "note": {"de": "Hält Gegner auf", "en": "Holds enemies back"}},
+        {"lvl": 7, "skill": 67, "key": "Teeth", "to": 9, "note": {"de": "Mit dem Punkt aus der Höhle des Bösen", "en": "With the Den of Evil point"}},
+        {"lvl": 11, "skill": 66, "key": "Amplify Damage", "to": 1},
+        {"lvl": 12, "skill": 76, "key": "Iron Maiden", "to": 1, "note": {"de": "Gegen Akt-Bosse in Normal", "en": "Against act bosses in Normal"}},
+        {"lvl": 13, "skill": 67, "key": "Teeth", "to": 10},
+        {"lvl": 14, "skill": 68, "key": "Bone Armor", "to": 1},
+        {"lvl": 15, "skill": 78, "key": "Bone Wall", "to": 3, "note": {"de": "Stärkt die Knochenrüstung", "en": "Strengthens Bone Armor"}},
+        {"lvl": 17, "skill": 74, "key": "Corpse Explosion", "to": 1},
+        {"lvl": 18, "skill": 84, "key": "Bone Spear", "to": 3},
+        {"lvl": 21, "skill": 74, "key": "Corpse Explosion", "to": 9, "note": {"de": "Hauptangriff gegen Gruppen", "en": "Main attack against packs"}},
+        {"lvl": 27, "skill": 84, "key": "Bone Spear", "to": 6, "note": {"de": "Bis zum Umskillen", "en": "Until the respec"}}
+      ],
+      "stats": [
+        {"stat": "ene", "to": 35, "why": {"de": "Maxroll: Stufe 2 und 3, Mana für Zähne", "en": "Maxroll: levels 2 and 3, mana for Teeth"}},
+        {"stat": "vit", "to": 55, "why": {"de": "Maxroll: Stufe 4 bis 11", "en": "Maxroll: levels 4 to 11"}},
+        {"stat": "str", "to": 47, "why": {"de": "Eckiger Schild für Schwur der Urahnen", "en": "Kite Shield for Ancients' Pledge"}},
+        {"stat": "dex", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Giftnova", "en": "Poison Nova"},
+      "levels": [30, 99],
+      "plan": "respec",
+      "note": {"de": "Mit 30 umskillen. Maxroll: Giftnova, Giftexplosion, Giftdolch, Kadaverexplosion voll; Rest Flüche und Knochenwand.", "en": "Respec at 30. Maxroll: Poison Nova, Poison Explosion, Poison Dagger, Corpse Explosion maxed; rest curses and Bone Wall."},
+      "skills": [
+        {"lvl": 30, "skill": 67, "key": "Teeth", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 74, "key": "Corpse Explosion", "to": 1},
+        {"lvl": 30, "skill": 73, "key": "Poison Dagger", "to": 1},
+        {"lvl": 30, "skill": 83, "key": "Poison Explosion", "to": 1},
+        {"lvl": 30, "skill": 92, "key": "Poison Nova", "to": 1, "note": {"de": "Ab jetzt die Hauptfertigkeit", "en": "From now on the main skill"}},
+        {"lvl": 30, "skill": 66, "key": "Amplify Damage", "to": 1, "note": {"de": "Vor der Kadaverexplosion", "en": "Before Corpse Explosion"}},
+        {"lvl": 30, "skill": 75, "key": "Clay Golem", "to": 1},
+        {"lvl": 30, "skill": 68, "key": "Bone Armor", "to": 1},
+        {"lvl": 30, "skill": 76, "key": "Iron Maiden", "to": 1, "note": {"de": "Weg zu Widerstandsschwund", "en": "Path to Lower Resist"}},
+        {"lvl": 30, "skill": 82, "key": "Life Tap", "to": 1},
+        {"lvl": 30, "skill": 72, "key": "Weaken", "to": 1},
+        {"lvl": 30, "skill": 77, "key": "Terror", "to": 1},
+        {"lvl": 30, "skill": 87, "key": "Decrepify", "to": 1},
+        {"lvl": 30, "skill": 91, "key": "Lower Resist", "to": 1, "note": {"de": "Vor jeder Giftnova", "en": "Before every Poison Nova"}},
+        {"lvl": 30, "skill": 70, "key": "Raise Skeleton", "to": 1, "note": {"de": "Weg zu Reanimation", "en": "Path to Revive"}},
+        {"lvl": 30, "skill": 69, "key": "Skeleton Mastery", "to": 1, "note": {"de": "Zähere Wiederbelebte", "en": "Tougher revives"}},
+        {"lvl": 30, "skill": 80, "key": "Raise Skeletal Mage", "to": 1},
+        {"lvl": 30, "skill": 85, "key": "BloodGolem", "to": 1},
+        {"lvl": 30, "skill": 90, "key": "IronGolem", "to": 1, "note": {"de": "Aus einer Einsicht: Meditation", "en": "From an Insight: Meditation"}},
+        {"lvl": 30, "skill": 95, "key": "Revive", "to": 1, "note": {"de": "Monster als Schutzschild", "en": "Monsters as a shield"}},
+        {"lvl": 30, "skill": 79, "key": "Golem Mastery", "to": 1},
+        {"lvl": 30, "skill": 89, "key": "Summon Resist", "to": 1},
+        {"lvl": 30, "skill": 92, "key": "Poison Nova", "to": 20},
+        {"lvl": 30, "skill": 83, "key": "Poison Explosion", "to": 20, "note": {"de": "Synergie für Giftnova", "en": "Synergy for Poison Nova"}},
+        {"lvl": 30, "skill": 73, "key": "Poison Dagger", "to": 20, "note": {"de": "Nur Synergie", "en": "Synergy only"}},
+        {"lvl": 30, "skill": 74, "key": "Corpse Explosion", "to": 20, "note": {"de": "Größerer Radius", "en": "Larger radius"}},
+        {"lvl": 30, "skill": 91, "key": "Lower Resist", "to": 7},
+        {"lvl": 30, "skill": 78, "key": "Bone Wall", "to": 6, "note": {"de": "Rest wie im Maxroll-Planer bis 99", "en": "Rest as in the Maxroll planner to 99"}}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 100, "why": {"de": "Unsere Wahl: gleich etwas Leben", "en": "Our choice: some life right away"}},
+        {"stat": "str", "to": 156, "why": {"de": "Geist-Monarch; mit Stärke von Gegenständen weniger", "en": "Spirit Monarch; less with strength from gear"}},
+        {"stat": "dex", "to": 35, "why": {"de": "Nur für Herz der Eiche im Flegel, sonst nicht", "en": "Only for Heart of the Oak in a Flail, else skip"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Der Rest in Vitalität", "en": "The rest into vitality"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "wand", "quality": "magic"}, "note": {"de": "Stab mit +Zähne von Akara, später Knochenstab mit +Knochenspeer", "en": "Wand with +Teeth from Akara, later a Bone Wand with +Bone Spear"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "kit", "sockets": 3}, "note": {"de": "Eckiger Schild von Fara", "en": "Kite Shield from Fara"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab Stufe 17", "en": "From level 17"}},
+    {"phase": "lvl", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Kriegsstab mit Teleport-Ladungen von Ormus, ab Stufe 24", "en": "Staff with Teleport charges from Ormus, from level 24"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Deaths's Web"}, "note": {"de": "Senkt den Gift-Widerstand der Gegner, +Gift- und Knochenfertigkeiten", "en": "Lowers enemy poison resistance, +poison and bone skills"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Schnelleres Zaubern, +Fertigkeiten (DiabloBytes)", "en": "Faster cast, +skills (DiabloBytes)"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword162"}, "base": {"item": "bwn", "sockets": 2}, "note": {"de": "Nichtmagische Basis, ideal mit +2 bis 3 zu Giftnova", "en": "Non-magic base, ideally with +2 to 3 Poison Nova"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}, "note": {"de": "35 % schnelleres Zaubern und +Fertigkeiten", "en": "35% faster cast and +skills"}},
+    {"phase": "end", "slot": "offhand", "tier": "alt", "ref": {"unique": "Homunculus"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword120"}, "base": {"item": "ne7", "sockets": 2}, "note": {"de": "Maxroll-Starter", "en": "Maxroll starter"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"type": "circ", "quality": "rare"}, "note": {"de": "+2 Totenbeschwörer-Fertigkeiten, 20 % schnelleres Zaubern, 2 Sockel", "en": "+2 Necromancer skills, 20% faster cast, 2 sockets"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport: in die Mitte der Gruppe springen", "en": "Teleport: jump into the middle of the pack"}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword9"}, "base": {"item": "utp", "sockets": 4}, "note": {"de": "Mehr Giftschaden; Teleport dann über Ladungen", "en": "More poison damage; Teleport then from charges"}},
+    {"phase": "end", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"item": "xea", "sockets": 2}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Trang-Oul's Claws"}, "note": {"de": "+Flüche, schnelleres Zaubern, mehr Giftschaden", "en": "+Curses, faster cast, more poison damage"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"type": "amul"}, "note": {"de": "Hergestelltes Zauber-Amulett: +2 Totenbeschwörer, 20 % schnelleres Zaubern", "en": "Crafted caster amulet: +2 Necromancer skills, 20% faster cast"}},
+    {"phase": "end", "slot": "amulet", "tier": "alt", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"type": "ring", "quality": "rare"}, "note": {"de": "10 % schnelleres Zaubern: 35+20+20+20+20+10 = 125 %", "en": "10% faster cast: 35+20+20+20+20+10 = 125%"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Rotting Fissure"}, "note": {"de": "Bricht Gift-Immunität", "en": "Breaks poison immunity"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Akt-2-Krieger (Alptraum) mit Macht: tötet Gift-Immune, liefert die erste Leiche; Unendlichkeit senkt Feuer-Widerstand", "en": "Act 2 mercenary (Nightmare) with Might: kills poison immunes, makes the first corpse; Infinity lowers fire resistance"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"item": "pax", "sockets": 4}, "note": {"de": "Meditation gegen Manamangel", "en": "Meditation against low mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7p7", "sockets": 4, "eth": true}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword128"}, "base": {"item": "xea", "sockets": 2}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"item": "xsk", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}, "note": {"de": "Mit einem Juwel (Angriffstempo)", "en": "With a jewel (attack speed)"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Poison Nova Necromancer Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/poison-nova-necromancer", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen samt Planer; Stand 22.05.2026; Reihenfolge, Einpunkt-Fertigkeiten, Ablauf, Ausrüstung, Söldner", "en": "Read in full incl. planner; updated 2026-05-22; max order, one-point skills, rotation, gear, mercenary"}},
+    {"site": "Maxroll", "title": "Necromancer Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/necromancer-leveling", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte je Stufe bis 26, Werte, Ausrüstung beim Leveln", "en": "Read in full; updated 2026-05-22; points per level until 26, stats, leveling gear"}},
+    {"site": "DiabloBytes", "title": "Poison Nova Necromancer Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/poison-nova-necro/", "seen": "2026-11-04", "patch": "S14 (3.2)", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand Juni 2026; Reihenfolge, Umskillen mit 30, Werte, Ausrüstung, Söldner", "en": "Read in full; updated June 2026; max order, respec at 30, stats, gear, mercenary"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-04", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Totenbeschwörer-Fertigkeit geändert; Bollwerk jetzt auch ohne Ladder", "en": "Read in full; no Necromancer skill changed; Bulwark now outside the ladder too"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

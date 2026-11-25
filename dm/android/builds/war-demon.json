@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "id": "war-demon",
+  "version": 2,
+  "class": "war",
+  "classIndex": 7,
+  "title": {"de": "Dämonen-Beschwörer", "en": "Demon Summoner"},
+  "summary": {
+    "de": "Dämon-Baum: bis zu drei Dämonen kämpfen für dich, einer davon ein gebundener Elite-Gegner mit seinen Eigenschaften. Dämonenbeherrschung stärkt alle, Todeszeichen lenkt sie, Mästen heilt sie. Sicher, ruhig zu spielen, braucht wenig Ausrüstung.",
+    "en": "Demon tree: up to three demons fight for you, one of them a bound elite monster that keeps its affixes. Demonic Mastery strengthens them all, Death Mark directs them, Engorge heals them. Safe, calm to play, needs little gear."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Sicher und ruhig: die Dämonen halten die Gegner fern", "Wenig Ausrüstung nötig, guter Start in die Hölle", "Gebundener Dämon behält seine Eigenschaften und Aura"],
+      "en": ["Safe and calm: the demons keep enemies away", "Needs little gear, a good start into Hell", "The bound demon keeps its affixes and aura"]
+    },
+    "weaknesses": {
+      "de": ["Hängt am Verhalten der Dämonen, wenig Flächenschaden", "Physisch-immune Gegner brauchen Fluch, Unendlichkeit oder Knochenbruch-Zauber", "Spieler berichten von deutlich weniger Schaden durch Dämon binden in 3.3 (keine offizielle Zahl)"],
+      "en": ["Depends on how the demons behave, little area damage", "Physical immunes need a curse, Infinity or a Bone Break sunder charm", "Players report much less Bind Demon damage in 3.3 (no official figure)"]
+    },
+    "notes": {
+      "de": ["Dämonenbeherrschung: zweiter Dämon ab 5, dritter ab 10 Punkten; nur echte Punkte zählen", "Dämon binden braucht 10 / 15 / 20 echte Punkte für Champions / Unikate / Superunikate", "Ziel laut Maxroll: verfluchter Dunkler Lanzer mit Aura (Ancient's Way), einfacher Lister", "Leveln ist unsere Anpassung; Endgame nach Maxroll. Forums-Variante: Entweiher 20, Mästen 10", "Etwa 1 Punkt bis Stufe 99 bleibt frei"],
+      "en": ["Demonic Mastery: second demon from 5, third from 10 points; only real points count", "Bind Demon needs 10 / 15 / 20 real points for champions / uniques / super uniques", "Target per Maxroll: a cursed Dark Lancer with an aura (Ancient's Way), Lister is easier", "Leveling is our adaptation; endgame after Maxroll. Forum variant: Defiler 20, Engorge 10", "About 1 point stays free by level 99"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "summon", "physical"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [374, 382, 377],
+  "trees": [1],
+  "profile": {
+    "bestgear": {"survivalHits": 10, "bossShare": 0.4},
+    "damage": ["physical"],
+    "keySkills": [{"skill": 374, "w": 1.0}, {"skill": 382, "w": 0.9}, {"skill": 375, "w": 0.7}, {"skill": 379, "w": 0.6}, {"skill": 377, "w": 0.5}],
+    "tabs": [{"class": 7, "page": 1, "w": 1.0}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "war/1", "w": 1.0},
+      "item_singleskill": {"param": 374, "w": 0.6}, "item_fastercastrate": 0.5, "item_fasterattackrate": 0.2,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.5, "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [9, 18, 30, 48, 75, 125], "source": "https://maxroll.gg/d2/guides/summoner-warlock-guide", "verified": false},
+    "requirements": {"str": 95}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 29],
+      "plan": "cumulative",
+      "note": {"de": "Ziegenmensch und Beherrschung von Anfang an, drei Dämonen ab 10 Punkten, dann Todeszeichen.", "en": "Goatman and Mastery from the start, three demons from 10 points, then Death Mark."},
+      "skills": [
+        {"lvl": 2, "skill": 373, "key": "Summon Goatman", "to": 1},
+        {"lvl": 2, "skill": 374, "key": "Demonic Mastery", "to": 1},
+        {"lvl": 3, "skill": 374, "key": "Demonic Mastery", "to": 5, "note": {"de": "Zweiter Dämon", "en": "Second demon"}},
+        {"lvl": 6, "skill": 375, "key": "Death Mark", "to": 1, "note": {"de": "Schickt die Dämonen auf ein Ziel", "en": "Sends the demons to a target"}},
+        {"lvl": 7, "skill": 374, "key": "Demonic Mastery", "to": 10, "note": {"de": "Dritter Dämon", "en": "Third demon"}},
+        {"lvl": 12, "skill": 376, "key": "Summon Tainted", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 12, "skill": 375, "key": "Death Mark", "to": 6},
+        {"lvl": 18, "skill": 380, "key": "Blood Boil", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 18, "skill": 377, "key": "Summon Defiler", "to": 1, "note": {"de": "Verteilt Schaden über eine Gruppe", "en": "Spreads damage over a pack"}},
+        {"lvl": 18, "skill": 375, "key": "Death Mark", "to": 10},
+        {"lvl": 24, "skill": 379, "key": "Engorge", "to": 1, "save": true, "note": {"de": "Heilt die Dämonen", "en": "Heals the demons"}},
+        {"lvl": 24, "skill": 374, "key": "Demonic Mastery", "to": 17}
+      ],
+      "stats": [
+        {"stat": "str", "to": 43, "why": {"de": "Geist im Kristallschwert", "en": "Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Leben vor allem anderen", "en": "Life above everything else"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [30, 99],
+      "plan": "cumulative",
+      "note": {"de": "Nach Maxroll: Dämon binden zuerst, dann Beherrschung, Todeszeichen und Mästen auf 20; Rest in Entweiher.", "en": "After Maxroll: Bind Demon first, then Mastery, Death Mark and Engorge to 20; the rest into Summon Defiler."},
+      "skills": [
+        {"lvl": 30, "skill": 382, "key": "Bind Demon", "to": 1, "save": true, "note": {"de": "Punkt aus Stufe 29 aufheben", "en": "Keep the point from level 29"}},
+        {"lvl": 30, "skill": 382, "key": "Bind Demon", "to": 20, "note": {"de": "20 echte Punkte für Superunikate", "en": "20 real points for super uniques"}},
+        {"lvl": 30, "skill": 374, "key": "Demonic Mastery", "to": 20},
+        {"lvl": 30, "skill": 375, "key": "Death Mark", "to": 20},
+        {"lvl": 30, "skill": 379, "key": "Engorge", "to": 20},
+        {"lvl": 30, "skill": 393, "key": "Sigil Lethargy", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 396, "key": "Sigil Rancor", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 400, "key": "Sigil Death", "to": 1},
+        {"lvl": 30, "skill": 383, "key": "Levitate", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 388, "key": "Echoing Strike", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 30, "skill": 390, "key": "Blade Warp", "to": 1, "note": {"de": "Fortbewegung bis Rätsel", "en": "Movement until Enigma"}},
+        {"lvl": 30, "skill": 377, "key": "Summon Defiler", "to": 20, "note": {"de": "Alle übrigen Punkte", "en": "All remaining points"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 95, "why": {"de": "Ars Tor'Baalos; Geist-Monarch 156 nur mit Ausrüstung", "en": "Ars Tor'Baalos; a Spirit Monarch 156 only with gear"}},
+        {"stat": "dex", "none": true, "why": {"de": "Hardcore: genug für 75 % Blocken", "en": "Hardcore: enough for 75% block"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25", "en": "From level 25"}},
+    {"phase": "lvl", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Mang Song's Lesson"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword94"}, "base": {"type": "staf", "sockets": 6}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword51"}, "base": {"type": "staf", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"unique": "Ars Tor'Baalos"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "uit", "sockets": 4}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Sandstorm Trek"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "The Stone of Jordan"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"unique": "Bul Katho's Wedding Band"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Unendlichkeit hilft gegen Immunitäten", "en": "Act 2 desert mercenary (Nightmare) with Might; Infinity helps against immunities"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"item": "7wc", "sockets": 4}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"type": "tors", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Summoner Warlock Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/summoner-warlock-guide", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 26.05.2026 (vor 3.3); Punkte, Bindeziele, Ausrüstung, Söldner", "en": "Read in full; page updated 2026-05-26 (before 3.3); points, bind targets, gear, mercenary"}},
+    {"site": "Blizzard Forums", "title": "My Warlock Summoner guide", "url": "https://us.forums.blizzard.com/en/d2r/t/my-warlock-summoner-guide/177636", "seen": "2026-11-03", "patch": "3.3", "kind": "forum", "lang": "en",
+     "note": {"de": "Ganz gelesen; 31.08.2026, Patch nicht genannt (3.3 nach Datum): Binden, Entweiher, Beherrschung, Todeszeichen 20", "en": "Read in full; 2026-08-31, patch not stated (3.3 by date): Bind, Defiler, Mastery, Death Mark at 20"}},
+    {"site": "Odealo", "title": "Summoner Warlock Build for Diablo 2 Resurrected", "url": "https://odealo.com/articles/summoner-warlock-build-for-diablo-2-resurrected", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "vendor", "lang": "en",
+     "note": {"de": "Ganz gelesen; Händlerseite, nur Nebenquelle: Ausrüstung und Söldner", "en": "Read in full; a shop, secondary only: gear and mercenary"}},
+    {"site": "Blizzard Forums", "title": "Blizzard patch 3.3 destroyed bind demon", "url": "https://us.forums.blizzard.com/en/d2r/t/blizzard-patch-33-destroyed-bind-demon/177504", "seen": "2026-11-03", "patch": "3.3", "kind": "forum", "lang": "en",
+     "note": {"de": "Ganz gelesen; Spielerberichte zur Schwächung von Dämon binden in 3.3", "en": "Read in full; player reports on Bind Demon's weakening in 3.3"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

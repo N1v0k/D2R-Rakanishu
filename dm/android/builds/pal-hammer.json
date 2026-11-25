@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "id": "pal-hammer",
+  "version": 2,
+  "class": "pal",
+  "classIndex": 3,
+  "title": {"de": "Hammerdin", "en": "Hammerdin"},
+  "summary": {
+    "de": "Gesegneter Hammer mit Konzentration: Hämmer kreisen um den Paladin und machen Magieschaden. Gedeihen und Gesegnete Führung verstärken sie, Heiliger Schild schützt. Leveln mit Heiligem Feuer, ab 19 Hämmer.",
+    "en": "Blessed Hammer with Concentration: hammers spiral around the Paladin and deal magic damage. Vigor and Blessed Aim boost them, Holy Shield protects. Level with Holy Fire, hammers from 19 on."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Magieschaden: kaum Immune, mehr Schaden gegen Untote und Dämonen", "Sehr zäh: Heiliger Schild und 75 % Block", "Billiger Start mit Geist, Überlieferung und Verstohlenheit; gut für Magic Find"],
+      "en": ["Magic damage: almost no immunes, extra damage to undead and demons", "Very tanky: Holy Shield and 75% block", "Cheap start with Spirit, Lore and Stealth; good for magic find"]
+    },
+    "weaknesses": {
+      "de": ["Schwach in engen Gängen: Hämmer enden an Wänden", "Magie-Immune: Niederstrecken, Söldner oder Erneuerte Schwarze Bresche", "Erst ab Stufe 18; ohne Teleport (Rätsel) schwerfällig"],
+      "en": ["Weak in narrow areas: hammers stop at walls", "Magic immunes: Smite, the mercenary or a Renewed Black Cleft", "Only from level 18; clunky without Teleport (Enigma)"]
+    },
+    "notes": {
+      "de": ["Maxroll: Heiliges Feuer bis 18, mit 19 bei Akara umskillen auf Hämmer", "Mit 75 erneut umskillen (unsere Lesart): Geschick bis 75 % Block; ~125 nur Beispiel (Stufe 84, Herold)", "Heiliger Schild ab 24 ist unsere Anpassung (Gamer Guides); Maxroll levelt ohne ihn", "3.2/3.3 ändern den Paladin nicht; Gamer Guides, D2Runewizard, Mein-MMO sind älter (Rest in Heiliger Schild)"],
+      "en": ["Maxroll: Holy Fire to 18, respec to hammers at Akara at 19", "Respec again at 75 (our reading): dexterity for 75% block; ~125 is only an example (level 84, Herald)", "Holy Shield from 24 is our adaptation (Gamer Guides); Maxroll levels without it", "3.2/3.3 do not change the Paladin; Gamer Guides, D2Runewizard, Mein-MMO are older (rest into Holy Shield)"]
+    }
+  },
+  "tags": ["leveling", "endgame", "budget", "magicfind", "magic", "caster"],
+  "difficulty": 1,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [112, 113, 117],
+  "trees": [1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["magic"],
+    "keySkills": [{"skill": 112, "w": 1.0}, {"skill": 113, "w": 0.8}, {"skill": 108, "w": 0.6}, {"skill": 115, "w": 0.6}, {"skill": 117, "w": 0.4}, {"skill": 110, "w": 0.2}],
+    "tabs": [{"class": 3, "page": 1, "w": 1.0}, {"class": 3, "page": 2, "w": 0.6}, {"class": 3, "page": 3, "w": 0.4}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "pal/1", "w": 1.0},
+      "item_singleskill": {"param": 112, "w": 0.6}, "item_fastercastrate": 0.8, "item_fastergethitrate": 0.4, "passive_mag_pierce": 0.3,
+      "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4, "maxmana": 0.2, "dexterity": 0.2,
+      "item_magicbonus": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [9, 18, 30, 48, 75, 125], "source": "https://maxroll.gg/d2/resources/paladin-overview", "verified": false},
+    "requirements": {"str": 95, "dex": 35}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Heiliges Feuer", "en": "Holy Fire"},
+      "levels": [1, 18],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll: erst Macht, dann Heiliges Feuer mit Eifer; Widerstand gegen Feuer als Synergie. Werte vereinfacht.", "en": "Maxroll: Might first, then Holy Fire with Zeal; Resist Fire as its synergy. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Aura bis Heiliges Feuer", "en": "Aura until Holy Fire"}},
+        {"lvl": 3, "skill": 96, "key": "Sacrifice", "to": 1, "note": {"de": "Voraussetzung für Eifer", "en": "Prerequisite for Zeal"}},
+        {"lvl": 4, "skill": 100, "key": "Resist Fire", "to": 3, "note": {"de": "Synergie; Punkt der Höhle des Bösen", "en": "Synergy; also the Den of Evil point"}},
+        {"lvl": 6, "skill": 102, "key": "Holy Fire", "to": 4, "note": {"de": "Hauptaura bis Stufe 18", "en": "Main aura up to level 18"}},
+        {"lvl": 10, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Voraussetzung für Ansturm", "en": "Prerequisite for Charge"}},
+        {"lvl": 12, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Punkt aus Stufe 11 aufheben", "en": "Keep the point from level 11"}},
+        {"lvl": 12, "skill": 106, "key": "Zeal", "to": 1, "note": {"de": "Angriff, mit Heiligem Feuer", "en": "Attack, together with Holy Fire"}},
+        {"lvl": 13, "skill": 102, "key": "Holy Fire", "to": 10},
+        {"lvl": 18, "skill": 100, "key": "Resist Fire", "to": 4, "note": {"de": "Punkt von Radament (Maxroll)", "en": "Radament's point (Maxroll)"}}
+      ],
+      "stats": [
+        {"stat": "dex", "to": 21, "why": {"de": "1 Punkt; Krummsäbel braucht 21", "en": "1 point; a Scimitar needs 21"}},
+        {"stat": "ene", "to": 25, "why": {"de": "Mana für Eifer und Ansturm (Maxroll)", "en": "Mana for Zeal and Charge (Maxroll)"}},
+        {"stat": "str", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles andere in Leben", "en": "Everything else into life"}}
+      ],
+      "profile": {
+        "damage": ["fire", "physical"],
+        "keySkills": [{"skill": 102, "w": 1.0}, {"skill": 106, "w": 0.6}, {"skill": 100, "w": 0.4}],
+        "tabs": [{"class": 3, "page": 2, "w": 1.0}, {"class": 3, "page": 1, "w": 0.5}],
+        "stats": {
+          "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "pal/2", "w": 1.0},
+          "item_singleskill": {"param": 102, "w": 0.6}, "item_fasterattackrate": 0.5, "tohit": 0.3,
+          "fireresist": 0.3, "coldresist": 0.3, "lightresist": 0.3, "maxhp": 0.4, "maxmana": 0.2
+        }
+      }
+    },
+    {
+      "id": "ham",
+      "name": {"de": "Hämmer (Leveln)", "en": "Hammers (leveling)"},
+      "levels": [19, 74],
+      "plan": "respec",
+      "note": {"de": "Mit 19 bei Akara umskillen (Maxroll); danach vereinfacht: Hammer voll, Gedeihen und Konzentration im Wechsel, Führung.", "en": "Respec at Akara at 19 (Maxroll); simplified after that: Hammer maxed, Vigor and Concentration alternating, Blessed Aim."},
+      "skills": [
+        {"lvl": 19, "skill": 101, "key": "Holy Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 112, "key": "Blessed Hammer", "to": 2, "note": {"de": "Hauptangriff, nur mit Konzentration", "en": "Main attack, only with Concentration"}},
+        {"lvl": 19, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 108, "key": "Blessed Aim", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 113, "key": "Concentration", "to": 1, "note": {"de": "Aura für die Hämmer", "en": "Aura for the hammers"}},
+        {"lvl": 19, "skill": 99, "key": "Prayer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 104, "key": "Defiance", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 109, "key": "Cleansing", "to": 1, "note": {"de": "Voraussetzung; gegen Flüche und Gift", "en": "Prerequisite; vs. curses and poison"}},
+        {"lvl": 19, "skill": 115, "key": "Vigor", "to": 2, "note": {"de": "Synergie; Aura zum Laufen", "en": "Synergy; aura for running"}},
+        {"lvl": 19, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Fortbewegung (Maxroll)", "en": "Movement (Maxroll)"}},
+        {"lvl": 19, "skill": 108, "key": "Blessed Aim", "to": 8, "note": {"de": "Synergie; Maxroll: 8 beim Umskillen", "en": "Synergy; Maxroll: 8 at the respec"}},
+        {"lvl": 20, "skill": 112, "key": "Blessed Hammer", "to": 6},
+        {"lvl": 24, "skill": 117, "key": "Holy Shield", "to": 1, "note": {"de": "Unsere Anpassung (Gamer Guides)", "en": "Our adaptation (Gamer Guides)"}},
+        {"lvl": 24, "skill": 112, "key": "Blessed Hammer", "to": 20, "note": {"de": "Jede Stufe, voll mit 37", "en": "Every level, maxed at 37"}},
+        {"lvl": 27, "skill": 115, "key": "Vigor", "to": 3, "note": {"de": "Izual-Punkte (Maxroll)", "en": "Izual's points (Maxroll)"}},
+        {"lvl": 27, "skill": 108, "key": "Blessed Aim", "to": 9},
+        {"lvl": 38, "skill": 115, "key": "Vigor", "to": 10, "note": {"de": "Stufe 38 bis 43 (Maxroll)", "en": "Levels 38 to 43 (Maxroll)"}},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 5, "note": {"de": "Abwechselnd mit Gedeihen", "en": "Alternate with Vigor"}},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 14},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 9},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 18},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 12},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 20},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 16, "note": {"de": "Abwechselnd mit Gesegneter Führung", "en": "Alternate with Blessed Aim"}},
+        {"lvl": 44, "skill": 108, "key": "Blessed Aim", "to": 12},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 20},
+        {"lvl": 44, "skill": 108, "key": "Blessed Aim", "to": 15, "note": {"de": "Rest bis Stufe 74", "en": "The rest up to level 74"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust 45, Geist-Akarantarge 44", "en": "Magefist 45, Spirit Akaran Targe 44"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Rest in Leben (Maxroll)", "en": "The rest into life (Maxroll)"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {"de": "Mit 75 neu verteilen ist unsere Lesart; Punkte nach Maxroll-Endgame, Rest in Widerstand gegen Blitze.", "en": "Redistributing at 75 is our reading; points after the Maxroll endgame, the rest into Resist Lightning."},
+      "skills": [
+        {"lvl": 75, "skill": 101, "key": "Holy Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 112, "key": "Blessed Hammer", "to": 20, "note": {"de": "Hauptangriff", "en": "Main attack"}},
+        {"lvl": 75, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Gegen Magie-Immune und Bosse", "en": "Vs. magic immunes and bosses"}},
+        {"lvl": 75, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 117, "key": "Holy Shield", "to": 1, "note": {"de": "Immer aktiv: Block und Verteidigung", "en": "Always on: block and defense"}},
+        {"lvl": 75, "skill": 99, "key": "Prayer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 104, "key": "Defiance", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 109, "key": "Cleansing", "to": 1, "note": {"de": "Gegen Flüche und Gift", "en": "Against curses and poison"}},
+        {"lvl": 75, "skill": 115, "key": "Vigor", "to": 20, "note": {"de": "Synergie; Aura zum Laufen", "en": "Synergy; aura for running"}},
+        {"lvl": 75, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 108, "key": "Blessed Aim", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 113, "key": "Concentration", "to": 20, "note": {"de": "Aura beim Werfen der Hämmer", "en": "Aura while casting hammers"}},
+        {"lvl": 75, "skill": 108, "key": "Blessed Aim", "to": 20, "note": {"de": "Synergie", "en": "Synergy"}},
+        {"lvl": 75, "skill": 124, "key": "Redemption", "to": 1, "note": {"de": "Leben und Mana aus Leichen", "en": "Life and mana from corpses"}},
+        {"lvl": 75, "skill": 122, "key": "Fanaticism", "to": 1, "note": {"de": "Optional, 1 Punkt (Maxroll)", "en": "Optional, one point (Maxroll)"}},
+        {"lvl": 75, "skill": 110, "key": "Resist Lightning", "to": 20, "note": {"de": "Rest: max. Blitzwiderstand", "en": "The rest: max lightning resistance"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 86, "why": {"de": "Heilige Targe; Stiefel 95 über Ausrüstung", "en": "Sacred Targe; boots 95 via gear"}},
+        {"stat": "dex", "to": 125, "why": {"de": "Richtwert; 75 % Block nach Stufe/Ausrüstung prüfen", "en": "Placeholder; recheck 75% block after levels or gear"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "magic"}, "note": {"de": "Bei Akara kaufen, mit +Fertigkeiten", "en": "Buy from Akara, with +skills"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword134"}, "base": {"item": "scm", "sockets": 2}, "note": {"de": "Ab Stufe 13, optional; schnell mit Eifer", "en": "From level 13, optional; fast with Zeal"}},
+    {"phase": "lvl", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab Stufe 17", "en": "From level 17"}},
+    {"phase": "ham", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "magic"}, "note": {"de": "Mit +Gesegneter Hammer (im Würfel neu würfeln)", "en": "With +Blessed Hammer (reroll in the cube)"}},
+    {"phase": "ham", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25", "en": "From level 25"}},
+    {"phase": "ham", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "ashd", "sockets": 3}, "note": {"de": "Ab Stufe 21; Widerstände", "en": "From level 21; resistances"}},
+    {"phase": "ham", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "pa6", "sockets": 4}, "note": {"de": "Schild mit hohen Widerständen nehmen", "en": "Use a shield with high resistances"}},
+    {"phase": "ham", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "ham", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "ham", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "ham", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "Schnelleres Zaubern", "en": "Faster cast rate"}},
+    {"phase": "ham", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen, Widerstände", "en": "Faster run, resistances"}},
+    {"phase": "ham", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Paladin- oder Kampf-Fertigkeiten", "en": "+Paladin or Combat skills"}},
+    {"phase": "ham", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "ham", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Stab mit Teleport-Ladungen (Ormus)", "en": "Staff with Teleport charges (Ormus)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword51"}, "base": {"item": "fla", "sockets": 4}, "note": {"de": "Für Magic Find: Leere (Dolch)", "en": "For magic find: Void (dagger)"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "pab", "sockets": 4}, "note": {"de": "Mit Wille des Höllenwärters + Schleuderer: 125 %", "en": "With Hellwarden's Will and Sling: 125% FCR"}},
+    {"phase": "end", "slot": "offhand", "tier": "alt", "ref": {"unique": "Herald of Zakarum"}, "note": {"de": "+Kampf-Fertigkeiten und Widerstände", "en": "+Combat skills and resistances"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"unique": "Unique Warlock Helm"}, "note": {"de": "Magie-Durchschlag; sonst Harlekinskrone", "en": "Magic pierce; otherwise Harlequin Crest"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport", "en": "Teleport"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}, "note": {"de": "Oder Sandsturmtreck", "en": "Or Sandstorm Trek"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Sling"}, "note": {"de": "Zweiter Ring: Der Stein von Jordan", "en": "Second ring: The Stone of Jordan"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "wsp", "sockets": 5}, "note": {"de": "Kampfbefehle vor dem Kampf", "en": "Battle Orders before fights"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Holy Freeze",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Heiligem Frost: verlangsamt; Einsicht gibt Mana", "en": "Act 2 desert mercenary (Nightmare) with Holy Freeze: slows; Insight solves mana"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword62"}, "base": {"item": "7wc", "sockets": 4}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4}},
+      {"slot": "helm", "tier": "bis", "ref": {"unique": "Andariel's Visage"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Blessed Hammer Paladin Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/blessed-hammer-paladin", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Ausrüstung, Söldner, Mechanik", "en": "Read in full; updated 2026-05-22; endgame points, stats, gear, mercenary, mechanics"}},
+    {"site": "Maxroll", "title": "Paladin Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/paladin-leveling", "seen": "2026-11-03", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Heiliges Feuer bis 19, Umskillen, Hämmer bis 76", "en": "Read in full; updated 2026-05-22; Holy Fire to 19, respec, hammers to 76"}},
+    {"site": "Gamer Guides", "title": "Blessed Hammer Paladin (Hammerdin)", "url": "https://www.gamerguides.com/diablo-ii-resurrected/guide/characters/paladin-builds/blessed-hammer-paladin-hammerdin", "seen": "2026-11-03", "patch": "vor 3.0", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 01.03.2023 (vor 3.0): Punkte je Stufe ohne Umskillen, Geschick, Ausrüstung", "en": "Read in full; updated 2023-03-01 (before 3.0): points per level without respec, dexterity, gear"}},
+    {"site": "D2Runewizard", "title": "Hammerdin Paladin Build Guide", "url": "https://d2runewizard.com/guides/hammerdin", "seen": "2026-11-03", "patch": "vor 3.0", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 11.04.2025 (vor 3.0): 20/20/20/20 plus Heiliger Schild, Ausrüstung, Söldner", "en": "Read in full; updated 2025-04-11 (before 3.0): 20/20/20/20 plus Holy Shield, gear, mercenary"}},
+    {"site": "Mein-MMO", "title": "Diablo 2: Resurrected – 2 Builds für den Paladin", "url": "https://mein-mmo.de/diablo-2-paladin-build/", "seen": "2026-11-03", "patch": "2021", "kind": "guide", "lang": "de",
+     "note": {"de": "Ganz gelesen; 05.10.2021, alt: Heiliger Schild 20, Söldner mit Macht; nur zum Vergleich", "en": "Read in full; 2021-10-05, old: Holy Shield 20, mercenary with Might; comparison only"}},
+    {"site": "Maxroll", "title": "Paladin Class Overview", "url": "https://maxroll.gg/d2/resources/paladin-overview", "seen": "2026-11-03", "patch": "S13", "kind": "database", "lang": "en",
+     "note": {"de": "Stand 10.02.2026; Stufen für schnelleres Zaubern, Erholung und Blocken", "en": "Updated 2026-02-10; faster cast rate, hit recovery and block breakpoints"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected 3.2 patch notes (Season 14)", "url": "https://news.blizzard.com/en-us/article/24261478", "seen": "2026-11-03", "patch": "3.2", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Paladin, seinen Fertigkeiten oder Söldner-Auren", "en": "Read in full; no change to the Paladin, his skills or mercenary auras"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-03", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Paladin oder an den genannten Gegenständen", "en": "Read in full; no change to the Paladin or the items used here"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

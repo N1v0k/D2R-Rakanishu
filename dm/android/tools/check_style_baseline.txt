@@ -1,0 +1,11 @@
+# check_style.py 的基线：现有的文字样式偏差，每处一行（文件、种类、语句）；#51–#55 改好一处就删一行，空了 = #50 验收
+# Baseline of check_style.py: the existing text style deviations, one line per place (file, kind, statement); #51-#55 delete a line per fix, empty = #50 accepted
+AppArt.java	font-file	if (new File(root, "fonts/" + file).isFile()) return font("fonts/" + file)
+AppArt.java	typeface	Typeface t = Typeface.createFromFile(f)
+AppArt.java	typeface	fonts.put(name, f.isFile() ? Typeface.createFromFile(f) : Typeface.SERIF)
+AppArt.java	typeface	fonts.put(name, f.isFile() ? Typeface.createFromFile(f) : Typeface.SERIF)
+AppArt.java	typeface	if (t == null || t == Typeface.DEFAULT || t == Typeface.SERIF) return "fonts/" + roleFile(role)
+AppArt.java	typeface	if (t == null || t == Typeface.DEFAULT || t == Typeface.SERIF) return "fonts/" + roleFile(role)
+CamButtons.java	system-font	glyph
+CamButtons.java	text-colour-literal	glyph.setColor(0xF0FFFFFF)
+SortButton.java	text-colour-literal	label.setColor(0xFFE8DCC0)

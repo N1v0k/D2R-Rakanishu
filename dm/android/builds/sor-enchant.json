@@ -1,0 +1,290 @@
+{
+  "schema": 1,
+  "id": "sor-enchant",
+  "version": 2,
+  "class": "sor",
+  "classIndex": 1,
+  "title": {"de": "Verzaubern-Zauberin", "en": "Enchant Sorceress"},
+  "summary": {
+    "de": "Verzaubern legt viel Feuerschaden auf Angriffe: auf die eigene Armbrust Dämonenmaschine, die explodierende Bolzen schießt, und auf den Söldner oder Mitspieler. Leveln mit Feuerball, mit 50 auf Verzaubern umskillen; Wärme ist die Synergie, Energieschild schützt.",
+    "en": "Enchant puts lots of fire damage on attacks: on your own Demon Machine crossbow, which shoots exploding bolts, and on your mercenary or party members. Level with Fire Ball, respec to Enchant at 50; Warmth is the synergy, Energy Shield protects."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Explodierende Bolzen räumen dichte Gruppen, auch bei vielen Spielern", "Stärkt Söldner und Mitspieler mit Feuerschaden", "Guter Elite-Jäger mit Teleport", "Sehr beliebt als Helfer beim Leveln anderer Figuren"],
+      "en": ["Exploding bolts clear dense packs, even at high player counts", "Boosts the mercenary and party members with fire damage", "Good elite hunter with Teleport", "Very popular as a helper for leveling other characters"]
+    },
+    "weaknesses": {
+      "de": ["Ungewohnte Spielweise: Zauberin mit Armbrust", "Wirkt nur auf Angriffe, nicht auf Zauber", "Feuer-Immune: Flammenspalt; Unendlichkeit bricht nur manche", "Volle Stärke erst mit seltener Ausrüstung"],
+      "en": ["Unusual play: a Sorceress with a crossbow", "Works on attacks only, not on spells", "Fire immunes: Flame Rift; Infinity breaks only some", "Full power only with rare gear"]
+    },
+    "notes": {
+      "de": ["Leveln mit Feuer wie DiabloBytes (Reihenfolge unsere); Umskillen mit 50 ist unsere Wahl (Dämonenmaschine ab 49)", "Wärme ist in 3.3 Synergie für Verzaubern (Spieltabellen)", "Vor dem Lauf mit +Feuerfertigkeiten verzaubern, dann zurückwechseln (Maxroll)", "Maxroll-Standard: max. 100 Punkte in Vitalität, Rest Energie; wir: 100 Punkte Energie (135), Rest Vitalität", "105 % schnelleres Zaubern gilt für das Wechsel-Set zum Teleportieren (Maxroll)"],
+      "en": ["Level with fire as DiabloBytes does (our order); the respec at 50 is our choice (Demon Machine from 49)", "Warmth is a synergy for Enchant in 3.3 (game tables)", "Before a run, Enchant with +fire skills gear, then swap back (Maxroll)", "Maxroll standard: at most 100 points vitality, rest energy; we: 100 points energy (135), rest vitality", "105% faster cast rate applies to the swap set for teleporting (Maxroll)"]
+    }
+  },
+  "tags": ["leveling", "endgame", "magicfind", "fire", "caster"],
+  "difficulty": 3,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [52, 37, 61],
+  "trees": [1, 2],
+  "profile": {
+    "bestgear": {"survivalHits": 12, "bossShare": 0.4},
+    "damage": ["fire", "physical"],
+    "keySkills": [
+      {"skill": 52, "w": 1.0},
+      {"skill": 37, "w": 0.8},
+      {"skill": 61, "w": 0.8},
+      {"skill": 58, "w": 0.4},
+      {"skill": 43, "w": 0.3},
+      {"skill": 42, "w": 0.3}
+    ],
+    "tabs": [{"class": 1, "page": 1, "w": 1.0}, {"class": 1, "page": 2, "w": 0.3}],
+    "stats": {
+      "item_allskills": 1.0,
+      "item_addclassskills": 1.0,
+      "item_addskill_tab": {"param": "sor/1", "w": 1.0},
+      "item_singleskill": {"param": 52, "w": 0.7},
+      "item_fasterattackrate": 0.6,
+      "item_pierce": 0.6,
+      "item_fastercastrate": 0.4,
+      "passive_fire_mastery": 0.6,
+      "passive_fire_pierce": 0.8,
+      "item_pierce_fire_immunity": 0.6,
+      "tohit": 0.3,
+      "maxmana": 0.4,
+      "item_maxmana_percent": 0.3,
+      "fireresist": 0.3,
+      "coldresist": 0.3,
+      "lightresist": 0.3,
+      "poisonresist": 0.4,
+      "maxhp": 0.3,
+      "item_magicbonus": 0.4,
+      "item_cannotbefrozen": 0.3
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75},
+    "breakpoints": {"item_fastercastrate": [105], "source": "https://maxroll.gg/d2/guides/enchant-sorceress", "verified": false},
+    "requirements": {"str": 95, "dex": 95}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Leveln", "en": "Leveling"},
+      "levels": [1, 23],
+      "plan": "cumulative",
+      "note": {
+        "de": "DiabloBytes: Feuerblitz bis 11, ab 12 Feuerball; Teleport mit 18; Voraussetzungen für Meteor sammeln.",
+        "en": "DiabloBytes: Fire Bolt until 11, Fire Ball from 12; Teleport at 18; collect the prerequisites for Meteor."
+      },
+      "skills": [
+        {"lvl": 2, "skill": 36, "key": "Fire Bolt", "to": 4, "note": {"de": "Startzauber; später Synergie", "en": "Starter spell; a synergy later"}},
+        {"lvl": 6, "skill": 42, "key": "Static Field", "to": 1, "note": {"de": "Gegen Bosse und zähe Gegner", "en": "For bosses and tough monsters"}},
+        {"lvl": 6, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 6, "skill": 37, "key": "Warmth", "to": 1, "note": {"de": "Mana-Regeneration", "en": "Mana regeneration"}},
+        {"lvl": 7, "skill": 36, "key": "Fire Bolt", "to": 6},
+        {"lvl": 11, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 12, "skill": 47, "key": "Fire Ball", "to": 1, "save": true, "note": {"de": "Hauptzauber ab jetzt (DiabloBytes)", "en": "Main spell from now on (DiabloBytes)"}},
+        {"lvl": 12, "skill": 41, "key": "Inferno", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 12, "skill": 46, "key": "Blaze", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 12, "skill": 47, "key": "Fire Ball", "to": 5},
+        {"lvl": 18, "skill": 54, "key": "Teleport", "to": 1, "save": true, "note": {"de": "Radament-Punkt dafür aufheben", "en": "Keep the Radament point for it"}},
+        {"lvl": 18, "skill": 51, "key": "Fire Wall", "to": 1, "note": {"de": "Voraussetzung für Meteor", "en": "Prerequisite for Meteor"}},
+        {"lvl": 18, "skill": 47, "key": "Fire Ball", "to": 10}
+      ],
+      "stats": [
+        {"stat": "vit", "to": 55, "why": {"de": "Erst etwas Leben", "en": "Some life first"}},
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust", "en": "Magefist"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true}
+      ]
+    },
+    {
+      "id": "fire",
+      "name": {"de": "Feuerball", "en": "Fire Ball"},
+      "levels": [24, 49],
+      "plan": "cumulative",
+      "note": {
+        "de": "Unsere Wahl: Feuerball voll, ein Punkt Meteor für Bosse, dann Feuerbeherrschung (DiabloBytes: Meteor zuerst).",
+        "en": "Our choice: Fire Ball maxed, one point of Meteor for bosses, then Fire Mastery (DiabloBytes: Meteor first)."
+      },
+      "skills": [
+        {"lvl": 24, "skill": 56, "key": "Meteor", "to": 1, "save": true, "note": {"de": "Gegen Bosse", "en": "For bosses"}},
+        {"lvl": 24, "skill": 47, "key": "Fire Ball", "to": 20, "note": {"de": "Hauptzauber bis zum Umskillen", "en": "Main spell until the respec"}},
+        {"lvl": 30, "skill": 61, "key": "Fire Mastery", "to": 19, "note": {"de": "Nach Feuerball, etwa ab 33", "en": "After Fire Ball, from about 33"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust, Geist im Kristallschwert", "en": "Magefist, Spirit in a Crystal Sword"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles Übrige ins Leben", "en": "Everything else into life"}}
+      ]
+    },
+    {
+      "id": "ench",
+      "name": {"de": "Verzaubern", "en": "Enchant"},
+      "levels": [50, 74],
+      "plan": "respec",
+      "note": {
+        "de": "Mit 50 umskillen: Verzaubern und Wärme voll, Einzelpunkte, Statikfeld 5, dann Feuerbeherrschung.",
+        "en": "Respec at 50: Enchant and Warmth maxed, single points, Static Field 5, then Fire Mastery."
+      },
+      "skills": [
+        {"lvl": 50, "skill": 36, "key": "Fire Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 50, "skill": 37, "key": "Warmth", "to": 1, "note": {"de": "Voraussetzung, Synergie", "en": "Prerequisite, synergy"}},
+        {"lvl": 50, "skill": 47, "key": "Fire Ball", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 50, "skill": 52, "key": "Enchant", "to": 20, "note": {"de": "Feuerschaden auf jeden Angriff", "en": "Fire damage on every attack"}},
+        {"lvl": 50, "skill": 37, "key": "Warmth", "to": 20, "note": {"de": "Synergie für Verzaubern (Tabellen 3.3)", "en": "Synergy for Enchant (tables 3.3)"}},
+        {"lvl": 50, "skill": 43, "key": "Telekinesis", "to": 1, "note": {"de": "Voraussetzung für Teleport", "en": "Prerequisite for Teleport"}},
+        {"lvl": 50, "skill": 54, "key": "Teleport", "to": 1},
+        {"lvl": 50, "skill": 40, "key": "Frozen Armor", "to": 1, "note": {"de": "Friert Nahkämpfer ein", "en": "Freezes melee attackers"}},
+        {"lvl": 50, "skill": 42, "key": "Static Field", "to": 5, "note": {"de": "Maxroll: 5–10 gegen Bosse", "en": "Maxroll: 5-10 for bosses"}},
+        {"lvl": 50, "skill": 38, "key": "Charged Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 50, "skill": 49, "key": "Lightning", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 50, "skill": 53, "key": "Chain Lightning", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 50, "skill": 58, "key": "Energy Shield", "to": 1, "note": {"de": "Schaden geht aufs Mana", "en": "Damage goes to mana"}},
+        {"lvl": 50, "skill": 61, "key": "Fire Mastery", "to": 20, "note": {"de": "Verstärkt den Feuerschaden", "en": "Boosts the fire damage"}},
+        {"lvl": 50, "skill": 43, "key": "Telekinesis", "to": 10, "note": {"de": "Stärkt Energieschild", "en": "Strengthens Energy Shield"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 80, "why": {"de": "Dämonenmaschine", "en": "Demon Machine"}},
+        {"stat": "dex", "to": 95, "why": {"de": "Dämonenmaschine", "en": "Demon Machine"}},
+        {"stat": "ene", "to": 60, "why": {"de": "Etwas Mana für den Schild", "en": "Some mana for the shield"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Der Rest ins Leben", "en": "The rest into life"}}
+      ]
+    },
+    {
+      "id": "end",
+      "name": {"de": "Endgame", "en": "Endgame"},
+      "levels": [75, 99],
+      "plan": "cumulative",
+      "note": {
+        "de": "Maxroll-Reihenfolge: Telekinese voll, dann Energieschild mit allen restlichen Punkten.",
+        "en": "Maxroll order: Telekinesis maxed, then Energy Shield with all remaining points."
+      },
+      "skills": [
+        {"lvl": 75, "skill": 43, "key": "Telekinesis", "to": 20, "note": {"de": "Maxroll: vor Energieschild voll", "en": "Maxroll: maxed before Energy Shield"}},
+        {"lvl": 75, "skill": 58, "key": "Energy Shield", "to": 18, "note": {"de": "Maxroll: zuletzt, so weit es reicht", "en": "Maxroll: last, as far as it goes"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 95, "why": {"de": "Kriegsreisender", "en": "War Traveler"}},
+        {"stat": "dex", "to": 95, "why": {"de": "Dämonenmaschine", "en": "Demon Machine"}},
+        {"stat": "ene", "to": 135, "why": {"de": "Maxroll: mindestens 100 in Energie", "en": "Maxroll: at least 100 into energy"}},
+        {"stat": "vit", "rest": true, "why": {"de": "Der Rest ins Leben", "en": "The rest into life"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Mit +Feuerblitz oder +Feuerfertigkeiten (Akara)", "en": "With +Fire Bolt or +fire skills (Akara)"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword72"}, "base": {"type": "staf", "sockets": 2}, "note": {"de": "Ab 19; Tir und Ral (DiabloBytes)", "en": "From 19; Tir and Ral (DiabloBytes)"}},
+    {"phase": "lvl", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}, "note": {"de": "Nur mit einhändiger Waffe", "en": "Only with a one-handed weapon"}},
+    {"phase": "lvl", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Runen von der Gräfin", "en": "Runes from the Countess"}},
+    {"phase": "lvl", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "lvl", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "lvl", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "fire", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword72"}, "base": {"type": "staf", "sockets": 2}},
+    {"phase": "fire", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}},
+    {"phase": "fire", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"item": "lrg", "sockets": 3}},
+    {"phase": "fire", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "fire", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "fire", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "fire", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "fire", "slot": "belt", "tier": "budget", "ref": {"type": "belt", "quality": "magic"}, "note": {"de": "Widerstände und Leben", "en": "Resistances and life"}},
+    {"phase": "fire", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Widerstände, schneller laufen", "en": "Resistances, faster run"}},
+    {"phase": "fire", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "ench", "slot": "weapon", "tier": "bis", "ref": {"unique": "Demon Machine"}, "note": {"de": "Ab 49; explodierende Bolzen tragen Verzaubern; nicht aufwerten", "en": "From 49; exploding bolts carry Enchant; do not upgrade"}},
+    {"phase": "ench", "slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "ench", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "ench", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "+Feuerfertigkeiten vor dem Verzaubern", "en": "+Fire skills before casting Enchant"}},
+    {"phase": "ench", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}, "note": {"de": "Durchschlagen", "en": "Piercing"}},
+    {"phase": "ench", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Widerstände, schneller laufen", "en": "Resistances, faster run"}},
+    {"phase": "ench", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Fertigkeiten, schnelleres Zaubern, Widerstände", "en": "+Skills, faster cast rate, resistances"}},
+    {"phase": "ench", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Treffsicherheit, kann nicht eingefroren werden", "en": "Attack rating, cannot be frozen"}},
+    {"phase": "ench", "slot": "switch", "tier": "budget", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Zum Vorab-Verzaubern und Teleportieren", "en": "For pre-buffing Enchant and teleporting"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"unique": "Demon Machine"}, "note": {"de": "Mit diesen Werten nicht aufwerten: aufgewertet braucht 141 Stärke, 98 Geschick", "en": "Do not upgrade with these stats: upgraded needs 141 str, 98 dex"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword40"}, "base": {"item": "ci3", "sockets": 3}, "note": {"de": "Senkt Feuerwiderstand; auch zum Vorab-Verzaubern", "en": "Lowers fire resistance; also for pre-buffing"}},
+    {"phase": "end", "slot": "helm", "tier": "alt", "ref": {"unique": "Harlequin Crest"}, "note": {"de": "Für Magic Find", "en": "For magic find"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"unique": "Ormus' Robes"}, "note": {"de": "Zum Vorab-Verzaubern", "en": "For pre-buffing"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Razortail"}},
+    {"phase": "end", "slot": "belt", "tier": "alt", "ref": {"unique": "Arachnid Mesh"}, "note": {"de": "Zum Vorab-Verzaubern", "en": "For pre-buffing"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Mara's Kaleidoscope"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"unique": "The Stone of Jordan"}, "note": {"de": "Zum Vorab-Verzaubern", "en": "For pre-buffing"}},
+    {"phase": "end", "slot": "charm", "tier": "bis", "ref": {"unique": "PreCrafted Flame Rift"}, "note": {"de": "Bricht Feuer-Immunität", "en": "Breaks fire immunity"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "Annihilus"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "crs", "sockets": 5}, "note": {"de": "Kampfbefehle vor jedem Lauf", "en": "Battle Orders before each run"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Teleport: Geist 35 + Vipermagier 30 + Magierfaust 20 + Spinnennetz 20 = 105 %", "en": "Teleport: Spirit 35 + Vipermagi 30 + Magefist 20 + Arachnid Mesh 20 = 105%"}},
+    {"phase": "end", "slot": "switch", "tier": "alt", "ref": {"runeword": "Runeword83"}, "base": {"type": "staf", "sockets": 4}, "note": {"de": "Stärkerer Energieschild vor dem Lauf", "en": "Stronger Energy Shield before the run"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Prayer",
+    "why": {
+      "de": "Wüstenkrieger aus Akt 2 mit Gebet gegen Gift, das den Energieschild umgeht (Maxroll); DiabloBytes nimmt Macht",
+      "en": "Act 2 desert mercenary with Prayer against poison, which bypasses Energy Shield (Maxroll); DiabloBytes uses Might"
+    },
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Meditation für Mana", "en": "Meditation for mana"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword60"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Überzeugung senkt Feuerwiderstand", "en": "Conviction lowers fire resistance"}},
+      {"slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword14"}, "base": {"item": "utp", "sockets": 4}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword178"}, "base": {"type": "helm", "sockets": 3}}
+    ]
+  },
+  "sources": [
+    {
+      "site": "Maxroll",
+      "title": "Enchant Sorceress Endgame Build Guide (Season 14)",
+      "url": "https://maxroll.gg/d2/guides/enchant-sorceress",
+      "seen": "2026-11-05",
+      "patch": "3.2 / S14",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; Stand 22.05.2026; Endgame-Punkte, Werte, Armbrust-Ausrüstung, Söldner",
+        "en": "Read in full; updated 2026-05-22; endgame points, stats, crossbow gear, mercenary"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Enchant Sorceress Build Guide (Fire Enchant Support)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/enchant-sorc/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {
+        "de": "Ganz gelesen; kurz; Verzaubern, Wärme, Feuerbeherrschung voll; Leveln mit Feuer",
+        "en": "Read in full; short; Enchant, Warmth, Fire Mastery maxed; leveling with fire"
+      }
+    },
+    {
+      "site": "DiabloBytes",
+      "title": "Fire Ball / Meteor Sorceress Build Guide (Highest Fire DPS)",
+      "url": "https://www.diablobytes.com/d2-resurrected/builds/fireball-meteor-sorc/",
+      "seen": "2026-11-05",
+      "patch": "3.2 (Kopf 3.3)",
+      "kind": "guide",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; Feuer-Leveln (dort Meteor vor Feuerball)", "en": "Read in full; fire leveling (Meteor before Fire Ball there)"}
+    },
+    {
+      "site": "Blizzard",
+      "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)",
+      "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live",
+      "seen": "2026-11-05",
+      "patch": "3.3",
+      "kind": "database",
+      "lang": "en",
+      "note": {"de": "Ganz gelesen; keine Änderung an Zauberin-Fertigkeiten", "en": "Read in full; no change to Sorceress skills"}
+    }
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

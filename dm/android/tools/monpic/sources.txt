@@ -1,0 +1,23 @@
+# The sources of the monpic library, relative to this directory; a line may name a pattern of files.
+archive.cpp
+bitknit.cpp
+granny.cpp
+jobs.cpp
+md5.cpp
+model.cpp
+render.cpp
+texture.cpp
+webp_writer.cpp
+../../../gfx/nvn/nvn_tex.c
+../../../gfx/tex/nvn_deswizzle.c
+../../../third_party/libdeflate/lib/adler32.c
+../../../third_party/libdeflate/lib/arm/cpu_features.c
+../../../third_party/libdeflate/lib/deflate_decompress.c
+../../../third_party/libdeflate/lib/utils.c
+../../../third_party/libdeflate/lib/x86/cpu_features.c
+../../../third_party/libdeflate/lib/zlib_decompress.c
+../../../third_party/libwebp/sharpyuv/*.c
+../../../third_party/libwebp/src/dec/*.c
+../../../third_party/libwebp/src/dsp/*.c
+../../../third_party/libwebp/src/enc/*.c
+../../../third_party/libwebp/src/utils/*.c

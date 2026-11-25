@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "id": "pal-dream",
+  "version": 1,
+  "class": "pal",
+  "classIndex": 3,
+  "title": {"de": "Traum-Paladin (Doppel-Traum)", "en": "Dream Paladin (double Dream)"},
+  "summary": {
+    "de": "Traum in Helm und Schild gibt eine Heiliger-Schock-Aura; Widerstand gegen Blitze und Errettung verstärken sie. Eifer verursacht Blitz- und physischen Schaden, Verurteilung senkt Widerstände. Teuer (zwei Jah). Leveln mit Heiligem Feuer und Hämmern; ab 75 umskillen, sobald beide Traum getragen werden.",
+    "en": "Dream in helm and shield grants a Holy Shock aura; Resist Lightning and Salvation boost it. Zeal hits with lightning and physical damage, Conviction lowers resistances. Expensive (two Jah). Level with Holy Fire and hammers; respec from 75 once both Dreams are equipped."
+  },
+  "overview": {
+    "strengths": {
+      "de": ["Blitz und Physisch: Verurteilung bricht Blitz-Immunität", "Schafft fast alle Gebiete, auch Uber-Bosse", "Zäh: 75 % Block mit Heiligem Schild", "Leicht zu spielen: Eifer und eine Aura"],
+      "en": ["Lightning and physical: Conviction breaks lightning immunity", "Clears almost every area, Uber bosses too", "Tanky: 75% block with Holy Shield", "Easy to play: Zeal and one aura"]
+    },
+    "weaknesses": {
+      "de": ["Sehr teuer: zwei Jah-Runen für zwei Traum", "Eifer hält 5 Schläge lang fest: gefährlich im Nahkampf", "Ohne Teleport (Rätsel) langsamer"],
+      "en": ["Very expensive: two Jah runes for two Dreams", "Zeal locks you in for 5 swings: risky in melee", "Slower without Teleport (Enigma)"]
+    },
+    "notes": {
+      "de": ["Leveln nach Maxroll: Heiliges Feuer bis 18, Hämmer ab 19, Traum ab 75 mit beiden Traum", "Maxroll: beide Traum zusammen geben Heiliger Schock auf Stufe 30; DiabloBytes bestreitet das", "Maxroll: Eifer zuletzt maximieren; 5-10 zusätzliche Punkte in Heiligen Schild sind möglich", "Übergang laut DiabloBytes: ein Traum plus Exil-Schild bis zum zweiten Jah", "Gegen Verurteilung-Bosse kurz auf Errettung oder Blitz-Widerstand wechseln", "Quellen Stand 3.2; laut 3.3-Patchnotes keine Änderung am Paladin"],
+      "en": ["Leveling after Maxroll: Holy Fire to 18, hammers from 19, Dream from 75 with both Dreams", "Maxroll: both Dreams together give Holy Shock level 30; DiabloBytes disputes this", "Maxroll: max Zeal last; 5-10 additional points in Holy Shield are possible", "Bridge per DiabloBytes: one Dream plus an Exile shield until the second Jah", "Against Conviction bosses switch to Salvation or Resist Lightning for a moment", "Sources as of 3.2; per the 3.3 patch notes no change to the Paladin"]
+    }
+  },
+  "tags": ["leveling", "endgame", "bosses", "magicfind", "melee", "lightning", "physical"],
+  "difficulty": 2,
+  "mode": {"core": "softcore", "ladder": "nonladder"},
+  "gameVersion": "3.3.94012",
+  "patch": "3.3",
+  "keySkills": [106, 123, 110],
+  "trees": [1, 2, 3],
+  "profile": {
+    "bestgear": {"survivalHits": 20, "bossShare": 0.6},
+    "damage": ["lightning", "physical"],
+    "keySkills": [{"skill": 106, "w": 1.0}, {"skill": 123, "w": 0.8}, {"skill": 110, "w": 0.6}, {"skill": 125, "w": 0.6}, {"skill": 96, "w": 0.5}, {"skill": 117, "w": 0.3}],
+    "tabs": [{"class": 3, "page": 2, "w": 1.0}, {"class": 3, "page": 3, "w": 0.8}, {"class": 3, "page": 1, "w": 0.6}],
+    "stats": {
+      "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "pal/3", "w": 0.8}, "item_singleskill": {"param": 123, "w": 0.5},
+      "item_aura": {"param": 118, "w": 1.0}, "item_fasterattackrate": 0.7, "item_normaldamage": 0.5, "item_maxdamage_percent": 0.4,
+      "tohit": 0.3, "passive_ltng_mastery": 0.4, "lifedrainmindam": 0.4, "item_crushingblow": 0.3,
+      "item_fastergethitrate": 0.4, "item_cannotbefrozen": 0.4, "toblock": 0.3, "fireresist": 0.3,
+      "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4,
+      "item_magicbonus": 0.2
+    },
+    "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 85, "poisonresist": 75},
+    "requirements": {"str": 148, "dex": 136}
+  },
+  "phases": [
+    {
+      "id": "lvl",
+      "name": {"de": "Heiliges Feuer", "en": "Holy Fire"},
+      "levels": [1, 18],
+      "plan": "cumulative",
+      "note": {"de": "Maxroll: erst Macht, dann Heiliges Feuer mit Eifer; Widerstand gegen Feuer als Synergie. Werte vereinfacht.", "en": "Maxroll: Might first, then Holy Fire with Zeal; Resist Fire as its synergy. Stats simplified."},
+      "skills": [
+        {"lvl": 2, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Aura bis Heiliges Feuer", "en": "Aura until Holy Fire"}},
+        {"lvl": 3, "skill": 96, "key": "Sacrifice", "to": 1, "note": {"de": "Voraussetzung für Eifer", "en": "Prerequisite for Zeal"}},
+        {"lvl": 4, "skill": 100, "key": "Resist Fire", "to": 3, "note": {"de": "Synergie; Punkt der Höhle des Bösen", "en": "Synergy; also the Den of Evil point"}},
+        {"lvl": 6, "skill": 102, "key": "Holy Fire", "to": 4, "note": {"de": "Hauptaura bis Stufe 18", "en": "Main aura up to level 18"}},
+        {"lvl": 10, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Voraussetzung für Ansturm", "en": "Prerequisite for Charge"}},
+        {"lvl": 12, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Punkt aus Stufe 11 aufheben", "en": "Keep the point from level 11"}},
+        {"lvl": 12, "skill": 106, "key": "Zeal", "to": 1, "note": {"de": "Angriff, mit Heiligem Feuer", "en": "Attack, together with Holy Fire"}},
+        {"lvl": 13, "skill": 102, "key": "Holy Fire", "to": 10},
+        {"lvl": 18, "skill": 100, "key": "Resist Fire", "to": 4, "note": {"de": "Punkt von Radament (Maxroll)", "en": "Radament's point (Maxroll)"}}
+      ],
+      "stats": [
+        {"stat": "dex", "to": 21, "why": {"de": "1 Punkt; Krummsäbel braucht 21", "en": "1 point; a Scimitar needs 21"}},
+        {"stat": "ene", "to": 25, "why": {"de": "Mana für Eifer und Ansturm (Maxroll)", "en": "Mana for Zeal and Charge (Maxroll)"}},
+        {"stat": "str", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles andere in Leben", "en": "Everything else into life"}}
+      ],
+      "profile": {
+        "damage": ["fire", "physical"],
+        "keySkills": [{"skill": 102, "w": 1.0}, {"skill": 106, "w": 0.6}, {"skill": 100, "w": 0.4}],
+        "tabs": [{"class": 3, "page": 2, "w": 1.0}, {"class": 3, "page": 1, "w": 0.5}],
+        "stats": {
+          "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "pal/2", "w": 1.0}, "item_singleskill": {"param": 102, "w": 0.6},
+          "item_fasterattackrate": 0.5, "tohit": 0.3, "fireresist": 0.3, "coldresist": 0.3,
+          "lightresist": 0.3, "maxhp": 0.4, "maxmana": 0.2
+        },
+        "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75}
+      }
+    },
+    {
+      "id": "ham",
+      "name": {"de": "Hämmer (Leveln)", "en": "Hammers (leveling)"},
+      "levels": [19, 74],
+      "plan": "respec",
+      "note": {"de": "Mit 19 bei Akara umskillen (Maxroll); Auren in Blöcken statt einzeln (vereinfacht). Zwei Jah sammeln.", "en": "Respec at Akara at 19 (Maxroll); auras in blocks, not point by point (simplified). Collect two Jah."},
+      "skills": [
+        {"lvl": 19, "skill": 101, "key": "Holy Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 112, "key": "Blessed Hammer", "to": 2, "note": {"de": "Hauptangriff, nur mit Konzentration", "en": "Main attack, only with Concentration"}},
+        {"lvl": 19, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 108, "key": "Blessed Aim", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 113, "key": "Concentration", "to": 1, "note": {"de": "Aura für die Hämmer", "en": "Aura for the hammers"}},
+        {"lvl": 19, "skill": 99, "key": "Prayer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 104, "key": "Defiance", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 109, "key": "Cleansing", "to": 1, "note": {"de": "Voraussetzung; gegen Flüche und Gift", "en": "Prerequisite; vs. curses and poison"}},
+        {"lvl": 19, "skill": 115, "key": "Vigor", "to": 2, "note": {"de": "Synergie; Aura zum Laufen", "en": "Synergy; aura for running"}},
+        {"lvl": 19, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 19, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Fortbewegung (Maxroll)", "en": "Movement (Maxroll)"}},
+        {"lvl": 19, "skill": 108, "key": "Blessed Aim", "to": 8, "note": {"de": "Synergie; Maxroll: 8 beim Umskillen", "en": "Synergy; Maxroll: 8 at the respec"}},
+        {"lvl": 20, "skill": 112, "key": "Blessed Hammer", "to": 6},
+        {"lvl": 24, "skill": 112, "key": "Blessed Hammer", "to": 20, "note": {"de": "Jede Stufe, voll mit 37", "en": "Every level, maxed at 37"}},
+        {"lvl": 27, "skill": 115, "key": "Vigor", "to": 3, "note": {"de": "Izual-Punkte (Maxroll)", "en": "Izual's points (Maxroll)"}},
+        {"lvl": 27, "skill": 108, "key": "Blessed Aim", "to": 9},
+        {"lvl": 38, "skill": 115, "key": "Vigor", "to": 10, "note": {"de": "Stufe 38 bis 43 (Maxroll)", "en": "Levels 38 to 43 (Maxroll)"}},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 5, "note": {"de": "Abwechselnd mit Gedeihen", "en": "Alternate with Vigor"}},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 14},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 9},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 18},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 12},
+        {"lvl": 44, "skill": 115, "key": "Vigor", "to": 20},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 16, "note": {"de": "Abwechselnd mit Gesegneter Führung", "en": "Alternate with Blessed Aim"}},
+        {"lvl": 44, "skill": 108, "key": "Blessed Aim", "to": 12},
+        {"lvl": 44, "skill": 113, "key": "Concentration", "to": 20},
+        {"lvl": 44, "skill": 108, "key": "Blessed Aim", "to": 16, "note": {"de": "Rest bis Stufe 74", "en": "The rest up to level 74"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 45, "why": {"de": "Magierfaust 45, Geist-Akarantarge 44", "en": "Magefist 45, Spirit Akaran Targe 44"}},
+        {"stat": "dex", "none": true},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Rest in Leben (Maxroll)", "en": "The rest into life (Maxroll)"}}
+      ],
+      "profile": {
+        "damage": ["magic"],
+        "keySkills": [{"skill": 112, "w": 1.0}, {"skill": 113, "w": 0.8}, {"skill": 108, "w": 0.6}, {"skill": 115, "w": 0.6}, {"skill": 117, "w": 0.4}, {"skill": 110, "w": 0.2}],
+        "tabs": [{"class": 3, "page": 1, "w": 1.0}, {"class": 3, "page": 2, "w": 0.6}, {"class": 3, "page": 3, "w": 0.4}],
+        "stats": {
+          "item_allskills": 1.0, "item_addclassskills": 1.0, "item_addskill_tab": {"param": "pal/1", "w": 1.0}, "item_singleskill": {"param": 112, "w": 0.6},
+          "item_fastercastrate": 0.8, "item_fastergethitrate": 0.4, "passive_mag_pierce": 0.3, "fireresist": 0.3,
+          "coldresist": 0.3, "lightresist": 0.3, "poisonresist": 0.2, "maxhp": 0.4,
+          "maxmana": 0.2, "dexterity": 0.2, "item_magicbonus": 0.3
+        },
+        "caps": {"fireresist": 75, "coldresist": 75, "lightresist": 75, "poisonresist": 75}
+      }
+    },
+    {
+      "id": "end",
+      "name": {"de": "Doppel-Traum", "en": "Double Dream"},
+      "levels": [75, 99],
+      "plan": "respec",
+      "note": {"de": "Ab 75 umskillen, sobald beide Traum getragen werden (Maxroll). Blitz-Wid., Errettung, Verurteilung, Opfer, Eifer.", "en": "Respec from 75 once both Dreams are worn (Maxroll). Resist Lightning, Salvation, Conviction, Sacrifice, Zeal."},
+      "skills": [
+        {"lvl": 75, "skill": 96, "key": "Sacrifice", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 106, "key": "Zeal", "to": 1, "note": {"de": "Hauptangriff, erst zum Schluss voll", "en": "Main attack, maxed last"}},
+        {"lvl": 75, "skill": 97, "key": "Smite", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 107, "key": "Charge", "to": 1, "note": {"de": "Fortbewegung ohne Teleport", "en": "Movement without Teleport"}},
+        {"lvl": 75, "skill": 101, "key": "Holy Bolt", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 112, "key": "Blessed Hammer", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 117, "key": "Holy Shield", "to": 1, "note": {"de": "Vor jedem Kampf: Block", "en": "Before every fight: block"}},
+        {"lvl": 75, "skill": 98, "key": "Might", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 102, "key": "Holy Fire", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 103, "key": "Thorns", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 114, "key": "Holy Freeze", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 119, "key": "Sanctuary", "to": 1, "note": {"de": "Voraussetzung", "en": "Prerequisite"}},
+        {"lvl": 75, "skill": 123, "key": "Conviction", "to": 1, "note": {"de": "Hauptaura: senkt Widerstände", "en": "Main aura: lowers resistances"}},
+        {"lvl": 75, "skill": 110, "key": "Resist Lightning", "to": 20, "note": {"de": "Synergie für Heiliger Schock (Traum)", "en": "Synergy for Holy Shock (Dream)"}},
+        {"lvl": 75, "skill": 125, "key": "Salvation", "to": 20, "note": {"de": "Synergie für Heiliger Schock (Traum)", "en": "Synergy for Holy Shock (Dream)"}},
+        {"lvl": 75, "skill": 123, "key": "Conviction", "to": 20},
+        {"lvl": 75, "skill": 96, "key": "Sacrifice", "to": 20, "note": {"de": "Synergie für Eifer", "en": "Synergy for Zeal"}},
+        {"lvl": 75, "skill": 106, "key": "Zeal", "to": 20, "note": {"de": "Zuletzt; voll mit 99", "en": "Last; maxed at 99"}}
+      ],
+      "stats": [
+        {"stat": "str", "to": 75, "why": {"de": "Richtwert; mit Exil (148) oder ohne Rätsel erhöhen", "en": "Guide value; raise it for Exile (148) or without Enigma"}},
+        {"stat": "dex", "to": 116, "why": {"de": "Richtwert; erhöhen bis 75 % Block mit Hl. Schild", "en": "Guide value; raise until 75% block with Holy Shield"}},
+        {"stat": "ene", "none": true},
+        {"stat": "vit", "rest": true, "why": {"de": "Alles andere in Leben", "en": "Everything else into life"}}
+      ]
+    }
+  ],
+  "gear": [
+    {"phase": "lvl", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "magic"}, "note": {"de": "Bei Akara kaufen, mit +Fertigkeiten", "en": "Buy from Akara, with +skills"}},
+    {"phase": "lvl", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword134"}, "base": {"item": "scm", "sockets": 2}, "note": {"de": "Ab Stufe 13, optional; schnell mit Eifer", "en": "From level 13, optional; fast with Zeal"}},
+    {"phase": "lvl", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}, "note": {"de": "Ab Stufe 17", "en": "From level 17"}},
+    {"phase": "ham", "slot": "weapon", "tier": "budget", "ref": {"type": "scep", "quality": "magic"}, "note": {"de": "Mit +Gesegneter Hammer (im Würfel neu würfeln)", "en": "With +Blessed Hammer (reroll in the cube)"}},
+    {"phase": "ham", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "crs", "sockets": 4}, "note": {"de": "Ab Stufe 25", "en": "From level 25"}},
+    {"phase": "ham", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword1"}, "base": {"type": "ashd", "sockets": 3}, "note": {"de": "Ab Stufe 21; Widerstände", "en": "From level 21; resistances"}},
+    {"phase": "ham", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword130"}, "base": {"item": "pa6", "sockets": 4}, "note": {"de": "Schild mit hohen Widerständen nehmen", "en": "Use a shield with high resistances"}},
+    {"phase": "ham", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword75"}, "base": {"type": "helm", "sockets": 2}},
+    {"phase": "ham", "slot": "armor", "tier": "budget", "ref": {"runeword": "Runeword133"}, "base": {"type": "tors", "sockets": 2}},
+    {"phase": "ham", "slot": "armor", "tier": "bis", "ref": {"unique": "Skin of the Vipermagi"}},
+    {"phase": "ham", "slot": "gloves", "tier": "bis", "ref": {"unique": "Magefist"}, "note": {"de": "Schnelleres Zaubern", "en": "Faster cast rate"}},
+    {"phase": "ham", "slot": "boots", "tier": "budget", "ref": {"type": "boot", "quality": "magic"}, "note": {"de": "Schneller laufen, Widerstände", "en": "Faster run, resistances"}},
+    {"phase": "ham", "slot": "amulet", "tier": "budget", "ref": {"type": "amul", "quality": "rare"}, "note": {"de": "+Paladin- oder Kampf-Fertigkeiten", "en": "+Paladin or Combat skills"}},
+    {"phase": "ham", "slot": "ring", "tier": "budget", "ref": {"type": "ring", "quality": "magic"}, "note": {"de": "Mit 10 % schnellerem Zaubern", "en": "With 10% faster cast rate"}},
+    {"phase": "ham", "slot": "switch", "tier": "budget", "ref": {"type": "staf", "quality": "magic"}, "note": {"de": "Stab mit Teleport-Ladungen (Ormus)", "en": "Staff with Teleport charges (Ormus)"}},
+    {"phase": "end", "slot": "weapon", "tier": "bis", "ref": {"runeword": "Runeword47"}, "base": {"item": "7cr", "sockets": 5}, "note": {"de": "Hoher Schaden, Angriffstempo", "en": "High damage, attack speed"}},
+    {"phase": "end", "slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword17"}, "base": {"item": "7cr", "sockets": 3}, "note": {"de": "Günstiger: -35 % Blitz-Widerstand der Gegner, Statikfeld", "en": "Cheaper: -35% enemy lightning resistance, Static Field"}},
+    {"phase": "end", "slot": "weapon", "tier": "alt", "ref": {"runeword": "Runeword48"}, "base": {"item": "7cr", "sockets": 4}, "note": {"de": "Hybrid: braucht Drache, Feuer-Wid. und anderen Söldner", "en": "Hybrid: needs Dragon, Resist Fire, another mercenary"}},
+    {"phase": "end", "slot": "offhand", "tier": "bis", "ref": {"runeword": "Runeword29"}, "base": {"item": "pab", "sockets": 3}, "note": {"de": "Paladin-Schild mit hohen Widerständen", "en": "Paladin shield with high resistances"}},
+    {"phase": "end", "slot": "offhand", "tier": "budget", "ref": {"runeword": "Runeword37"}, "base": {"item": "paf", "sockets": 4}, "note": {"de": "Bis zum zweiten Jah (DiabloBytes)", "en": "Until the second Jah (DiabloBytes)"}},
+    {"phase": "end", "slot": "helm", "tier": "bis", "ref": {"runeword": "Runeword29"}, "base": {"item": "uh9", "sockets": 3}, "note": {"de": "Zweiter Traum", "en": "Second Dream"}},
+    {"phase": "end", "slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword33"}, "base": {"item": "xtp", "sockets": 3}, "note": {"de": "Teleport", "en": "Teleport"}},
+    {"phase": "end", "slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword14"}, "base": {"item": "utp", "sockets": 4}, "note": {"de": "Für Uber-Bosse: mehr Widerstände", "en": "For Uber bosses: more resistances"}},
+    {"phase": "end", "slot": "gloves", "tier": "bis", "ref": {"set": "Laying of Hands"}, "note": {"de": "Angriffstempo, Schaden gegen Dämonen", "en": "Attack speed, damage to demons"}},
+    {"phase": "end", "slot": "belt", "tier": "bis", "ref": {"unique": "Arachnid Mesh"}, "note": {"de": "Schneller zaubern für Teleport", "en": "Faster cast rate for Teleport"}},
+    {"phase": "end", "slot": "belt", "tier": "alt", "ref": {"unique": "Verdugo's Hearty Cord"}, "note": {"de": "Zäher (DiabloBytes)", "en": "Tankier (DiabloBytes)"}},
+    {"phase": "end", "slot": "boots", "tier": "bis", "ref": {"unique": "Wartraveler"}, "note": {"de": "Magic Find", "en": "Magic find"}},
+    {"phase": "end", "slot": "boots", "tier": "alt", "ref": {"unique": "Gorerider"}, "note": {"de": "Vernichtender Schlag (DiabloBytes)", "en": "Crushing Blow (DiabloBytes)"}},
+    {"phase": "end", "slot": "amulet", "tier": "bis", "ref": {"unique": "Highlord's Wrath"}, "note": {"de": "Angriffstempo, tödlicher Schlag", "en": "Attack speed, Deadly Strike"}},
+    {"phase": "end", "slot": "ring", "tier": "bis", "ref": {"unique": "Raven Frost"}, "note": {"de": "Nicht einfrierbar", "en": "Cannot be frozen"}},
+    {"phase": "end", "slot": "ring", "tier": "alt", "ref": {"unique": "Bul Katho's Wedding Band"}, "note": {"de": "Lebensentzug, +1 Fertigkeiten", "en": "Life leech, +1 skills"}},
+    {"phase": "end", "slot": "charm", "tier": "alt", "ref": {"unique": "PreCrafted Crack of the Heavens"}, "note": {"de": "Bricht Blitz-Immunität", "en": "Breaks lightning immunity"}},
+    {"phase": "end", "slot": "switch", "tier": "bis", "ref": {"runeword": "Runeword13"}, "base": {"item": "wsp", "sockets": 5}, "note": {"de": "Kampfbefehle; Geist-Schild für Teleport", "en": "Battle Orders; Spirit shield for Teleport"}}
+  ],
+  "merc": {
+    "act": 2,
+    "difficulty": 2,
+    "aura": "Might",
+    "why": {"de": "Wüstenkrieger aus Akt 2 (Albtraum) mit Macht; Schnitters Tribut wirkt Altern", "en": "Act 2 desert mercenary (Nightmare) with Might; The Reaper's Toll casts Decrepify"},
+    "gear": [
+      {"slot": "weapon", "tier": "budget", "ref": {"runeword": "Runeword62"}, "base": {"type": "pole", "sockets": 4}, "note": {"de": "Bis Schnitters Tribut", "en": "Until The Reaper's Toll"}},
+      {"slot": "weapon", "tier": "bis", "ref": {"unique": "The Reaper's Toll"}, "note": {"de": "Altern: weniger physischer Widerstand", "en": "Decrepify: lower physical resistance"}},
+      {"slot": "armor", "tier": "bis", "ref": {"runeword": "Runeword148"}, "base": {"type": "tors", "sockets": 3}, "note": {"de": "Angriffstempo für mehr Altern", "en": "Attack speed for more Decrepify"}},
+      {"slot": "armor", "tier": "alt", "ref": {"runeword": "Runeword41"}, "base": {"item": "uar", "sockets": 4, "eth": true}},
+      {"slot": "helm", "tier": "budget", "ref": {"runeword": "Runeword179"}, "base": {"type": "helm", "sockets": 3}},
+      {"slot": "helm", "tier": "bis", "ref": {"set": "Guillaume's Face"}, "note": {"de": "Vernichtender Schlag", "en": "Crushing Blow"}}
+    ]
+  },
+  "sources": [
+    {"site": "Maxroll", "title": "Dream Paladin Endgame Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/dream-paladin", "seen": "2026-11-04", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Punkte, Varianten, Ausrüstung, Söldner, Spielweise", "en": "Read in full; updated 2026-05-22; points, variants, gear, mercenary, play style"}},
+    {"site": "Maxroll", "title": "Paladin Leveling Build Guide (Season 14)", "url": "https://maxroll.gg/d2/guides/paladin-leveling", "seen": "2026-11-04", "patch": "3.2 / S14", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; Stand 22.05.2026; Heiliges Feuer bis 18, Hämmer bis 75", "en": "Read in full; updated 2026-05-22; Holy Fire to 18, hammers to 75"}},
+    {"site": "DiabloBytes", "title": "Dream Paladin (Dreamadin) Build Guide", "url": "https://www.diablobytes.com/d2-resurrected/builds/dream-paladin/", "seen": "2026-11-04", "patch": "ohne Angabe", "kind": "guide", "lang": "en",
+     "note": {"de": "Ganz gelesen; ohne Datum; Punkte, Ausrüstung, Söldner; zwei widersprüchliche Leveln-Abschnitte", "en": "Read in full; undated; points, gear, mercenary; two contradicting leveling sections"}},
+    {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-04", "patch": "3.3", "kind": "database", "lang": "en",
+     "note": {"de": "Ganz gelesen; keine Änderung am Paladin; Bollwerk, Boden usw. jetzt auch Nicht-Ladder", "en": "Read in full; no change to the Paladin; Bulwark, Ground etc. now also Non-Ladder"}}
+  ],
+  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+}

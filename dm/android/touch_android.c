@@ -1,0 +1,471 @@
+#include "touch_android.h"
+#include "front_android.h"
+#include "../ios/Sources/dm_touch_controls.h"
+#include "../host/dm_input.h"
+#include "../host/dm_cursor.h"
+#include "../host/dm_actions.h"
+#include "../host/dm_hud.h"
+#include "../host/dm_custom.h"
+#include "../host/dm_world.h"
+#include "../host/dm_uiscreen.h"
+#include "../ios/Sources/dm_touch_native_art.h"
+#include <pthread.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
+uint64_t now_ns(void);
+void dm_uiscreen_set_panel(int panel);
+void dm_tp_request(void);
+
+void dm_touch_game_set_scene(int game, uint64_t scene, uint64_t world) __attribute__((weak));
+
+typedef struct { int phase, slot; float x, y; double time; int quiet; } touch_event;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static dm_tc_state tc;
+static dm_tc_scene scene;
+
+
+int dm_hud_stack_msg(const char *act, const char *arg);
+static int hud_blocked;
+static touch_event queue[256];
+static unsigned head, tail;
+static int ready, focused = 1, cancel, resizing, ui_drag;
+
+
+static float width = 800, height = 375, win_w = 800, win_h = 375, vr_x, vr_y, vr_w = 800, vr_h = 375, safe_left, safe_right, safe_bottom;
+static int tablet_layout, swap_above;
+typedef struct { int kind; float x,y; double time; uint64_t key; } direct_gesture;
+static direct_gesture direct[DM_TC_MAX_TOUCH];
+static uint32_t selected_point;
+static double stat_next, skill_add_at;
+static unsigned map_world_seq;
+static int map_world_pending;
+static uint64_t epoch = 1, world = 1, pulse_epoch, pulse_sample, resume_sample;
+
+static uint32_t rebuilds_seen;
+uint32_t dm_padmode_rebuilds(void);
+static double pulse_hold_start;
+static unsigned seen_world, seen_mouse, seen_tab, seen_use, seen_ident, seen_long, seen_item, seen_stack;
+
+
+
+
+
+
+
+static int frontend, fe_slot = -1, fe_drag;
+static float fe_x0, fe_y0;
+
+
+
+static int nav_pad(void) { static int v = -1; if (v < 0) { const char *e = getenv("DM_TOUCH_NAV_PAD"); v = e && e[0] == '1'; } return v; }
+static int touch_overlay(void) { static int v = -1; if (v < 0) { const char *o = getenv("DM_ROMFS_OVERLAY"); v = o && *o; } return v; }
+static void fe_end_locked(void) {
+    if (fe_slot >= 0) { if (fe_drag) dm_ui_drag_end(); else dm_ui_touch(3, 0, 0); }
+    fe_slot = -1; fe_drag = 0;
+}
+static void fe_event_locked(const touch_event *e) {
+    if (e->phase == 0 && fe_slot < 0) { fe_slot = e->slot; fe_x0 = e->x; fe_y0 = e->y; fe_drag = 0; }
+    if (e->slot != fe_slot) return;
+    float nx = e->x / width, ny = e->y / height, dy = fabsf(e->y - fe_y0);
+    if (e->phase == 1 && !fe_drag && dy > 10 && dy > fabsf(e->x - fe_x0) && dm_ui_fe_drag_ok()) {
+        fe_drag = 1; dm_ui_touch(3, 0, 0); dm_ui_drag_begin(1, fe_x0 / width, fe_y0 / height, 0);
+    }
+    if (fe_drag) { if (e->phase == 1) dm_ui_drag_move(nx, ny); else fe_end_locked(); return; }
+    if (e->phase == 3) { fe_end_locked(); return; }
+    dm_ui_touch(e->phase, nx, ny);
+    if (e->phase == 2) fe_slot = -1;
+}
+
+static void init_locked(void) {
+    if (ready) return;
+    dm_tc_set_tall_scale(tablet_layout);
+    dm_tc_init(&tc, width, height);
+    tc.mouse_click_mode = 1;
+    dm_tc_set_navigation_mode(&tc, 1);
+    dm_tc_enable_targets(&tc, dm_tc_nav_mask(nav_pad()));
+    ready = 1;
+}
+static void cancel_locked(void) {
+    dm_tc_cancel_all(&tc);
+    if (ui_drag) dm_ui_drag_end();
+    ui_drag = 0;
+    fe_end_locked();
+    pulse_epoch = pulse_sample = resume_sample = 0;
+    pulse_hold_start = 0;
+    memset(direct,0,sizeof direct); selected_point=0; stat_next=skill_add_at=0; map_world_pending=0;
+    dm_cursor_clear();
+}
+void dm_android_touch_resize(float w, float h, float l, float r, float b) {
+    if (!isfinite(w) || !isfinite(h) || w <= 0 || h <= 0) return;
+    pthread_mutex_lock(&lock);
+    int whole = vr_w <= 0 || (vr_x == 0 && vr_y == 0 && vr_w == win_w && vr_h == win_h);
+    win_w = w; win_h = h; safe_left = fmaxf(0,l); safe_right = fmaxf(0,r); safe_bottom = fmaxf(0,b);
+    if (whole) { vr_x = vr_y = 0; vr_w = w; vr_h = h; }
+
+    else { vr_x = fminf(fmaxf(vr_x,0),w); vr_y = fminf(fmaxf(vr_y,0),h); vr_w = fminf(vr_w,w-vr_x); vr_h = fminf(vr_h,h-vr_y);
+           if (vr_w <= 0 || vr_h <= 0) { vr_x = vr_y = 0; vr_w = w; vr_h = h; } }
+    width = vr_w; height = vr_h;
+    resizing = cancel = 1; head = tail = 0;
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_view(float x, float y, float w, float h) {
+    if (!isfinite(x) || !isfinite(y) || !isfinite(w) || !isfinite(h) || w <= 0 || h <= 0) return;
+    pthread_mutex_lock(&lock);
+    if (x != vr_x || y != vr_y || w != vr_w || h != vr_h) {
+        vr_x = x; vr_y = y; vr_w = w; vr_h = h; width = w; height = h;
+        resizing = cancel = 1; head = tail = 0;
+    }
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_tablet(int tablet) {
+    pthread_mutex_lock(&lock);
+    tablet_layout = !!tablet; resizing = cancel = 1;
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_focus(int active) {
+    pthread_mutex_lock(&lock);
+    focused = !!active; cancel = 1; head = tail = 0;
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_event(int phase, int slot, float x, float y) {
+    if (phase < 0 || phase > 5 || slot < 0 || slot >= DM_TC_MAX_TOUCH || !isfinite(x) || !isfinite(y)) return;
+    int quiet = phase == 4; if (quiet) phase = 2;
+    pthread_mutex_lock(&lock);
+    if (focused) {
+
+        if (tail - head == 256) { cancel = 1; head = tail = 0; }
+
+        else { queue[tail++ % 256] = (touch_event){phase, slot, x - vr_x, y - vr_y, now_ns() / 1e9, quiet}; }
+    }
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_uimsg(const char *cat, const char *act, const char *arg) {
+    if (!cat || !act) return;
+    pthread_mutex_lock(&lock);
+    init_locked();
+    dm_tc_scene before = scene;
+    dm_tc_set_panel_state(dm_ui_panel_state());
+    if (!strcmp(cat, "PanelManager")) hud_blocked = dm_hud_stack_msg(act, arg ? arg : "");
+    int nav = dm_tc_navigation(&scene, cat, act, arg ? arg : "");
+
+
+    if (scene.game && hud_blocked > 0) nav = 1;
+    nav = dm_tc_panel_mode(nav, &scene, hud_blocked);
+    if (before.game != scene.game || before.panels != scene.panels) {
+        ++epoch; if (before.game != scene.game) ++world;
+        cancel_locked(); head = tail = 0;
+    }
+    int fe = !scene.game && touch_overlay();
+    if (fe != frontend) { cancel_locked(); head = tail = 0; frontend = fe; }
+    dm_tc_set_navigation_mode(&tc, nav);
+    dm_ui_map_hold(nav != 0);
+    dm_tc_set_joy_block(&tc, !!(dm_ui_panel_state() & DM_PS_TEXT));
+
+
+
+    dm_tc_enable_targets(&tc, nav ? (dm_tc_nav_mask(nav_pad() && nav != 2 && !dm_tc_scene_dead()) | (nav == 3 ? 1u << DM_TC_MENU : 0u))
+                                  : (((1u << DM_TC_COUNT) - 1) & ~(1u << DM_TC_MAP)));
+    dm_uiscreen_set_panel(nav && !dm_tc_scene_dead() && !dm_tc_scene_dialog_only(&scene));
+
+
+
+
+    { uint32_t rb = dm_padmode_rebuilds(); if (rb != rebuilds_seen) { rebuilds_seen = rb; ++world; } }
+    if (dm_touch_game_set_scene) dm_touch_game_set_scene(!nav, epoch, world);
+    pthread_mutex_unlock(&lock);
+}
+static void sync_host(void) {
+    dm_tc_set_panel_state(dm_ui_panel_state());
+    dm_tc_set_tap_box(dm_ui_tap_box());
+    dm_tc_set_cur_stack(dm_ui_cur_stack_id());
+    dm_tc_set_hover_unid(dm_ui_hover_unid());
+    dm_hud_info info; dm_hud_get(&info);
+    dm_tc_set_holding(&tc, info.valid && info.holding && !dm_ui_targeting());
+    tc.belt_rows = dm_belt_rows(&tc.belt_open);
+}
+
+
+static void world_rect(float r[4]) {
+    int x, y, w, h, rw = 0, rh = 0;
+    r[0] = 0; r[1] = 0; r[2] = width; r[3] = height;
+    if (!front_android_full()) return;
+    dm_ui_rect(&x, &y, &w, &h);
+    if (dm_screen_real(&rw, &rh) && h > 0 && h < rh) { r[0] = -vr_x; r[1] = -vr_y; r[2] = win_w; r[3] = win_h; }
+}
+static void world_norm(float x, float y, float *nx, float *ny) { float r[4]; world_rect(r); *nx = (x - r[0]) / r[2]; *ny = (y - r[1]) / r[3]; }
+static void requests(void) {
+    if (seen_tab != tc.tab_tap_seq) { seen_tab = tc.tab_tap_seq; dm_ui_tab_go(); }
+    if (seen_use != tc.use_seq) { seen_use = tc.use_seq; dm_ui_use_item(); }
+    if (seen_ident != tc.ident_seq) { seen_ident = tc.ident_seq; dm_ui_identify_hovered(); }
+    if (seen_long != tc.long_press_seq) { seen_long = tc.long_press_seq; dm_ui_long_press(); }
+    if (seen_item != tc.item_tap_seq) { seen_item = tc.item_tap_seq; dm_ui_item_tap(); }
+    if (seen_stack != tc.stack_take_seq) { seen_stack = tc.stack_take_seq; dm_stash_take(1); }
+    if (seen_world != tc.world_tap_seq) {
+        seen_world = tc.world_tap_seq;
+
+        float nx = tc.world_tap_x / width, ny = tc.world_tap_y / height, wx, wy;
+        world_norm(tc.world_tap_x, tc.world_tap_y, &wx, &wy);
+        dm_ui_world_tap(nx, ny, wx, wy);
+    }
+    if (seen_mouse != tc.mouse_click_seq) {
+        seen_mouse = tc.mouse_click_seq;
+        float nx = tc.mouse_click_x / width, ny = tc.mouse_click_y / height;
+        dm_ui_touch(0,nx,ny); dm_ui_touch(2,nx,ny);
+    }
+    if (tc.diff_request) { dm_hud_request_players(tc.diff_request); tc.diff_request = 0; }
+    if (tc.belt_request) {
+        int br = tc.belt_request; tc.belt_request = 0;
+        if (br == 1 || br == 2) dm_belt_expand(br == 1);
+        else dm_belt_use(br & 15, (br >> 4) & 15);
+    }
+}
+static void release_pointer(dm_tc_finger *f) {
+    float lift = DM_TC_POINTER_LIFT_PT * dm_tc_scale_for_size(width,height);
+    int kind = dm_ui_drop_at_now(f->x/width, (f->y-lift)/height, f->y/height);
+    float x,y;
+    if (f->shop_drag) {
+        if (kind == 11) dm_ui_stack_cube_at(f->aim_origin_x/width,f->aim_origin_y/height);
+        else if (kind == 5 && dm_ui_drop_bag()) {
+            if (tc.pointer_stack) dm_ui_stack_take_at(f->aim_origin_x/width,f->aim_origin_y/height);
+            else dm_ui_shop_buy_at(f->aim_origin_x/width,f->aim_origin_y/height);
+        }
+        tc.pointer_x = f->aim_origin_x; tc.pointer_y = f->aim_origin_y;
+    } else if ((kind == 5 && dm_ui_drop_point(&x,&y)) || (kind == 0 && dm_ui_origin_point(&x,&y))) dm_tc_pointer_release_at(&tc,x*width,y*height);
+    else { if (kind == 7) { dm_shop_sell_cursor(); kind = 0; } dm_tc_pointer_release(&tc,kind); }
+}
+
+
+static int direct_begin(const touch_event *e) {
+    if (tc.navigation_mode) return 0;
+    int target=dm_tc_hit(&tc.layout,e->x,e->y), kind=0; uint64_t key=0;
+    if (target>=DM_TC_MAIN && target<=DM_TC_SKILL4) {
+        dm_tg_snapshot snapshot; dm_touch_game_snapshot(&snapshot);
+        dm_ta_glyph g=dm_ta_current_set(&snapshot,tc.layout.target[target].button,now_ns(),tc.skill_set);
+        if (g.status==DM_TA_EMPTY) { kind=1; key=tc.layout.target[target].button|(tc.skill_set?DM_BTN_ZL:0); }
+    }
+    if (!kind && target==DM_TC_MAP) kind=2;
+    float r[4];
+    if (!kind && target<0 && dm_ui_minimap_rect(r)) {
+        float h=(r[3]-r[1])*height, band=h/4;
+        if (band<30) band=fminf(30,h*.4f);
+        if (e->x>=r[0]*width && e->x<=r[2]*width && e->y>=r[1]*height && e->y<=r[1]*height+band) kind=2;
+    }
+    if (!kind) return 0;
+    direct[e->slot]=(direct_gesture){kind,e->x,e->y,e->time,key}; return 1;
+}
+static int direct_event(const touch_event *e) {
+    direct_gesture *g=&direct[e->slot]; if (!g->kind) return 0;
+    if (hypotf(e->x-g->x,e->y-g->y)>14) g->kind=-1;
+    if (e->phase==2) {
+        if (!tc.navigation_mode && g->kind>0 && e->time-g->time<.6) {
+            if (g->kind==1) dm_ui_bind_begin(g->key);
+            else if (dm_ui_map_is_full()) dm_ui_map_full(0);
+            else if (g->kind==2) { float wx, wy; world_norm(e->x,e->y,&wx,&wy); map_world_seq=dm_world_tap(wx,wy); map_world_pending=1; }
+        }
+        memset(g,0,sizeof *g);
+    } else if (e->phase==3) memset(g,0,sizeof *g);
+    return 1;
+}
+static void point_tick(double now) {
+    if (tc.navigation_mode && !dm_ui_bind_active() && tc.pointer_slot>=0) {
+        dm_tc_finger *f=&tc.finger[tc.pointer_slot]; float nx=0,ny=0;
+        int hit=dm_ui_bind_skill_hit(&nx,&ny); uint32_t id=dm_ui_hit_id();
+        if (f->active && !f->pointer_dragged && !f->ui_drag && now-f->start_time_s>=.5 && hypotf(f->x-f->aim_origin_x,f->y-f->aim_origin_y)<=10*dm_tc_scale_for_size(width,height)) {
+            if (hit==2 && id>=1 && id<=4) {
+                if (!f->pointer_long) { f->pointer_long=1; stat_next=now; selected_point=id; tc.pointer_valid=1; tc.pointer_x=nx*width; tc.pointer_y=ny*height; }
+                if (now>=stat_next) { stat_next=now+.15; dm_stat_add((int)id-1,1); }
+            } else if (hit==1 && !f->pointer_long) dm_tc_pointer_press(&tc,nx*width,ny*height,DM_BTN_Y);
+        }
+    }
+    if (skill_add_at>0 && now>=skill_add_at) {
+        dm_points_info points; dm_points_get(&points);
+        if (points.tree_open && points.sel_skill>=0 && !dm_cursor_pending()) {
+            skill_add_at=0;
+            if (points.sel_block==0 || points.sel_block==5) dm_skill_add_selected();
+        } else if (now>skill_add_at+1 || !points.tree_open) skill_add_at=0;
+    }
+}
+void dm_android_touch_step(uint64_t guest_now, uint64_t *buttons, int32_t *lx, int32_t *ly, int32_t *rx, int32_t *ry) {
+    (void)guest_now;
+    pthread_mutex_lock(&lock);
+    init_locked();
+    int next_swap = dm_custom_get("touch_swap_above");
+    if (next_swap != swap_above) { swap_above = next_swap; resizing = cancel = 1; }
+    if (cancel) { cancel_locked(); cancel = 0; }
+    if (resizing) {
+
+        float sl = fmaxf(0, safe_left - vr_x), sr = fmaxf(0, safe_right - (win_w - vr_x - vr_w)), sb = fmaxf(0, safe_bottom - (win_h - vr_y - vr_h));
+        dm_tc_set_tall_scale(tablet_layout); dm_tc_set_swap_above(swap_above);
+        dm_tc_set_safe_insets(sl,sr); dm_tc_set_edge_bottom(sb); dm_tc_set_safe_bottom(sb);
+        dm_ui_safe_left((int)lroundf(sl * 2160 / height));
+        dm_ui_safe_right((int)lroundf(sr * 2160 / height));
+        dm_tc_resize(&tc,width,height); resizing = 0;
+    }
+    if (!focused) { pthread_mutex_unlock(&lock); return; }
+    sync_host();
+    if (map_world_pending) {
+        int result=dm_world_tap_result(map_world_seq);
+        if (result>=0) { map_world_pending=0; if (!result && !tc.navigation_mode) dm_ui_map_full(1); }
+    }
+
+
+
+
+
+
+
+
+    uint64_t latched[DM_TC_MAX_TOUCH] = {0};
+    while (head != tail) {
+        touch_event e = queue[head++ % 256];
+
+
+
+        int stick = e.phase == 5;
+        if (stick) e.phase = 0;
+        if (frontend) { if (!stick) fe_event_locked(&e); continue; }
+        if (!stick && (direct_event(&e) || (e.phase==0 && direct_begin(&e)))) continue;
+        dm_tc_finger *f = &tc.finger[e.slot];
+        uint64_t before_buttons = tc.buttons;
+        int before_target = f->target;
+        int event_cancelled = 0;
+        if (e.phase == 0) latched[e.slot] = 0;
+        if (e.phase == 0) {
+            if (!stick && dm_tc_belt_outside(&tc,e.x,e.y)) { dm_belt_expand(0); continue; }
+            { int dm_cam_mode(void), dm_cam_style(void); tc.cam_on = dm_cam_mode(); tc.cam_orbit = dm_cam_style() == 1; }
+            if (stick) dm_tc_begin_stick_at(&tc,e.slot,e.x,e.y,e.time); else dm_tc_begin_at(&tc,e.slot,e.x,e.y,e.time);
+            if (!tc.navigation_mode && f->target == DM_TC_PORTAL) { dm_tc_cancel_finger(&tc,e.slot); dm_tp_request(); }
+            if (tc.navigation_mode && tc.pointer_slot == e.slot) { dm_ui_press_new(); dm_tc_pointer_item(&tc,dm_ui_item_at_now(e.x/width,e.y/height)); }
+        } else if (e.phase == 1 || e.phase == 2) {
+            dm_tc_move_at(&tc,e.slot,e.x,e.y,e.time);
+            if (tc.cam_pitch != 0 || tc.cam_yaw != 0) { void dm_cam_tilt(float); void dm_cam_turn(float); if (tc.cam_pitch != 0) dm_cam_tilt(tc.cam_pitch); if (tc.cam_yaw != 0) dm_cam_turn(tc.cam_yaw); tc.cam_pitch = tc.cam_yaw = 0; }
+            event_cancelled = f->aim_cancelled;
+            if (tc.navigation_mode && tc.pointer_slot == e.slot && f->ui_drag) {
+                if (!ui_drag) {
+                    ui_drag = 1; dm_ui_drag_lift(DM_TC_POINTER_LIFT_PT*dm_tc_scale_for_size(width,height)/height);
+                    dm_ui_drag_begin(f->ui_drag,f->aim_origin_x/width,f->aim_origin_y/height,44/height);
+                }
+                dm_ui_drag_move(e.x/width,e.y/height);
+            }
+            if (e.phase == 2) {
+                tc.tap_button=0; tc.tap_move=0;
+                if (tc.navigation_mode) {
+                    float nx,ny;
+                    int hit=dm_ui_bind_skill_hit(&nx,&ny);
+                    if (!hit) selected_point=0;
+                    else {
+                        tc.tap_x=nx*width; tc.tap_y=ny*height;
+                        if (hit==1 && dm_ui_bind_active()==2) tc.tap_button=DM_BTN_Y;
+                        else if (!dm_ui_bind_active()) tc.tap_move=1;
+                    }
+                }
+                if (tc.navigation_mode && tc.pointer_slot == e.slot && (f->pointer_dragged || f->shop_drag)) release_pointer(f);
+                if (ui_drag && tc.pointer_slot == e.slot) { dm_ui_drag_end(); ui_drag = 0; }
+                unsigned moved=tc.tap_move_seq, world_before=tc.world_tap_seq;
+                dm_tc_end_at(&tc,e.slot,e.time);
+                if (e.quiet && tc.world_tap_seq!=world_before) seen_world=tc.world_tap_seq;
+                if (moved!=tc.tap_move_seq) {
+                    uint32_t id=dm_ui_hit_id();
+                    if (id && id==selected_point) {
+                        if (id<=4) dm_stat_add((int)id-1,1);
+                        else skill_add_at=e.time+.3;
+                    } else selected_point=id;
+                }
+            }
+        } else {
+
+            if (tc.pointer_slot == e.slot && f->pointer_dragged && !f->shop_drag) {
+                dm_tc_pointer_release(&tc,0); dm_tc_end_at(&tc,e.slot,e.time);
+            } else dm_tc_cancel_finger(&tc,e.slot);
+            if (ui_drag) { dm_ui_drag_end(); ui_drag = 0; }
+        }
+        int target = e.phase == 2 ? before_target : f->target;
+        if (e.phase == 3 || event_cancelled || f->aim_cancelled) latched[e.slot] = 0;
+        else {
+            latched[e.slot] |= tc.buttons & ~before_buttons;
+            if (target >= 0 && target < DM_TC_COUNT)
+                latched[e.slot] |= tc.buttons & (tc.layout.target[target].button | (tc.skill_set ? DM_BTN_ZL : 0));
+        }
+        requests();
+    }
+    double now = now_ns()/1e9;
+
+
+    point_tick(now);
+    dm_tc_tick(&tc,now); requests();
+    uint64_t sample = dm_input_samples();
+    if (tc.pulse_button && pulse_epoch != tc.pulse_epoch) {
+        pulse_epoch = tc.pulse_epoch; pulse_sample = sample; pulse_hold_start = 0;
+    }
+    if (tc.pulse_button && !dm_cursor_pending()) {
+        if (!pulse_hold_start) pulse_hold_start = now;
+        if (sample - pulse_sample >= 4 && now - pulse_hold_start >= tc.pulse_hold_s) {
+            dm_tc_pulse_end(&tc,pulse_epoch); resume_sample = sample + 2;
+        }
+    }
+    if (!tc.pulse_button && dm_tc_pulse_pending(&tc) && resume_sample && sample >= resume_sample) { dm_tc_pulse_resume(&tc); resume_sample = 0; }
+    if (tc.pointer_valid) dm_cursor_set_screen(tc.pointer_x,tc.pointer_y,width,height); else dm_cursor_clear();
+    int active = 0; for (int i=0;i<DM_TC_MAX_TOUCH;++i) active |= tc.finger[i].active;
+    dm_ui_hand_idle(!active && !tc.pulse_button && !dm_tc_pulse_pending(&tc) && !dm_cursor_pending() && !dm_ui_touch_active());
+    *buttons |= tc.buttons;
+    for (int i=0;i<DM_TC_MAX_TOUCH;++i) *buttons |= latched[i];
+    if (!*lx && !*ly) { *lx = tc.lx; *ly = tc.ly; }
+    if (!*rx && !*ry) { *rx = tc.rx; *ry = tc.ry; }
+    pthread_mutex_unlock(&lock);
+}
+void dm_android_touch_layout(float out[DM_ANDROID_TOUCH_DRAW_FLOATS]) {
+    pthread_mutex_lock(&lock); init_locked();
+    memset(out,0,sizeof(float)*DM_ANDROID_TOUCH_DRAW_FLOATS);
+    out[0]=tc.layout.width; out[1]=tc.layout.height; out[2]=tc.navigation_mode; out[3]=tc.skill_set;
+    for (int i=0;i<23;++i) {
+        float *p = out+4+i*5;
+        dm_tc_target t = i<DM_TC_COUNT ? tc.layout.target[i] : i==13 ? tc.layout.swap : i>=15 ? tc.layout.pick[i-15] : tc.layout.diff;
+        if (i==12) {
+            p[0]=tc.joy_slot>=0?tc.joy_origin_x:tc.layout.joy_x; p[1]=tc.joy_slot>=0?tc.joy_origin_y:tc.layout.joy_y;
+            p[2]=tc.layout.joy_radius; p[3]=!tc.navigation_mode; p[4]=tc.joy_slot>=0;
+        } else {
+            p[0]=t.x; p[1]=t.y; p[2]=t.r;
+            p[3]=i<DM_TC_COUNT?!!(tc.enabled_targets&(1u<<i)):!tc.navigation_mode && (i<15 || tc.diff_open);
+
+
+            p[4]=t.button && (tc.buttons&t.button)==t.button;
+            for (int j=0;j<DM_TC_MAX_TOUCH;++j) {
+                const dm_tc_finger *f=&tc.finger[j];
+                if (!f->active || f->aim_cancelled) continue;
+                if ((i<DM_TC_COUNT && f->target==i) || (i==13 && f->target==DM_TC_SWAP)) p[4]=1;
+
+
+                if (i>=14 && f->target==DM_TC_DIFF && hypotf(f->x-t.x,f->y-t.y)<=t.r) p[4]=1;
+            }
+        }
+        if (frontend) p[3]=0;
+    }
+    dm_tg_snapshot native; dm_touch_game_snapshot(&native);
+    for (int i=0;i<6;++i) {
+        float *p=out+DM_ANDROID_TOUCH_GLYPHS+i*8;
+        dm_ta_glyph g=i==5 ? dm_ta_skill(359) : dm_ta_current_set(&native,tc.layout.target[i].button,now_ns(),tc.skill_set);
+        dm_ta_frame frame;
+        p[0]=g.status; p[1]=g.atlas;
+        int held=out[4+i*5+4]!=0;
+        if (g.status==DM_TA_GLYPH && dm_ta_frame_at(g.atlas,held?g.pressed_frame:g.normal_frame,&frame)) {
+            p[2]=frame.x; p[3]=frame.y; p[4]=frame.width; p[5]=frame.height;
+            if (g.slot>=0) { int charges=0; p[6]=dm_swapskill_slot(g.slot,&charges); p[7]=charges; }
+        }
+    }
+    dm_hud_info h; dm_hud_get(&h);
+    float *hud=out+DM_ANDROID_TOUCH_HUD;
+    hud[0]=!frontend && dm_hud_bar_visible(&h,tc.navigation_mode && !dm_tc_scene_dialog_only(&scene),hud_blocked>0);
+    hud[1]=h.level; hud[2]=h.exp_permille;
+
+
+
+
+    { static int ov = -2; if (ov == -2) { const char *e = getenv("DM_TEST_EXP_PERMILLE"); ov = e && *e ? atoi(e) : -1; if (ov > 1000) ov = 1000; } if (ov >= 0) hud[2] = ov; }
+    for (int i=0;i<4;++i) hud[3+i]=h.belt[i];
+    hud[7]=h.players; hud[8]=h.hp; hud[9]=h.hp_max; hud[10]=h.mp; hud[11]=h.mp_max;
+    hud[12]=h.points; hud[13]=h.quest_unread; hud[14]=h.dead; hud[15]=tc.map_cancel_active;
+    hud[16]=tc.lx; hud[17]=tc.ly;
+    pthread_mutex_unlock(&lock);
+}

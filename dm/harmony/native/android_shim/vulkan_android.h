@@ -1,0 +1,8 @@
+
+
+#pragma once
+#include <vulkan/vulkan_ohos.h>
+#define VkAndroidSurfaceCreateInfoKHR VkSurfaceCreateInfoOHOS
+#define VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS
+#define vkCreateAndroidSurfaceKHR vkCreateSurfaceOHOS
+#define VK_KHR_ANDROID_SURFACE_EXTENSION_NAME VK_OHOS_SURFACE_EXTENSION_NAME

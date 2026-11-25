@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">Eigener Treiber</string>
+    <string name="dmAndroidDriverPackage">Treiberpaket</string>
+    <string name="dmAndroidDriverRunning">läuft</string>
+    <string name="dmAndroidDriverIdle">gewählt, diesmal nicht geladen</string>
+    <string name="dmAndroidDriverFellBack">Der eigene Grafiktreiber ist zweimal nicht fertig gestartet. Das Spiel nutzt wieder den Systemtreiber. Neuer Versuch: Treiber auf der Technik-Seite unter Grafiktreiber neu wählen.</string>
+    <string name="dmAndroidDriverLoadFailed">Der eigene Grafiktreiber ließ sich nicht laden (%1$s). Das Spiel nutzt den Systemtreiber.</string>
+    <string name="dmAndroidDriverRejected">Die Treiber-ZIP wird nicht geladen (%1$s). Das Spiel nutzt den Systemtreiber.</string>
+    <string name="dmAndroidDriverSafe">Sicherer Start: diesmal mit dem Systemtreiber.</string>
+    <string name="dmAndroidDriverSafeShort">Systemtreiber</string>
+    <string name="dmAndroidDriverSafeLong">Mit Systemtreiber starten</string>
+    <string name="dmAndroidDriverPage">Grafiktreiber</string>
+    <string name="dmAndroidDriverSystem">Systemtreiber</string>
+    <string name="dmAndroidDriverActive">aktiv</string>
+    <string name="dmAndroidDriverChosen">gewählt</string>
+    <string name="dmAndroidDriverBlocked">gesperrt</string>
+    <string name="dmAndroidDriverAdd">Hinzufügen</string>
+    <string name="dmAndroidDriverDelete">Löschen</string>
+    <string name="dmAndroidDriverRestart">Neu starten</string>
+    <string name="dmAndroidDriverAdded">Treiber hinzugefügt: %1$s</string>
+    <string name="dmAndroidDriverInvalid">Kein gültiger Treiber: %1$s</string>
+    <string name="dmAndroidDriverAfterRestart">Gilt nach dem Neustart</string>
+</resources>

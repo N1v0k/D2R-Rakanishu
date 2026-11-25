@@ -1,0 +1,3 @@
+
+set(DM_GEN_DIR "C:/path/to/gen" CACHE PATH "Host tables and skill index generated from the player's game files")
+set(Python3_EXECUTABLE "C:/path/to/python.exe" CACHE FILEPATH "Python with the dm tools' dependencies")

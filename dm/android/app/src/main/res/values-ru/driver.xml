@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidDriverOwn">Свой драйвер</string>
+    <string name="dmAndroidDriverPackage">Пакет драйвера</string>
+    <string name="dmAndroidDriverRunning">работает</string>
+    <string name="dmAndroidDriverIdle">выбран, в этот раз не загружен</string>
+    <string name="dmAndroidDriverFellBack">Свой графический драйвер дважды не запустился до конца. Игра снова использует системный драйвер. Чтобы попробовать снова, заново выберите драйвер на странице «Техника», в разделе «Графические драйверы».</string>
+    <string name="dmAndroidDriverLoadFailed">Не удалось загрузить свой графический драйвер (%1$s). Игра использует системный драйвер.</string>
+    <string name="dmAndroidDriverRejected">ZIP драйвера не загружается (%1$s). Игра использует системный драйвер.</string>
+    <string name="dmAndroidDriverSafe">Безопасный запуск: в этот раз системный драйвер.</string>
+    <string name="dmAndroidDriverSafeShort">Системный драйвер</string>
+    <string name="dmAndroidDriverSafeLong">Запустить с системным драйвером</string>
+    <string name="dmAndroidDriverPage">Графические драйверы</string>
+    <string name="dmAndroidDriverSystem">Системный драйвер</string>
+    <string name="dmAndroidDriverActive">активен</string>
+    <string name="dmAndroidDriverChosen">выбран</string>
+    <string name="dmAndroidDriverBlocked">заблокирован</string>
+    <string name="dmAndroidDriverAdd">Добавить</string>
+    <string name="dmAndroidDriverDelete">Удалить</string>
+    <string name="dmAndroidDriverRestart">Перезапустить</string>
+    <string name="dmAndroidDriverAdded">Драйвер добавлен: %1$s</string>
+    <string name="dmAndroidDriverInvalid">Недействительный драйвер: %1$s</string>
+    <string name="dmAndroidDriverAfterRestart">Действует после перезапуска</string>
+</resources>

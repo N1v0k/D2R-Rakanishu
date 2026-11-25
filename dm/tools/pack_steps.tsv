@@ -1,0 +1,10 @@
+# The file sets of the pack build's Python steps (pack_steps.py) for game version 3.3.94012 on Android: per step the number of files its
+# progress counts, the number of output files and the SHA-256 of their sorted paths. The build on the phone checks every step against it.
+# After a change to what a step writes, take the rows of a cold build: pack_steps.py expect <build json>
+# step	progress files	output files	output path digest
+rewrite	17	17	54538b4f83cd77ac8870abe9d4c35940b5497caea8996032299ba1737f2c59bd
+art	1502	16	5619b71e7a03b38d9b929bda4b492ce85418f1273645c046c544308769fb9ad9
+overlay	141	141	9925b6fd27270921c65a1de825822b47fd0e79db2f26f42dd8523d82f92cdaaa
+app	1849	1849	3bd0f43e83701fce4cdf8c3342fca5da4db48f9fa93a91111c3abb2c8b64f197
+pictures	733	733	46f02225690e88e0cbae3039c5e854fa0a30d33a5bd74d44b778064ba05cb45b
+shaders	6931	6931	777fc42b48f1bd4aea40b423c4fb3d3deeac7029369516f0bea9e56a86c6d6ef

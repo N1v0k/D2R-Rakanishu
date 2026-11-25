@@ -1,0 +1,230 @@
+name: DmIOS
+options:
+  bundleIdPrefix: ${DM_BUNDLE_ID}
+  deploymentTarget:
+    iOS: "26.0"
+configFiles:
+  Release: Gen/dm.xcconfig
+  Debug: Gen/dm.xcconfig
+targets:
+  DmIOS:
+    type: application
+    platform: iOS
+    preBuildScripts:
+      - name: 从游戏文件生成资源
+        basedOnDependencyAnalysis: false
+        script: |
+          [ -f "$SRCROOT/Gen/assets/NativeHUD/v4/hud.json" ] && [ -f "$SRCROOT/Sources/dm_touch_native_art.c" ] || python3 "$SRCROOT/tools/gen_assets.py"
+    sources:
+      - Sources
+      - Assets.xcassets
+      - path: Gen/assets/NativeHUD/v4/hud_v4_ui
+        type: folder
+        buildPhase: resources
+      - path: Gen/assets/NativeHUD/mapgoal
+        type: folder
+        buildPhase: resources
+      - path: Gen/romfs_overlay
+        type: folder
+        buildPhase: resources
+      - path: Gen/romfs_overlay_variants
+        type: folder
+        buildPhase: resources
+      - path: Gen/romfs_overlay_astc
+        type: folder
+        buildPhase: resources
+      - path: Gen/romfs_overlay_astc_variants
+        type: folder
+        buildPhase: resources
+      - path: Gen/embed.S
+      - path: Gen/dm
+        type: folder
+        buildPhase: resources
+      - path: Gen/msl
+        type: folder
+        buildPhase: resources
+      - path: Gen/save_ref
+        type: folder
+        buildPhase: resources
+      - path: Gen/save_ref_warlock
+        type: folder
+        buildPhase: resources
+      - path: Gen/src
+      - path: Gen/main/main.c
+        compilerFlags: "-Dmain=dm_main"
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: D2R Mobile
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        SWUpdateURL: $(DM_UPDATE_URL)
+        UILaunchScreen: {}
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationLandscapeLeft
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        LSApplicationCategoryType: public.app-category.role-playing-games
+        LSSupportsGameMode: true
+        ITSAppUsesNonExemptEncryption: false
+        BAAppGroupID: group.${DM_BUNDLE_ID}
+        BAHasManagedAssetPacks: true
+        BAUsesAppleHosting: true
+        CADisableMinimumFrameDurationOnPhone: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: SceneDelegate
+    entitlements:
+      path: Sources/DmIOS.entitlements
+      properties:
+        com.apple.developer.kernel.increased-memory-limit: true
+        com.apple.developer.kernel.extended-virtual-addressing: true
+        com.apple.developer.sustained-execution: true
+        com.apple.security.application-groups: ["group.${DM_BUNDLE_ID}"]
+        com.apple.developer.icloud-container-identifiers: ["iCloud.${DM_BUNDLE_ID}"]
+        com.apple.developer.icloud-services: [CloudDocuments]
+        com.apple.developer.ubiquity-container-identifiers: ["iCloud.${DM_BUNDLE_ID}"]
+    dependencies:
+      - target: RomfsDownloader
+      - sdk: BackgroundAssets.framework
+      - sdk: Network.framework
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: ${DM_BUNDLE_ID}
+      ENABLE_USER_SCRIPT_SANDBOXING: NO
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: $(DM_BUILD_NUMBER)
+      DM_BUILD_NUMBER: "1"
+      DM_UPDATE_URL: ""
+      DEVELOPMENT_TEAM: ${DM_TEAM_ID}
+      CODE_SIGN_STYLE: Automatic
+      TARGETED_DEVICE_FAMILY: $(DM_DEVICE_FAMILY)
+      DM_DEVICE_FAMILY: "1,2"
+      ENABLE_BITCODE: NO
+      GCC_C_LANGUAGE_STANDARD: gnu11
+      OTHER_CFLAGS: $(inherited) -mcpu=apple-a18
+      CLANG_ENABLE_OBJC_ARC: YES
+      DEBUG_INFORMATION_FORMAT: dwarf
+  RomfsDownloader:
+    type: extensionkit-extension
+    platform: iOS
+    sources:
+      - RomfsDownloader
+    info:
+      path: RomfsDownloader/Info.plist
+      properties:
+        CFBundleDisplayName: RomfsDownloader
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        EXAppExtensionAttributes:
+          EXExtensionPointIdentifier: com.apple.background-asset-downloader-extension
+    entitlements:
+      path: RomfsDownloader/RomfsDownloader.entitlements
+      properties:
+        com.apple.security.application-groups: ["group.${DM_BUNDLE_ID}"]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: ${DM_BUNDLE_ID}.romfs-downloader
+      DEVELOPMENT_TEAM: ${DM_TEAM_ID}
+      CODE_SIGN_STYLE: Automatic
+      TARGETED_DEVICE_FAMILY: $(DM_DEVICE_FAMILY)
+      DM_DEVICE_FAMILY: "1,2"
+      IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+      SWIFT_VERSION: "6.0"
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: $(DM_BUILD_NUMBER)
+      DM_BUILD_NUMBER: "1"
+  TouchSmokeTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - TouchSmokeTests
+    dependencies:
+      - target: DmIOS
+    settings:
+      DEVELOPMENT_TEAM: ${DM_TEAM_ID}
+      CODE_SIGN_STYLE: Automatic
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_TARGET_NAME: DmIOS
+  DmTV:
+    type: application
+    platform: tvOS
+    deploymentTarget: "26.0"
+    preBuildScripts:
+      - name: 生成 tvOS 图标
+        basedOnDependencyAnalysis: false
+        script: |
+          [ -f "$SRCROOT/Gen/tvos/Assets.xcassets/Contents.json" ] || python3 "$SRCROOT/../tvos/gen_icon.py" "$SRCROOT/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png" "$SRCROOT/Gen/tvos/Assets.xcassets"
+    sources:
+      - ../tvos/main.m
+      - Sources/dm_gamepad.m
+      - Sources/dm_metal_cache_guard.c
+      - Sources/dm_touch_controls.c
+      - path: Gen/tvos/Assets.xcassets
+        optional: true
+      - path: Gen/romfs_overlay
+        type: folder
+        buildPhase: resources
+      - path: Gen/embed.S
+      - path: Gen/dm
+        type: folder
+        buildPhase: resources
+      - path: Gen/tvos/msl
+        type: folder
+        buildPhase: resources
+        optional: true
+      - path: Gen/save_ref
+        type: folder
+        buildPhase: resources
+      - path: Gen/src
+      - path: Gen/main/main.c
+        compilerFlags: "-Dmain=dm_main"
+    info:
+      path: Gen/tvos/Info.plist
+      properties:
+        CFBundleDisplayName: D2R Mobile TV
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        GCSupportedGameControllers: [{ProfileName: ExtendedGamepad}]
+        GCSupportsControllerUserInteraction: true
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: SceneDelegate
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: ${DM_BUNDLE_ID}.tv
+      ENABLE_USER_SCRIPT_SANDBOXING: NO
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: "1"
+      DEVELOPMENT_TEAM: ${DM_TEAM_ID}
+      CODE_SIGN_STYLE: Automatic
+      TARGETED_DEVICE_FAMILY: "3"
+      ENABLE_BITCODE: NO
+      GCC_C_LANGUAGE_STANDARD: gnu11
+      OTHER_CFLAGS: $(inherited) -mcpu=apple-a15
+      CLANG_ENABLE_OBJC_ARC: YES
+      DEBUG_INFORMATION_FORMAT: dwarf
+schemes:
+  DmIOS:
+    build:
+      targets:
+        DmIOS: all
+        TouchSmokeTests: [test]
+    test:
+      targets:
+        - TouchSmokeTests
+  DmTV:
+    build:
+      targets:
+        DmTV: all

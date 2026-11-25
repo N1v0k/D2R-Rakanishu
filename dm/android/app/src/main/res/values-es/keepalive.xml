@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+<resources>
+    <string name="dmAndroidKeepChannel">Partida en curso</string>
+    <string name="dmAndroidKeepChannelInfo">Mantiene la partida en pausa en la memoria mientras la app está en segundo plano.</string>
+    <string name="dmAndroidKeepRunning">Juego en marcha</string>
+    <string name="dmAndroidKeepStays">Se mantiene abierto en segundo plano</string>
+    <string name="dmAndroidKeepPaused">Juego en pausa</string>
+    <string name="dmAndroidKeepBackground">Juego en segundo plano</string>
+    <string name="dmAndroidKeepTap">Toca para seguir jugando</string>
+    <string name="dmAndroidKeepQuit">Guardar y salir</string>
+    <string name="dmAndroidKeepOk">Protección en segundo plano activa</string>
+    <string name="dmAndroidKeepNoNotify">Protección en segundo plano activa · notificaciones desactivadas</string>
+    <string name="dmAndroidKeepBattery">Optimización de batería activada: protección limitada</string>
+    <string name="dmAndroidKeepAllow">Permitir ahora</string>
+    <string name="dmAndroidKeepRestricted">Uso en segundo plano restringido: protección limitada</string>
+    <string name="dmAndroidKeepFailed">Protección en segundo plano desactivada: Android la rechazó</string>
+</resources>
