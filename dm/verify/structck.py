@@ -37,6 +37,8 @@
 import sys, os, re, struct, subprocess, tempfile
 sys.path.insert(0, os.path.dirname(__file__))
 import nsoimg
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
+from game_addrs import GA
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 
 LLVM = os.environ.get('LLVM_BIN', '/opt/homebrew/opt/llvm@23/bin')
@@ -133,20 +135,22 @@ for off, ob, nb, why in cuts:
 
 
 _hreg = {}
+_ADDR = r'(0x[0-9a-fA-F]+|GA_[A-Z][A-Z0-9_]*)'
+def _addr(t): return int(t, 16) if t.startswith('0x') else getattr(GA, t[3:])
 for l in open(os.path.join(os.path.dirname(__file__), '..', 'host', 'hle.h'), encoding='utf-8'):
-    m = re.match(r'//\s+(0x[0-9a-fA-F]+)\s.*?\s(0x[0-9a-fA-F]+)（([^）]*)', l)
-    if m: _hreg[int(m[1], 16)] = (int(m[2], 16), m[3])
+    m = re.match(r'//\s+(0x[0-9a-fA-F]+)\s.*?\s' + _ADDR + '（([^）]*)', l)
+    if m: _hreg[int(m[1], 16)] = (_addr(m[2]), m[3])
 def _bl(w, o): return o + 4 * (((w & 0x3FFFFFF) ^ 0x2000000) - 0x2000000) if w & 0xFC000000 == 0x94000000 else None
 for a, n in _hostcall.items():
     if n not in _hreg: bad(f'宿主调用 svc #{n:#x}：hle.h 登记表没有对应行'); continue
     roff, form = _hreg[n]
     if mod != 'main' or roff != a: bad(f'宿主调用 svc #{n:#x} 在 {mod} {a:#x}，登记表写 main {roff:#x}'); continue
     nbw = next(c[2] for c in cuts if c[0] <= a < c[0] + len(c[2]))
-    mt = re.search(r'\bbl (0x[0-9a-fA-F]+)', form)
+    mt = re.search(r'\bbl ' + _ADDR, form)
     if mt:
         t = _bl(W(orig, a), a)
         if t is None: bad(f'宿主调用 svc #{n:#x} {a:#x}：登记为调用点形，原指令 {W(orig, a):#010x} 不是 bl')
-        elif t != int(mt[1], 16): bad(f'宿主调用 svc #{n:#x} {a:#x}：原 bl 目标 {t:#x} ≠ 登记 {mt[1]}')
+        elif t != _addr(mt[1]): bad(f'宿主调用 svc #{n:#x} {a:#x}：原 bl 目标 {t:#x} ≠ 登记 {mt[1]}')
         if len(nbw) != 4: bad(f'宿主调用 svc #{n:#x} {a:#x}：调用点形剪口只许换这一条指令')
     elif '入口' in form:
         if a not in set(nsoimg.func_starts(orig, TE)): bad(f'宿主调用 svc #{n:#x} {a:#x}：登记为入口形，不是 eh_frame 函数入口')

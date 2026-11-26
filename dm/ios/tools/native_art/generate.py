@@ -37,7 +37,7 @@ def main(romfs, output=None):
     tables = {}
     for t in man['official_tables']:
         raw = romfs_art.read(romfs, 'global/excel/' + t['file'])
-        if sha(raw) != t['sha256']: raise SystemExit('native_art：游戏文件里的 %s 和冻结的不一样（游戏版本不对？要 3.3.94012）' % t['file'])
+        if sha(raw) != t['sha256']: raise SystemExit('native_art：游戏文件里的 %s 和冻结的不一样（游戏版本不对？要 3.4.95035）' % t['file'])
         tables[t['file']] = list(csv.DictReader(io.StringIO(raw.decode('utf-8')), delimiter='\t'))
 
 

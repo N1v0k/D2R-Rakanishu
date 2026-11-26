@@ -6,6 +6,7 @@
 #define st_mtimespec st_mtim
 #endif
 #include "../dm_cloudmerge.c"
+#include "../game_addrs.h"
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -93,8 +94,8 @@ static void tramp(uint64_t off, void *fn) { uint8_t *p = g_base + off; p[0] = 0x
 static int base_init(void) {
     g_base = mmap(NULL, 0x2200000, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (g_base == MAP_FAILED) return 0;
-    tramp(0x5b9290, (void *)f_get_stat); tramp(0x5bc1f0, (void *)f_set_stat); tramp(0x658be0, (void *)f_free); tramp(0x650d10, (void *)f_near);
-    tramp(0x55f620, (void *)f_slot); tramp(0x6f1940, (void *)f_place); tramp(0x642f70, (void *)f_notify);
+    tramp(GA_STAT_GET, (void *)f_get_stat); tramp(GA_STAT_SET, (void *)f_set_stat); tramp(GA_ITEM_FREE, (void *)f_free); tramp(GA_OBJECT_NEAR, (void *)f_near);
+    tramp(GA_INV_FIND_FREE, (void *)f_slot); tramp(GA_ITEM_PLACE_ON_LOAD, (void *)f_place); tramp(GA_ITEM_NOTIFY_CLIENT, (void *)f_notify);
     return 1;
 }
 #endif

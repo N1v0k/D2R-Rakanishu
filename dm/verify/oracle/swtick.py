@@ -17,8 +17,10 @@
 import sys, os, struct, json, argparse, time
 sys.path.insert(0, os.path.dirname(__file__))
 from swgdb import Gdb
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools'))
+from game_addrs import GA
 
-TICK_ENTRY = 0x5d3bc0
+TICK_ENTRY = GA.SERVER_TICK
 TBASE = (0x2230, 0x2630, 0x2a30, 0x3230, 0x2e30)
 NB, NEXT, MAXS = 128, 0x158, 96
 

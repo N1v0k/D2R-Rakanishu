@@ -19,13 +19,13 @@ predicate = text[start:end]
 
 
 for guest, stub in (
-    ('((uint64_t(*)(uint32_t))(b+0x45f9d0))', 'player_lookup'),
-    ('((int(*)(uint64_t,uint64_t,int))(b+0x5b1710))', 'equip_bonus'),
+    ('((uint64_t(*)(uint32_t))(b+GA_CLIENT_PLAYER_GET))', 'player_lookup'),
+    ('((int(*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))', 'equip_bonus'),
 ):
     assert predicate.count(guest) == 1, 'guest call seam changed: ' + guest
     predicate = predicate.replace(guest, stub)
 
-code = r'''
+code = '#include "%s"\n' % (src.parents[2] / 'host/game_addrs.h') + r'''
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,10 +46,10 @@ static void check(const char *name,unsigned char *base,uint32_t id,int32_t item,
     if(actual!=expected) { fprintf(stderr,"FAIL %s: got %d expected %d\n",name,actual,expected);bad++; }
 }
 int main(void) {
-    size_t size=0x2d64a18+64;
+    size_t size=GA_DATA_TABLES+64;
     unsigned char *base=calloc(1,size);
     if(!base) {perror("calloc");return 2;}
-    player[0x1bd]=1;putptr(player+0x100,list);putptr(base+0x2d64a18+16,config);putptr(config+0x1500,&cap);
+    player[0x1bd]=1;putptr(player+0x100,list);putptr(base+GA_DATA_TABLES+16,config);putptr(config+0x1500,&cap);
     const char *names[]={"Interact","Loot","TownPortal","EmoteWheel","SwapWeapons","Map","ShowItems","RunToggle","CubeLoot"};
     const uint32_t ids[]={357,358,359,360,361,362,363,364,370};
     for(int i=0;i<9;i++) check(names[i],base,ids[i],-1,1);

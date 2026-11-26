@@ -8,7 +8,7 @@ enum { SIM_LIST_IDLE = 0x40000000 };
 
 static int sim_dr(uint8_t *b,uint64_t pl,int st) {
     unsigned ver=*(uint8_t *)(pl+0x1bd);if(ver<1 || ver>3)return -1;
-    uint64_t table=*(uint64_t *)(b+0x2d64a18+ver*16);if(!table)return -1;
+    uint64_t table=*(uint64_t *)(b+GA_DATA_TABLES+ver*16);if(!table)return -1;
     uint64_t stats=*(uint64_t *)(table+0x1290);int count=*(int32_t *)(table+0x1298);
     if(!stats || count<1 || count>4096 || st<0 || st>=count)return -1;
     return (*(uint8_t *)(stats+(uint64_t)st*0x144+4)&4)!=0;
@@ -71,7 +71,7 @@ static int sim_dual_fill(uint8_t *b,const dm_sim_data *d,uint64_t pl,dm_sim_char
     for(int h=0;h<2;h++) {
         if(!sim_weapon(b,hand_items[h],1,c->cls,&in[h].w))return -1;
         in[h].ias=gstat(b,hand_items[h],93,0);in[h].ds=gstat(b,hand_items[h],141,0);
-        in[h].mcs=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,hand_items[h],0,2);
+        in[h].mcs=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,hand_items[h],0,2);
         for(int s=0;s<512;s++)val[h][s]=dr[s] && d->stat_name[s][0]?gstat(b,hand_items[h],s,0):0;
     }
     const int *const vp[2]={val[0],val[1]};
@@ -83,8 +83,8 @@ static int sim_dual_fill(uint8_t *b,const dm_sim_data *d,uint64_t pl,dm_sim_char
         uint64_t node=skill_node(pl,id),record=node?*(uint64_t *)node:0;
         prog[id]=record && (*(uint8_t *)(record+0x24)&8)?c->stat_value[325]:0;
         for(int h=0;h<2;h++) {
-            mth[h][id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,hand_items[h],node,0):DM_SIM_NO_NODE;
-            mdmg[h][id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,hand_items[h],node,1):DM_SIM_NO_NODE;
+            mth[h][id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,hand_items[h],node,0):DM_SIM_NO_NODE;
+            mdmg[h][id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,hand_items[h],node,1):DM_SIM_NO_NODE;
         }
         if(record)c->endpoint_state_bad[id]=charge>0 && (*(uint8_t *)(record+0x24)&8)!=0;
     }
@@ -120,7 +120,7 @@ static void sim_dual_now(uint8_t *b,const dm_sim_data *d,uint64_t pl,dm_sim_char
     if(!base->ok || idle!=1 || !nd){c->capture_bad|=1;c->endpoint_bad=1;return;}
     int sias=sim_get(c,d,"attackrate")-100;
     sim_dual_strip(b,d,pl,c,hands,dr_flag);
-    int alvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,nd,0);
+    int alvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,nd,0);
     dm_ic_cb cb[2];for(int h=0;h<2;h++)sim_dual_cb(b,pl,c->cls,base,hands[h],1,nd,alvl,NULL,&cb[h]);
     int filled=sim_dual_fill(b,d,pl,c,hands,cb,dr_flag,NULL);
     if(filled){c->capture_bad|=1;c->endpoint_bad=1;return;}
@@ -161,7 +161,7 @@ static int sim_dual_after(uint8_t *b,const dm_sim_data *d,uint64_t pl,const dm_s
     }
     uint64_t nd=skill_node(pl,0);
     if(!nd){a->capture_bad|=1;a->endpoint_bad=1;return 1;}
-    int alvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,nd,0)+dsk;
+    int alvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,nd,0)+dsk;
     if(!after_dual) {
         uint64_t w=sim_hand_weapon(b,after[0])?after[0]:after[1];
         int mode=w?hand_mode(b,pl,after[0],after[1]):0;
@@ -179,16 +179,16 @@ static int sim_dual_after(uint8_t *b,const dm_sim_data *d,uint64_t pl,const dm_s
             for(int id=0;id<DM_SIM_MAXSKILL;id++) {
                 uint64_t node=skill_node(pl,id),record=node?*(uint64_t *)node:0;
                 prog[id]=record && (*(uint8_t *)(record+0x24)&8)?a->stat_value[325]:0;
-                mth[id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,w,node,0):DM_SIM_NO_NODE;
-                mdmg[id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,w,node,1):DM_SIM_NO_NODE;
+                mth[id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,w,node,0):DM_SIM_NO_NODE;
+                mdmg[id]=record?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,w,node,1):DM_SIM_NO_NODE;
             }
             x=*a;
-            if(dm_gear_hand_passive(d,c,&x,&cb,mth,mdmg,((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,w,0,2),prog)){a->capture_bad|=1|16;a->endpoint_bad=1;return 1;}
+            if(dm_gear_hand_passive(d,c,&x,&cb,mth,mdmg,((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,w,0,2),prog)){a->capture_bad|=1|16;a->endpoint_bad=1;return 1;}
         }
         sim_values(d,a);a->nhands=1;memset(&a->hand[1],0,sizeof a->hand[1]);memset(&a->hand[0],0,sizeof a->hand[0]);
         sim_combat(a,&cb);
         if(!sim_weapon(b,w,mode,a->cls,&a->hand[0])){a->capture_bad|=1;a->endpoint_bad=1;}
-        sim_ar_inputs(b,pl,w,&cb,a);a->mastery_cs=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,w,0,2);
+        sim_ar_inputs(b,pl,w,&cb,a);a->mastery_cs=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,w,0,2);
         if(passive){for(int id=0;id<DM_SIM_MAXSKILL;id++)if(mth[id]!=DM_SIM_NO_NODE){a->ar_bonus[id]=x.ar_bonus[id];a->damage_mastery_delta[id]=x.damage_mastery_delta[id];}a->mastery_cs=x.mastery_cs;}
         a->sias=sim_get(a,d,"attackrate")-100+a->hand[0].wsm;
         return 1;

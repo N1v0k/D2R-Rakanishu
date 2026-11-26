@@ -11,11 +11,13 @@
 
 
 
-import struct, sys
-LOADER = 0x1739290
+import os, struct, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools'))
+from game_addrs import GA, GL
+LOADER = GA.NVN_LOADER
 img, out = sys.argv[1], sys.argv[2]
 d = open(img, 'rb').read()
-TEXT_END = 0x1b786a0
+TEXT_END = GL.TEXT_END
 N = TEXT_END // 4
 w = struct.unpack_from('<%dI' % N, d, 0)
 

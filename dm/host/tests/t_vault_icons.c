@@ -2,6 +2,7 @@
 
 
 #include "../dm_vault_ui.c"
+#include "../game_addrs.h"
 #include <stddef.h>
 
 module_t g_mod[MAX_MOD];
@@ -71,7 +72,7 @@ int main(void) {
 
 
 
-    uint8_t *base = (uint8_t *)((uintptr_t)image_stub - 0xac1704);
+    uint8_t *base = (uint8_t *)((uintptr_t)image_stub - GA_IMAGE_SET_PATH);
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = base;
     vtable[0x10 / 8] = addr(relayout);
     widget_init(&owner, "TouchVault", 0);

@@ -28,6 +28,7 @@
 
 
 #include "dm_rift.h"
+#include "game_addrs.h"
 #include <errno.h>
 #include "dm_bossrush.h"
 #include "dm_hud.h"
@@ -68,8 +69,8 @@ static int unit_xy(uint64_t u, int *x, int *y) {
 }
 static int ground_items(uint64_t G) { int n = 0; for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2e30 + 8 * b); u; u = rd(u + 0x158)) n += *(uint32_t *)(uintptr_t)u == 4 && *(uint32_t *)(uintptr_t)(u + 0xc) == 3; return n; }
 static uint64_t find_unit(uint64_t G, int type, uint32_t id) { for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + type * 0x400 + 8 * b); u; u = rd(u + 0x158)) if (*(uint32_t *)(uintptr_t)(u + 8) == id) return u; return 0; }
-static int gs(uint64_t u, int st) { return ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, st, 0); }
-static void ss(uint64_t u, int st, int v) { ((void (*)(uint64_t, int, int, int))(B + 0x5bc1f0))(u, st, v, 0); }
+static int gs(uint64_t u, int st) { return ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, st, 0); }
+static void ss(uint64_t u, int st, int v) { ((void (*)(uint64_t, int, int, int))(B + GA_STAT_SET))(u, st, v, 0); }
 
 
 
@@ -87,7 +88,7 @@ static uint64_t room_at(uint64_t lv, int px, int py) { int n = 0; for (uint64_t 
 
 static uint64_t room_load(uint64_t G, uint64_t lv, int px, int py) { return dm_level_room_load(B, G, lv, px, py); }
 static void warp(uint64_t G, uint64_t player, int lv) { dm_warp(B, G, player, lv); }
-static uint64_t tables(uint64_t G) { return rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + *(uint8_t *)(uintptr_t)(G + 0x106) * 16)); }
+static uint64_t tables(uint64_t G) { return rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + *(uint8_t *)(uintptr_t)(G + 0x106) * 16)); }
 
 
 
@@ -372,7 +373,7 @@ static int su_cap(int tier) { return tier >= 90 ? 3 : 2; }
 
 static uint64_t su_spawn(uint64_t G, uint64_t room, int x, int y, int row) {
     uint8_t *bm = (uint8_t *)(uintptr_t)(G + 0x5668 + (row >> 3)), bit = (uint8_t)(1u << (row & 7)), old = *bm & bit; *bm &= (uint8_t)~bit;
-    uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int))(B + 0x69b310))(G, room, x, y, row, 0);
+    uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int))(B + GA_SUPERUNIQUE_SPAWN))(G, room, x, y, row, 0);
     uint8_t mid = *bm & bit; *bm = (uint8_t)((*bm & ~bit) | old); static int n; if (n++ < 3) LOG("秘境：刷超级金怪 行 %d：本局已出现位 刷前 %d、刷完原版置成 %d、写回 %d", row, old != 0, mid != 0, (*bm & bit) != 0); return u; }
 static int g_near_now;
 static const uint8_t k_su_pool[] = { 0, 1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 19, 21, 22, 23, 24, 25, 32, 33, 34, 35, 36, 37, 38, 40, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59 };
@@ -430,7 +431,7 @@ void dm_rift_client_pump(uint8_t *b) {
 
     { static int seq0 = -1; int sq = atomic_load(&g_run_seq); if (sq != seq0) { seq0 = sq; memset(seen, 0, sizeof seen); memset(dead, 0, sizeof dead); } }
     if (!b || atomic_load(&K.st) == ST_IDLE) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); if (!pl) { atomic_store(&g_cli_lv, -1); return; }
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); if (!pl) { atomic_store(&g_cli_lv, -1); return; }
 
 
 
@@ -444,12 +445,12 @@ void dm_rift_client_pump(uint8_t *b) {
     if (atomic_load(&K.st) != ST_RUN) return;
     if (lv != lvp) { lvp = lv; LOG("秘境：客户端看到关卡 %d（%s秘境图）", lv, in_rift_map(lv) ? "是" : "不是"); }
     if (!in_rift_map(lv)) return;
-    for (int k = 0; k < 128; k++) for (uint64_t u = rd((uint64_t)(uintptr_t)(b + 0x2d603a0 + 1 * 0x400 + k * 8)); u; u = rd(u + 0x158)) {
+    for (int k = 0; k < 128; k++) for (uint64_t u = rd((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + k * 8)); u; u = rd(u + 0x158)) {
         uint32_t id = *(uint32_t *)(uintptr_t)(u + 8), m = *(uint32_t *)(uintptr_t)(u + 0xc), h = id & 4095;
         if (is_guard(id)) continue;
         int alive = m != 0 && m != 12;
         if (alive) { if (seen[h] == id) continue;
-            if (((int (*)(int, uint64_t, uint64_t))(b + 0x2f7b7c))(0x165, pl, u) != 1) continue;
+            if (((int (*)(int, uint64_t, uint64_t))(b + GA_UNIT_INTERACT_CLASS))(0x165, pl, u) != 1) continue;
             seen[h] = id; uint32_t w = atomic_fetch_add(&g_newq_w, 1); atomic_store(&g_newq[w % NQ], id); continue; }
         if (seen[h] != id || dead[h] == id) continue;
         dead[h] = id; hs_kill(id); uint64_t md = rd(u + 0x10); uint8_t fl = md ? *(uint8_t *)(uintptr_t)(md + 0x1a) : 0; int p = pts_of(fl);
@@ -594,8 +595,8 @@ static void pet_file_save(void) { char p[1200], q[1220]; if (!pet_path(p, sizeof
 
 static int bound_cap(uint64_t u, uint64_t player) {
     uint8_t ver = *(uint8_t *)(uintptr_t)(u + 0x1bd); if (ver < 1 || ver > 3) return 0;
-    uint64_t row = ((uint64_t (*)(uint64_t))(B + 0x51ea40))(u); if (!row || *(uint16_t *)(uintptr_t)(row + 0x50) != 7) return 0;
-    int v = ((int (*)(int, uint64_t, uint64_t, uint32_t))(B + 0x5285b0))(ver, u, player, *(uint32_t *)(uintptr_t)(row + 0x5c));
+    uint64_t row = ((uint64_t (*)(uint64_t))(B + GA_MONPET_ROW_GET))(u); if (!row || *(uint16_t *)(uintptr_t)(row + 0x50) != 7) return 0;
+    int v = ((int (*)(int, uint64_t, uint64_t, uint32_t))(B + GA_MON_CALC_EVAL))(ver, u, player, *(uint32_t *)(uintptr_t)(row + 0x5c));
     return v > 0 && v <= 0x7fffff ? v << 8 : 0;
 }
 static void pet_hp_pump(uint64_t G, uint64_t player, uint32_t t) {
@@ -673,11 +674,11 @@ static uint64_t quest_rec(uint64_t G, int type) { int n = 0; for (uint64_t q = r
 static uint32_t place_door(uint64_t G, uint64_t room, int cx, int cy, const char *what, int cls, int exact) {
     int32_t pos[2] = { cx, cy }; uint64_t rr = !room ? 0 : exact ? room : free_spot(G, room, pos); if (!rr) return 0;
     uint64_t q = quest_rec(G, 0x14); uint8_t o21 = q ? *(uint8_t *)(uintptr_t)(q + 0x21) : 0; uint32_t o24 = q ? *(uint32_t *)(uintptr_t)(q + 0x24) : 0;
-    uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + 0x7ce630))(G, rr, 2, cls, pos[0], pos[1], 0, 0, 0);
+    uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + GA_UNIT_SPAWN))(G, rr, 2, cls, pos[0], pos[1], 0, 0, 0);
     if (q) { int changed = *(uint8_t *)(uintptr_t)(q + 0x21) != o21 || *(uint32_t *)(uintptr_t)(q + 0x24) != o24; *(uint8_t *)(uintptr_t)(q + 0x21) = o21; *(uint32_t *)(uintptr_t)(q + 0x24) = o24;
         LOG("秘境：建门%s第三幕任务记录 +0x21 / +0x24（已写回 %u / %u）", changed ? "改了" : "没改", o21, o24); }
     if (!u) return 0;
-    ((void (*)(uint64_t, int))(B + 0x5ca8a0))(u, 2);
+    ((void (*)(uint64_t, int))(B + GA_UNIT_SET_MODE))(u, 2);
     LOG("秘境：%s开门（物件 %d id %u 在 %d,%d，模式 %u）", what, cls, *(uint32_t *)(uintptr_t)(u + 8), pos[0], pos[1], *(uint32_t *)(uintptr_t)(u + 0xc));
     return *(uint32_t *)(uintptr_t)(u + 8);
 }
@@ -700,7 +701,7 @@ static int door_gap(uint64_t G, int type, int lvno, int x, int y) { int best = 1
 static int preset_gap(uint64_t G, uint64_t lvt, int mon, int x, int y, int *cls) { int best = 1 << 30, n = 0;
     for (uint64_t r = dm_level_rooms(lvt); r && n < 2000; r = rd(r + 0x48), n++) { int rx = *(int32_t *)(uintptr_t)(r + 0x60) * 5, ry = *(int32_t *)(uintptr_t)(r + 0x64) * 5, w = *(int32_t *)(uintptr_t)(r + 0x68) * 5, h = *(int32_t *)(uintptr_t)(r + 0x6c) * 5;
         if (x < rx - DOOR_HOME_GAP || x > rx + w + DOOR_HOME_GAP || y < ry - DOOR_HOME_GAP || y > ry + h + DOOR_HOME_GAP) continue;
-        if (!rd(r + 0x58)) ((void (*)(int, uint64_t))(B + 0x52dcc0))(*(uint8_t *)(uintptr_t)(G + 0x106), r);
+        if (!rd(r + 0x58)) ((void (*)(int, uint64_t))(B + GA_ROOM_INIT))(*(uint8_t *)(uintptr_t)(G + 0x106), r);
         for (uint64_t u = rd(r + 0x98), k = 0; u && k < 256; u = rd(u + 0x10), k++) { if (*(int32_t *)(uintptr_t)(u + 0x20) != (mon ? 1 : 2)) continue;
             int ux = rx + *(int32_t *)(uintptr_t)(u + 8), uy = ry + *(int32_t *)(uintptr_t)(u + 0x24), d = abs(ux - x) > abs(uy - y) ? abs(ux - x) : abs(uy - y); if (d < best) { best = d; if (cls) *cls = *(int32_t *)(uintptr_t)(u + 4); } } }
     return best; }
@@ -710,7 +711,7 @@ static int preset_gap(uint64_t G, uint64_t lvt, int mon, int x, int y, int *cls)
 
 static int door_line_open(uint64_t lvt, int ax, int ay, int x, int y) { int n = abs(x - ax) > abs(y - ay) ? abs(x - ax) : abs(y - ay); uint64_t room = room_at(lvt, ax, ay); if (!room) return 0;
     for (int i = 1; i <= n; i++) { int cx = ax + (x - ax) * i / n, cy = ay + (y - ay) * i / n; uint64_t r2 = room_at(lvt, cx, cy); if (!r2) return 0;
-        if (((uint32_t (*)(uint64_t, int, int, int))(B + 0x4ce020))(r2, cx, cy, 1) & 0xffff) return 0; }
+        if (((uint32_t (*)(uint64_t, int, int, int))(B + GA_COLL_QUERY))(r2, cx, cy, 1) & 0xffff) return 0; }
     return 1; }
 
 
@@ -722,10 +723,10 @@ static uint32_t ds_fill(uint64_t G, uint64_t player, int x, int y, struct ds_gri
     uint64_t lvp = level_of(player), pp = rd(player + 0x38); uint32_t mk = pp ? *(uint32_t *)(uintptr_t)(pp + 0x64) : 0; if (!(mk & 1) || (mk & ~0xffffu)) mk = 0x1c09;
     if (G) mk &= ~0x1000u;
     for (int iy = 0; iy < DS_W; iy++) for (int ix = 0; ix < DS_W; ix++) { int cx = x + ix - DS_R, cy = y + iy - DS_R; uint64_t r = G ? room_load(G, lvp, cx, cy) : room_at(lvp, cx, cy);
-        uint32_t v = r ? ((uint32_t (*)(uint64_t, int, int, int))(B + 0x4ce020))(r, cx, cy, (int)mk) & 0xffff : 1; if (ix == DS_R && iy == DS_R) v &= ~0x1000u; dg->blk[iy * DS_W + ix] = v != 0; }
+        uint32_t v = r ? ((uint32_t (*)(uint64_t, int, int, int))(B + GA_COLL_QUERY))(r, cx, cy, (int)mk) & 0xffff : 1; if (ix == DS_R && iy == DS_R) v &= ~0x1000u; dg->blk[iy * DS_W + ix] = v != 0; }
     ds_flood_r(dg, G ? 2 : 0); return mk;
 }
-static int door_clear(uint64_t lvt, int x, int y) { for (int dy = -5; dy <= 5; dy++) for (int dx = -5; dx <= 5; dx++) { uint64_t r = room_at(lvt, x + dx, y + dy); if (!r || (((uint32_t (*)(uint64_t, int, int, int))(B + 0x4ce020))(r, x + dx, y + dy, 1) & 0xffff)) return 0; } return 1; }
+static int door_clear(uint64_t lvt, int x, int y) { for (int dy = -5; dy <= 5; dy++) for (int dx = -5; dx <= 5; dx++) { uint64_t r = room_at(lvt, x + dx, y + dy); if (!r || (((uint32_t (*)(uint64_t, int, int, int))(B + GA_COLL_QUERY))(r, x + dx, y + dy, 1) & 0xffff)) return 0; } return 1; }
 static uint64_t pick_door_spot(uint64_t G, uint64_t lvt, int lvno, int ax, int ay, int32_t out[2]) {
     long best = -1; uint64_t broom = 0; int bx = 0, by = 0, c[6] = {0};
     for (int dy = -40; dy <= 40; dy += 2) for (int dx = -40; dx <= 40; dx += 2) { long d2 = (long)dx * dx + (long)dy * dy; c[0]++;
@@ -837,7 +838,7 @@ void dm_rift_merc_locked_hint(void) {
 
     static uint64_t last; struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); uint64_t now = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000; if (!B || now - last < 500) return; last = now;
     dm_game_notice(B, dm_str(B, "dmMercSlotLocked")); LOG("佣兵装备位：提示「%s」", dm_str(B, "dmMercSlotLocked")); }
-static int merc_class(uint64_t u) { uint8_t v = *(uint8_t *)(uintptr_t)(u + 0x1bd); if (!B || v < 1 || v > 3) return 0; uint64_t T = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + v * 16)), a = rd(T + 0x558), n = rd(T + 0x560);
+static int merc_class(uint64_t u) { uint8_t v = *(uint8_t *)(uintptr_t)(u + 0x1bd); if (!B || v < 1 || v > 3) return 0; uint64_t T = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + v * 16)), a = rd(T + 0x558), n = rd(T + 0x560);
     int cls = *(int32_t *)(uintptr_t)(u + 4); for (uint64_t k = 0; a && k < n && k < 4096; k++) if (*(int32_t *)(uintptr_t)(a + k * 0x150 + 8) == cls) return 1; return 0; }
 
 
@@ -845,7 +846,7 @@ static int merc_class(uint64_t u) { uint8_t v = *(uint8_t *)(uintptr_t)(u + 0x1b
 
 int dm_rift_merc_slot_empty(int loc) {
     if (!B) return 0;
-    for (int k = 0; k < 128; k++) for (uint64_t u = rd((uint64_t)(uintptr_t)(B + 0x2d603a0 + 1 * 0x400 + k * 8)); u; u = rd(u + 0x158)) { if (!merc_class(u)) continue;
+    for (int k = 0; k < 128; k++) for (uint64_t u = rd((uint64_t)(uintptr_t)(B + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + k * 8)); u; u = rd(u + 0x158)) { if (!merc_class(u)) continue;
         uint64_t a0 = rd(u + 0xa0), iv = a0 && *(int32_t *)(uintptr_t)(a0 + 8) && rd(u + 0x98) ? rd(u + 0x98) : rd(u + 0x90); int n = 0;
         for (uint64_t it = iv ? rd(iv + 0x10) : 0; it && n < 40; n++) { uint64_t d = rd(it + 0x10); if (!d) break; if (*(uint8_t *)(uintptr_t)(d + 0x54) == loc) return 0; it = rd(d + 0xb0); }
         return 1; }
@@ -855,7 +856,7 @@ void svc_merc_slot(uint64_t *regs) {
     static const int ty[] = { 10, 12, 15, 16, 19 }; static int test = -1, nlog; regs[8] = 0; if ((uint32_t)regs[0]) return;
     if (!B) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) B = (uint8_t *)g_mod[i].base; if (!B) return; }
     uint64_t it = regs[20], own = rd(regs[22]); if (!it || !own || *(uint32_t *)(uintptr_t)own != 1 || !merc_class(own)) return;
-    int hit = 0; for (unsigned i = 0; i < sizeof ty / sizeof *ty && !hit; i++) hit = ((int (*)(uint64_t, int))(B + 0x574bc0))(it, ty[i]) != 0; if (!hit) return;
+    int hit = 0; for (unsigned i = 0; i < sizeof ty / sizeof *ty && !hit; i++) hit = ((int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE))(it, ty[i]) != 0; if (!hit) return;
     if (test < 0) test = getenv("DM_TEST_MERC_SLOTS") != NULL;
     int req = atomic_load(&g_merc_req), unlocked = R.best >= 10 || test;
     if (req && !unlocked) { if (nlog++ < 12) LOG("佣兵装备位：玩家要给佣兵穿新部位的物品（单位 id %u），秘境最高通关 %d 层不到 10 层 → 不放行", *(uint32_t *)(uintptr_t)(it + 8), R.best); dm_rift_merc_locked_hint(); return; }
@@ -869,20 +870,20 @@ void svc_merc_slot_cl(uint64_t *regs) {
     static const int ty[] = { 10, 12, 15, 16, 19 }; regs[8] = 0; uint64_t it = regs[19]; if (!it || (uint32_t)regs[1] != 0x25) return;
     if (!B) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) B = (uint8_t *)g_mod[i].base; if (!B) return; }
     if (!dm_rift_merc_unlocked()) return;
-    for (unsigned i = 0; i < sizeof ty / sizeof *ty; i++) if (((int (*)(uint64_t, int))(B + 0x574bc0))(it, ty[i])) { regs[1] = (uint64_t)ty[i]; return; }
+    for (unsigned i = 0; i < sizeof ty / sizeof *ty; i++) if (((int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE))(it, ty[i])) { regs[1] = (uint64_t)ty[i]; return; }
 }
 
 
 
 
 static void merc_dump(uint64_t G, uint64_t pl, uint32_t t, const char *why) {
-    uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(B + 0x6c3130))(G, pl, 7, 0); if (!m) { LOG("佣兵装备位：拍 %u（%s）没有佣兵", t, why); return; }
+    uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(B + GA_PET_FIND))(G, pl, 7, 0); if (!m) { LOG("佣兵装备位：拍 %u（%s）没有佣兵", t, why); return; }
     uint64_t a0 = rd(m + 0xa0), iv = a0 && *(int32_t *)(uintptr_t)(a0 + 8) && rd(m + 0x98) ? rd(m + 0x98) : rd(m + 0x90); char o[600]; int c = 0, n = 0; o[0] = 0;
-    for (uint64_t it = iv ? rd(iv + 0x10) : 0; it && n < 40; n++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t code = ((uint32_t (*)(uint64_t))(B + 0x570260))(it);
+    for (uint64_t it = iv ? rd(iv + 0x10) : 0; it && n < 40; n++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t code = ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(it);
         c += snprintf(o + c, sizeof o - (size_t)c, " [%.3s 部位 %u 模式 %u id %u]", (const char *)&code, *(uint8_t *)(uintptr_t)(d + 0x54), *(uint32_t *)(uintptr_t)(it + 0xc), *(uint32_t *)(uintptr_t)(it + 8)); if (c > 520) break; it = rd(d + 0xb0); }
-    { uint32_t mid = *(uint32_t *)(uintptr_t)(m + 8); uint64_t cu = rd((uint64_t)(uintptr_t)(B + 0x2d603a0 + 1 * 0x400 + (mid & 0x7f) * 8)); while (cu && *(uint32_t *)(uintptr_t)(cu + 8) != mid) cu = rd(cu + 0x158);
+    { uint32_t mid = *(uint32_t *)(uintptr_t)(m + 8); uint64_t cu = rd((uint64_t)(uintptr_t)(B + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + (mid & 0x7f) * 8)); while (cu && *(uint32_t *)(uintptr_t)(cu + 8) != mid) cu = rd(cu + 0x158);
       uint64_t ca0 = cu ? rd(cu + 0xa0) : 0, civ = cu ? (ca0 && *(int32_t *)(uintptr_t)(ca0 + 8) && rd(cu + 0x98) ? rd(cu + 0x98) : rd(cu + 0x90)) : 0; char co[400]; int cc = 0, cn = 0; co[0] = 0;
-      for (uint64_t it = civ ? rd(civ + 0x10) : 0; it && cn < 40; cn++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t code = ((uint32_t (*)(uint64_t))(B + 0x570260))(it); cc += snprintf(co + cc, sizeof co - (size_t)cc, " [%.3s 部位 %u]", (const char *)&code, *(uint8_t *)(uintptr_t)(d + 0x54)); if (cc > 340) break; it = rd(d + 0xb0); }
+      for (uint64_t it = civ ? rd(civ + 0x10) : 0; it && cn < 40; cn++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t code = ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(it); cc += snprintf(co + cc, sizeof co - (size_t)cc, " [%.3s 部位 %u]", (const char *)&code, *(uint8_t *)(uintptr_t)(d + 0x54)); if (cc > 340) break; it = rd(d + 0xb0); }
       LOG("佣兵装备位：拍 %u（%s）客户端佣兵%s物品 %d 件：%s", t, why, cu ? "" : "（没找到）", cn, co); }
     LOG("佣兵装备位：拍 %u（%s）佣兵 id %u 类号 %d 物品 %d 件：%s｜生命上限 %d 防御 %d 力量 %d 敏捷 %d 等级 %d 全抗(火) %d", t, why, *(uint32_t *)(uintptr_t)(m + 8), *(int32_t *)(uintptr_t)(m + 4), n, o, gs(m, 7) >> 8, gs(m, 31), gs(m, 0), gs(m, 2), gs(m, 12), gs(m, 39));
 }
@@ -890,14 +891,14 @@ static void merc_test(uint64_t G, uint64_t pl, uint32_t t) {
     static const char *eq, *dp; static int init; if (!init) { init = 1; eq = getenv("DM_TEST_MERC_EQUIP"); dp = getenv("DM_TEST_MERC_DUMP"); }
     for (const char *p = dp; p && *p; ) { if ((uint32_t)atoi(p) == t) merc_dump(G, pl, t, "定时"); p = strchr(p, ','); if (p) p++; }
     for (const char *p = eq; p && *p; ) { unsigned at = 0, loc = 0; char code[8] = ""; if (sscanf(p, "%u:%3[^:]:%u", &at, code, &loc) == 3 && at == t) {
-            uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(B + 0x6c3130))(G, pl, 7, 0), a0 = rd(pl + 0xa0), iv = a0 && *(int32_t *)(uintptr_t)(a0 + 8) && rd(pl + 0x98) ? rd(pl + 0x98) : rd(pl + 0x90), found = 0;
-            for (uint64_t it = iv ? rd(iv + 0x10) : 0, n = 0; it && n < 400 && !found; n++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t cd = ((uint32_t (*)(uint64_t))(B + 0x570260))(it);
+            uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(B + GA_PET_FIND))(G, pl, 7, 0), a0 = rd(pl + 0xa0), iv = a0 && *(int32_t *)(uintptr_t)(a0 + 8) && rd(pl + 0x98) ? rd(pl + 0x98) : rd(pl + 0x90), found = 0;
+            for (uint64_t it = iv ? rd(iv + 0x10) : 0, n = 0; it && n < 400 && !found; n++) { uint64_t d = rd(it + 0x10); if (!d) break; uint32_t cd = ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(it);
                 if (!memcmp(&cd, code, 3) && *(uint32_t *)(uintptr_t)(it + 0xc) == 0) found = it; it = rd(d + 0xb0); }
             if (!m || !found) LOG("佣兵装备位：测试 拍 %u 给佣兵穿 %s → 部位 %u：%s", t, code, loc, !m ? "没有佣兵" : "玩家物品栏里没找到这种物品");
             else { merc_dump(G, pl, t, "穿之前"); uint8_t pk[25] = { 0x5b }; uint32_t none = 0xffffffff; uint64_t ip = rd(found + 0x38); uint32_t cell = ip ? ((*(uint32_t *)(uintptr_t)(ip + 0x10) & 0xffff) | (*(uint32_t *)(uintptr_t)(ip + 0x14) << 16)) : 0;
 
                 memcpy(pk + 1, (void *)(uintptr_t)(found + 8), 4); memcpy(pk + 5, (void *)(uintptr_t)(m + 8), 4); memcpy(pk + 9, &none, 4); memcpy(pk + 13, &loc, 4); memcpy(pk + 17, &cell, 4); memcpy(pk + 21, &cell, 4);
-                atomic_store(&g_merc_req, 1); *(uint32_t *)(uintptr_t)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(B + 0x6e5b40))(G, pl, pk, 25); *(uint32_t *)(uintptr_t)(G + 0x19050) = 0;
+                atomic_store(&g_merc_req, 1); *(uint32_t *)(uintptr_t)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(B + GA_C2S_DISPATCH))(G, pl, pk, 25); *(uint32_t *)(uintptr_t)(G + 0x19050) = 0;
                 LOG("佣兵装备位：测试 拍 %u 替玩家发 0x5b：物品 %s（id %u）→ 佣兵部位 %u；发完物品模式 %u、部位字段 %u、佣兵回执字节 %#x", t, code, *(uint32_t *)(uintptr_t)(found + 8), loc, *(uint32_t *)(uintptr_t)(found + 0xc), *(uint8_t *)(uintptr_t)(rd(found + 0x10) + 0x54), *(uint8_t *)(uintptr_t)(m + 0xb2));
                 merc_dump(G, pl, t, "穿之后"); } }
         p = strchr(p, ';'); if (p) p++; }
@@ -1018,7 +1019,7 @@ static void inv_gone_pump(uint64_t G, uint32_t t) {
 
 static int unit_align(uint64_t u) { uint64_t sl = rd(u + 0x88); if (!sl || !(*(uint32_t *)(uintptr_t)(sl + 0x1c) & 0x80000000u)) return 0;
     for (int pass = 0; pass < 2; pass++) for (uint64_t n = rd(sl + (pass ? 0xd8 : 0xd0)), k = 0; n && k < 512; n = rd(n + 0x68), k++)
-        if (*(uint32_t *)(uintptr_t)(n + 0x20) == 0x69) return ((int (*)(int, uint64_t, int, int))(B + 0x5bc810))(*(uint8_t *)(uintptr_t)(u + 0x1bd), n, 0xac, 0);
+        if (*(uint32_t *)(uintptr_t)(n + 0x20) == 0x69) return ((int (*)(int, uint64_t, int, int))(B + GA_STATLIST_GET))(*(uint8_t *)(uintptr_t)(u + 0x1bd), n, 0xac, 0);
     return 0; }
 
 
@@ -1064,15 +1065,15 @@ static void give_item2(uint64_t G, uint64_t player, const char *code4, int q, in
     uint64_t T = tables(G), ix = T ? rd(T + 0x258) : 0, ar = ix ? rd(ix) : 0, cnt = ix ? rd(ix + 8) : 0; uint32_t code; memcpy(&code, code4, 4); int cls = -1;
     for (uint64_t k = 0; ar && k < cnt; k++) if (*(uint32_t *)(uintptr_t)(ar + k * 8) == code) { cls = *(int32_t *)(uintptr_t)(ar + k * 8 + 4); break; }
     if (cls < 0) { LOG("【红】秘境：物品码 %.4s 查不到", code4); return; }
-    int32_t p0[2] = { 0, 0 }, p1[2] = { 0, 0 }; ((void (*)(uint64_t, int32_t *))(B + 0x5c84f0))(player, p0); uint64_t pth = rd(player + 0x38), room0 = pth ? rd(pth + 0x20) : 0;
-    uint64_t room = ((uint64_t (*)(uint64_t, uint64_t, int32_t *, int32_t *, int))(B + 0x6529e0))(G, room0, p0, p1, 1); if (!room) return;
+    int32_t p0[2] = { 0, 0 }, p1[2] = { 0, 0 }; ((void (*)(uint64_t, int32_t *))(B + GA_UNIT_GET_POS))(player, p0); uint64_t pth = rd(player + 0x38), room0 = pth ? rd(pth + 0x20) : 0;
+    uint64_t room = ((uint64_t (*)(uint64_t, uint64_t, int32_t *, int32_t *, int))(B + GA_ROOM_FIND_DROP_SPOT))(G, room0, p0, p1, 1); if (!room) return;
     uint8_t prm[0xd8]; memset(prm, 0, sizeof prm);
     *(uint64_t *)(prm + 0) = player; *(uint64_t *)(prm + 0x10) = G; *(int32_t *)(prm + 0x18) = ilvl; *(int32_t *)(prm + 0x20) = cls; *(int32_t *)(prm + 0x24) = 3;
     *(int32_t *)(prm + 0x28) = p1[0]; *(int32_t *)(prm + 0x2c) = p1[1]; *(uint64_t *)(prm + 0x30) = room; *(uint16_t *)(prm + 0x38) = 1; *(uint16_t *)(prm + 0x3a) = *(uint16_t *)(uintptr_t)(G + 0x128); *(int32_t *)(prm + 0x40) = q;
     if (urow >= 0) { int32_t ur = urow + 1; memcpy(prm + 0x50, &ur, 4);
         uint32_t *w = (uint32_t *)(uintptr_t)(G + 0x3638 + 4 * ((uint32_t)urow >> 5)); *w &= ~(1u << (urow & 31)); }
     *(uint32_t *)(prm + 0x54) = fl;
-    uint64_t it = ((uint64_t (*)(uint64_t, void *, int))(B + 0x656780))(G, prm, 0); uint64_t d = it ? rd(it + 0x14 * 0 + 0x10) : 0;
+    uint64_t it = ((uint64_t (*)(uint64_t, void *, int))(B + GA_ITEM_SPAWN))(G, prm, 0); uint64_t d = it ? rd(it + 0x14 * 0 + 0x10) : 0;
     LOG("秘境：掉落 %.4s 品质 %d → %s（物品数据 品质 %d、暗金行 %d、物品等级 %d、标志 %#x）", code4, q, it ? "成" : "【红】败", d ? *(int32_t *)(uintptr_t)d : -1, d ? *(int32_t *)(uintptr_t)(d + 0x34) : -1, d ? *(int32_t *)(uintptr_t)(d + 0x38) : -1, d ? *(uint32_t *)(uintptr_t)(d + 0x18) : 0);
 }
 
@@ -1084,7 +1085,7 @@ static const char *k_eth[] = { "7s8", "7wc", "7pa", "7vo", "7h7", "7gd", "7cr", 
 
 
 
-static int rotw(void) { uint64_t g = rd((uint64_t)(uintptr_t)(B + 0x2d20b80)); return g && *(uint8_t *)(uintptr_t)(g + 0x5c) == 3; }
+static int rotw(void) { uint64_t g = rd((uint64_t)(uintptr_t)(B + GA_GAME_INFO)); return g && *(uint8_t *)(uintptr_t)(g + 0x5c) == 3; }
 static void give_sunder(uint64_t G, uint64_t player) { int left[6], n = 0; for (int k = 0; k < 6; k++) if (!(R.sunder & (1u << k))) left[n++] = k;
     int k = n ? left[rnd(n)] : rnd(6); R.sunder |= 1u << k; static const int row[6] = { 426, 428, 429, 430, 431, 432 }; give_item2(G, player, "cm3 ", 7, 99, rotw() ? row[k] : 401 + k, 0); }
 static void milestone(uint64_t G, uint64_t player, int m) {
@@ -1147,7 +1148,7 @@ static void finish(uint64_t G, uint64_t player, uint64_t guard) {
               for (uint64_t r = dm_level_rooms(lvp); r && n < 2000; r = rd(r + 0x48), n++) { int sk = 0; for (int q = 0; q < nd; q++) sk |= done[q] == r; if (sk) continue;
                   int cx = *(int32_t *)(uintptr_t)(r + 0x60) * 5 + *(int32_t *)(uintptr_t)(r + 0x68) * 5 / 2, cy = *(int32_t *)(uintptr_t)(r + 0x64) * 5 + *(int32_t *)(uintptr_t)(r + 0x6c) * 5 / 2, d = abs(cx - x) + abs(cy - y); if (d > best) { best = d; br = r; } }
               if (!br) break; done[nd++] = br; tried++;
-              if (!rd(br + 0x58)) ((void (*)(int, uint64_t))(B + 0x52dcc0))(*(uint8_t *)(uintptr_t)(G + 0x106), br);
+              if (!rd(br + 0x58)) ((void (*)(int, uint64_t))(B + GA_ROOM_INIT))(*(uint8_t *)(uintptr_t)(G + 0x106), br);
               int rx = *(int32_t *)(uintptr_t)(br + 0x60) * 5, ry = *(int32_t *)(uintptr_t)(br + 0x64) * 5;
               for (uint64_t u = rd(br + 0x98), k = 0; u && k < 256 && !fx; u = rd(u + 0x10), k++) if (*(uint32_t *)(uintptr_t)(u + 0x20) == 1) { fx = rx + *(int32_t *)(uintptr_t)(u + 8); fy = ry + *(int32_t *)(uintptr_t)(u + 0x24); fd = abs(fx - x) + abs(fy - y); } }
           if (fx) { LOG("秘境：测试 DM_RIFT_TEST_ND_FAR 把守护者处从 %d,%d 换成远处的怪物预设点 %d,%d（相距 %d 格；试了 %d 间房，共 %d 间）", x, y, fx, fy, fd, tried, n); L.nd_x = fx; L.nd_y = fy; }
@@ -1320,7 +1321,7 @@ static int guard_wave(uint64_t G, uint64_t player, uint32_t t, int lowhp) {
     int lv = unit_level(player); if (!in_rift_map(lv) || !unit_room(player)) return 0;
     static const int ox[2][2] = { { 6, 0 }, { 6, -6 } }, oy[2][2] = { { 6, 0 }, { 6, 6 } }; int w = K.wave, nw = K.wn[w] < 1 ? 1 : K.wn[w] > 2 ? 2 : K.wn[w], x, y, n = 0; unit_xy(player, &x, &y); hs_sync();
     for (int i = 0; i < nw; i++) { int32_t pos[2] = { x + ox[nw - 1][i], y + oy[nw - 1][i] }; uint64_t rr = free_spot(G, unit_room(player), pos);
-        uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + 0x7ce630))(G, rr, 1, K.wcls[w][i], pos[0], pos[1], 1, 0, 0x10) : 0;
+        uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + GA_UNIT_SPAWN))(G, rr, 1, K.wcls[w][i], pos[0], pos[1], 1, 0, 0x10) : 0;
         if (!u) { LOG("【红】秘境：守护者第 %d 波第 %d 位（类号 %d）没刷出来", w + 1, i + 1, K.wcls[w][i]); continue; }
         K.guards[i] = *(uint32_t *)(uintptr_t)(u + 8); K.gcls[i] = K.wcls[w][i]; if (!K.guard) K.guard = K.guards[i]; n++;
         if (lowhp) ss(u, 6, 256); else if (K.tier >= 9) { g_hp_mul = K.whp[w]; scale_monster(G, u, target_level(player) + 3, dm_rift_tier_level(9, gs(player, 12)) + 3); g_hp_mul = 1000; }
@@ -1413,7 +1414,7 @@ void dm_rift_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
 
 
 
-        int old = getenv("DM_RIFT_TEST_TP_NOROOM") != NULL, okk = !rr ? 0 : old ? ((int (*)(uint64_t, uint64_t, uint64_t, int, int, int, int))(B + 0x7cc530))(G, player, 0, pos[0], pos[1], 0, 0) : dm_teleport(B, G, player, rr, pos[0], pos[1]);
+        int old = getenv("DM_RIFT_TEST_TP_NOROOM") != NULL, okk = !rr ? 0 : old ? ((int (*)(uint64_t, uint64_t, uint64_t, int, int, int, int))(B + GA_UNIT_TELEPORT))(G, player, 0, pos[0], pos[1], 0, 0) : dm_teleport(B, G, player, rr, pos[0], pos[1]);
         if (okk) LOG("秘境：继续 落到 %d,%d%s", pos[0], pos[1], old ? "（测试：没给目标房间）" : "");
         else LOG("【红】秘境：继续 没能落到离开时的位置 %d,%d（房间 %s），留在落点", L.tp_x, L.tp_y, !rs ? "载入不了" : !rr ? "有、附近找不到空地" : "有、有空地、传送不成");
         L.tp_lv = 0; }
@@ -1438,7 +1439,7 @@ void dm_rift_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         uint32_t cls = *(uint32_t *)(uintptr_t)(u + 4), id = *(uint32_t *)(uintptr_t)(u + 8); int x, y; if ((cls != RIFT_OBJ && cls != TOWN_OBJ) || !unit_xy(u, &x, &y) || abs(x - L.nd_x) > 32 || abs(y - L.nd_y) > 32) continue;
         uint32_t *mine = cls == RIFT_OBJ ? &L.next_door : &L.town_door; if (!*mine) continue;
         if (*mine != id) { LOG("秘境：守护者处的%s门单位号 %u → %u（房间重建过）", cls == RIFT_OBJ ? "下一层" : "回城", *mine, id); *mine = id; }
-        if (*(uint32_t *)(uintptr_t)(u + 0xc) != 2) { LOG("秘境：守护者处的%s门模式 %u → 2（重新开着）", cls == RIFT_OBJ ? "下一层" : "回城", *(uint32_t *)(uintptr_t)(u + 0xc)); ((void (*)(uint64_t, int))(B + 0x5ca8a0))(u, 2); } }
+        if (*(uint32_t *)(uintptr_t)(u + 0xc) != 2) { LOG("秘境：守护者处的%s门模式 %u → 2（重新开着）", cls == RIFT_OBJ ? "下一层" : "回城", *(uint32_t *)(uintptr_t)(u + 0xc)); ((void (*)(uint64_t, int))(B + GA_UNIT_SET_MODE))(u, 2); } }
     if ((st == ST_RUN || st == ST_DONE) && in_rift_map(lv)) level_box(G, lv, level_of(player));
     if (st == ST_DONE) { region_set(G, 1); if (in_rift_map(lv)) presets_skip(level_of(player)); }
 
@@ -1453,7 +1454,7 @@ void dm_rift_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + 1 * 0x400 + 8 * b), nx; u; u = nx) { nx = rd(u + 0x158); uint32_t m = *(uint32_t *)(uintptr_t)(u + 0xc), fl = *(uint32_t *)(uintptr_t)(u + 0x124);
             if (m == 0 || m == 12 || (fl & 0x80000000u) || any_level(u) != lv || unit_align(u) != 0) continue;
             if (!n_tot && !nk) { exp0 = gs(player, 13); it0 = ground_items(G); }
-            g_swept[*(uint32_t *)(uintptr_t)(u + 8) & 1023] = *(uint32_t *)(uintptr_t)(u + 8); *(uint32_t *)(uintptr_t)(u + 0x124) = fl | 0x20000; ((void (*)(uint64_t, uint64_t, uint64_t, int))(B + 0x7d82b0))(G, u, 0, 1); nk++; }
+            g_swept[*(uint32_t *)(uintptr_t)(u + 8) & 1023] = *(uint32_t *)(uintptr_t)(u + 8); *(uint32_t *)(uintptr_t)(u + 0x124) = fl | 0x20000; ((void (*)(uint64_t, uint64_t, uint64_t, int))(B + GA_UNIT_KILL))(G, u, 0, 1); nk++; }
         if (nk) { if (!n_tot) chk_at = t + 75; n_tot += nk; LOG("秘境：拍 %u 清掉在场的敌对怪 %d 只（本局累计 %u）", t, nk, n_tot); }
         if (chk_at && t >= chk_at) { chk_at = 0; LOG("秘境：清怪核对（首批后 75 拍）经验 %d → %d，地上物品 %d → %d 件", exp0, gs(player, 13), it0, ground_items(G)); } } }
     if (st != ST_RUN) return;
@@ -1612,7 +1613,7 @@ void dm_rift_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
                               int cx = px < rx + 3 ? rx + 3 : px > rx + rw - 4 ? rx + rw - 4 : px, cy = py < ry + 3 ? ry + 3 : py > ry + rh - 4 ? ry + rh - 4 : py, d3 = abs(cx - px) + abs(cy - py); if (d3 < bd) { bd = d3; br = r3; } } }
                       if (br) { int rx = *(int32_t *)(uintptr_t)(br + 0x60) * 5, ry = *(int32_t *)(uintptr_t)(br + 0x64) * 5, rw = *(int32_t *)(uintptr_t)(br + 0x68) * 5, rh = *(int32_t *)(uintptr_t)(br + 0x6c) * 5;
                           int32_t pos[2] = { px < rx + 3 ? rx + 3 : px > rx + rw - 4 ? rx + rw - 4 : px, py < ry + 3 ? ry + 3 : py > ry + rh - 4 ? ry + rh - 4 : py };
-                          if (!rd(br + 0x58)) ((void (*)(int, uint64_t))(B + 0x52dcc0))(*(uint8_t *)(uintptr_t)(G + 0x106), br); uint64_t rr = rd(br + 0x58) ? free_spot(G, rd(br + 0x58), pos) : 0; int ok = rr && dm_teleport(B, G, u, rr, pos[0], pos[1]);
+                          if (!rd(br + 0x58)) ((void (*)(int, uint64_t))(B + GA_ROOM_INIT))(*(uint8_t *)(uintptr_t)(G + 0x106), br); uint64_t rr = rd(br + 0x58) ? free_spot(G, rd(br + 0x58), pos) : 0; int ok = rr && dm_teleport(B, G, u, rr, pos[0], pos[1]);
                           LOG("[验收轮] 本体 id %u 推过界 → 关卡 %d 的 %d,%d（人 %d,%d）%s；落地关卡 %d", g_suseq_id, plv, pos[0], pos[1], px, py, ok ? "成" : "不成", any_level(u)); } } } }
           else if (ph == 1) { uint64_t u = find_unit(G, 1, g_suseq_id); uint32_t m = u ? *(uint32_t *)(uintptr_t)(u + 0xc) : 0; int dead = !u || m == 0 || m == 12, x, y;
               if (t - t0 == 20) { int px, py; unit_xy(player, &px, &py); for (int b = 0; b < 128; b++) for (uint64_t v = rd(G + 0x2230 + 1 * 0x400 + 8 * b); v; v = rd(v + 0x158)) { uint64_t md = rd(v + 0x10); if (md && (*(uint8_t *)(uintptr_t)(md + 0x1a) & 0x10) && unit_xy(v, &x, &y) && abs(x - px) + abs(y - py) <= 40) minions++; } }
@@ -1641,7 +1642,7 @@ void dm_rift_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
                 static struct ds_grid ig; ds_fill(G, player, x, y, &ig); int d0 = rnd(8), rx = 0, ry = 0, lo = t - K.inv_t[i] >= 75 + 125 ? 12 : 24, kk = ds_pick_ring(&ig, dx[d0], dy[d0], lo, 120, &rx, &ry);
                 if (kk < 0) { static int nl; if (nl++ < 10) LOG("秘境：闯入首领这一秒没有合格落点（人 %d,%d 窗口内可达 %d 格，离人至少 %d 格、120 步内）", x, y, ig.reach, lo); }
                 if (kk >= 0) { pos[0] = x + rx; pos[1] = y + ry; uint64_t rr = room_load(G, level_of(player), pos[0], pos[1]);
-                    if (rr) u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + 0x7ce630))(G, rr, 1, K.inv_cls[i], pos[0], pos[1], 1, 0, 0x10);
+                    if (rr) u = ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + GA_UNIT_SPAWN))(G, rr, 1, K.inv_cls[i], pos[0], pos[1], 1, 0, 0x10);
                     LOG("秘境：闯入首领落点 人 %d,%d 窗口内可达 %d 格 → 取 %d,%d（离人 %d 格、走 %d 步、四周 %d 圈可达）%s", x, y, ig.reach, pos[0], pos[1], abs(rx) > abs(ry) ? abs(rx) : abs(ry), ds_dist(&ig, rx + DS_R, ry + DS_R), kk, u ? "" : "，原版没刷出来"); }
                 if (!u) { if (t - K.inv_t[i] > 325) { K.inv_st[i] = 4; LOG("秘境：第 %d 位闯入首领 10 秒内没找到落点，作罢", i + 1); } continue; }
                 K.inv_id[i] = *(uint32_t *)(uintptr_t)(u + 8); K.inv_st[i] = 2;

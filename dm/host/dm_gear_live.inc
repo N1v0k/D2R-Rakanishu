@@ -75,7 +75,7 @@ static int gear_profile(uint8_t *b, uint64_t pl, uint64_t it, int slot, const dm
     memset(g, 0, sizeof *g); g->id = *(uint32_t *)(it + 8); g->slot = slot; g->setitem = -1;
     uint64_t d = *(uint64_t *)(it + 0x10);
     if (gear_quality5(it)) { uint32_t row = *(uint32_t *)(d + 0x34); if (row >= (uint32_t)t->nitem) return -1; g->setitem = (int)row; }
-    req_table(b, pl, it, &g->req_str, &g->req_dex); g->req_lvl = ((int (*)(uint64_t, uint64_t))(b + 0x571580))(it, pl);
+    req_table(b, pl, it, &g->req_str, &g->req_dex); g->req_lvl = ((int (*)(uint64_t, uint64_t))(b + GA_ITEM_REQ_LEVEL))(it, pl);
     static uint32_t keys[512]; int n = gear_keys(it, keys, 0, 512), k = 0;
     KIDS(it, c, k) if (n >= 0) n = gear_keys(c, keys, n, 512);
     if (n < 0) return -1;

@@ -26,8 +26,8 @@
   "tags": ["leveling", "endgame", "magicfind", "fire", "caster"],
   "difficulty": 3,
   "mode": {"core": "softcore", "ladder": "nonladder"},
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [52, 37, 61],
   "trees": [1, 2],
   "profile": {
@@ -286,5 +286,5 @@
       "note": {"de": "Ganz gelesen; keine Änderung an Zauberin-Fertigkeiten", "en": "Read in full; no change to Sorceress skills"}
     }
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

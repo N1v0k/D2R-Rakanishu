@@ -7,6 +7,7 @@
 
 
 #include "../dm_pouch.c"
+#include "../game_addrs.h"
 #include <setjmp.h>
 module_t g_mod[MAX_MOD]; int g_nmod;
 static int checks, fails;
@@ -27,9 +28,9 @@ static void text_of(widget *w, const char *t) { *(const char **)(w->b + 0x88) = 
 static void sync(void) { written[0] = 0; if (!setjmp(back)) pouch_count_sync(P(&box)); }
 
 int main(void) {
-    B = (uint8_t *)((uintptr_t)set_text_stub - 0x136e5c);
+    B = (uint8_t *)((uintptr_t)set_text_stub - GA_TEXT_SET);
     memset(&box, 0, sizeof box); *(const char **)(box.b + 8) = "TouchPouchBox"; kids[0] = P(&count); *(uint64_t *)(box.b + 0x58) = P(kids); *(uint64_t *)(box.b + 0x60) = 1;
-    memset(&count, 0, sizeof count); *(const char **)(count.b + 8) = "TouchPouchCount"; *(uint64_t *)count.b = (uint64_t)(uintptr_t)B + 0x20ba4c8; count.b[0x50] = 1;
+    memset(&count, 0, sizeof count); *(const char **)(count.b + 8) = "TouchPouchCount"; *(uint64_t *)count.b = (uint64_t)(uintptr_t)B + GA_VT_TEXTBOX; count.b[0x50] = 1;
 
     atomic_store(&g_ucount, 5); text_of(&count, "0"); sync(); CHECK(writes == 1 && !strcmp(written, "5"), "应补写 5（写了 %d 次：%s）", writes, written);
 
@@ -41,7 +42,7 @@ int main(void) {
     atomic_store(&g_ucount, 0); text_of(&count, "0"); sync(); CHECK(writes == 2, "空囊时不该写（写了 %d 次）", writes);
 
     atomic_store(&g_ucount, 3); *(const char **)(count.b + 8) = "Count"; *(const char **)(box.b + 8) = "TouchPouchBox"; sync(); CHECK(writes == 2, "名字不对不该写（写了 %d 次）", writes);
-    *(const char **)(count.b + 8) = "TouchPouchCount"; *(uint64_t *)count.b = (uint64_t)(uintptr_t)B + 0x20bc110; sync(); CHECK(writes == 2, "类不对不该写（写了 %d 次）", writes);
+    *(const char **)(count.b + 8) = "TouchPouchCount"; *(uint64_t *)count.b = (uint64_t)(uintptr_t)B + GA_VT_TOGGLE_BUTTON; sync(); CHECK(writes == 2, "类不对不该写（写了 %d 次）", writes);
     printf("t_pouch_count: %d checks, %d failures\n", checks, fails);
     return fails != 0;
 }

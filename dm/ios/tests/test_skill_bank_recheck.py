@@ -15,12 +15,14 @@ call = 'skill_live((const unsigned char*)m->base,id,item)'
 assert text.count(call) == 1, 'ownership call site changed'
 text = text.replace(call, 'test_skill_live(id,item)')
 text = text.replace('#include "../../host/dm.h"', '#include "%s"' % (root.parent / 'host/dm.h'))
+text = text.replace('#include "../../host/game_addrs.h"', '#include "%s"' % (root.parent / 'host/game_addrs.h'))
 hook_at = text.index('static void binding_getter(')
 text = text[:hook_at] + 'int test_skill_live(uint32_t id,int32_t item);\n' + text[hook_at:]
 
 harness = r'''
 #include "dm_touch_game_state.h"
 #include "%(dm_h)s"
+#include "%(ga_h)s"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,16 +45,16 @@ int dm_touch_game_test_identity(const uint64_t *regs,uint64_t *caller,uint64_t *
 static void put32(unsigned char *p,uint32_t v) { memcpy(p,&v,4); }
 static void call_bank(unsigned char *mem,int bank,int slot,int x23_off) {
     uint64_t regs[31]={0};
-    regs[10]=(uint64_t)(mem+0x2d5f0c0); regs[8]=(uint64_t)(bank+slot)*28; regs[19]=(uint64_t)slot; regs[23]=(uint64_t)slot+(uint64_t)x23_off;
+    regs[10]=(uint64_t)(mem+GA_SKILL_SLOT_BINDS); regs[8]=(uint64_t)(bank+slot)*28; regs[19]=(uint64_t)slot; regs[23]=(uint64_t)slot+(uint64_t)x23_off;
     hook(regs);
 }
 int main(void) {
-    size_t size=0x2d5f0c0+32*28; unsigned char *mem=calloc(1,size); if(!mem) return 2;
+    size_t size=GA_SKILL_SLOT_BINDS+32*28; unsigned char *mem=calloc(1,size); if(!mem) return 2;
     g_mod[0].base=mem; g_mod[0].size=size; strcpy(g_mod[0].name,"main"); g_nmod=1;
     const uint32_t map[6][3]={{0x1000,1,7},{0x2000,0,6},{0x4000,2,8},{0x8000,3,9},{0x200,4,10},{0x800,5,11}};
-    for(int i=0;i<6;i++) for(int j=0;j<3;j++) put32(mem+0x2d13cbc+i*12+j*4,map[i][j]);
-    for(int i=0;i<32;i++) put32(mem+0x2d5f0c0+i*28,UINT32_MAX);
-    put32(mem+0x2d5f0c0+0*28,36); put32(mem+0x2d5f0c0+2*28,52); put32(mem+0x2d5f0c0+16*28,40);
+    for(int i=0;i<6;i++) for(int j=0;j<3;j++) put32(mem+GA_PAD_BUTTON_SLOTS+i*12+j*4,map[i][j]);
+    for(int i=0;i<32;i++) put32(mem+GA_SKILL_SLOT_BINDS+i*28,UINT32_MAX);
+    put32(mem+GA_SKILL_SLOT_BINDS+0*28,36); put32(mem+GA_SKILL_SLOT_BINDS+2*28,52); put32(mem+GA_SKILL_SLOT_BINDS+16*28,40);
     CHECK(dm_touch_game_attach()==1 && hook);
     dm_touch_game_set_scene(1,2,1);
     dm_tg_snapshot s;
@@ -86,7 +88,7 @@ int main(void) {
     free(mem);
     return bad?1:0;
 }
-''' % {'dm_h': root.parent / 'host/dm.h'}
+''' % {'dm_h': root.parent / 'host/dm.h', 'ga_h': root.parent / 'host/game_addrs.h'}
 
 with tempfile.TemporaryDirectory(prefix='dm-skill-bank-') as temp:
     bridge = Path(temp) / 'bridge.c'

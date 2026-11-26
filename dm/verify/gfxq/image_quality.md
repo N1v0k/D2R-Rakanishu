@@ -48,7 +48,7 @@ One complete measurement: first produce the reference directory at `2868x1320`, 
 
 ### About the video memory budget
 
-The game's own video memory allocator has a budget constant (`main + 0x8524c4`), which is 260 MB in the original. Under this budget, as soon as the internal resolution is high the render targets no longer fit and the game crashes at startup, so a reference frame at native resolution cannot be drawn.
+The game's own video memory allocator has a budget constant (`main + GA_AT_VRAM_BUDGET`), which is 260 MB in the original. Under this budget, as soon as the internal resolution is high the render targets no longer fit and the game crashes at startup, so a reference frame at native resolution cannot be drawn.
 
 The rewriter has already registered this constant as a cut (`CUTS` in `dm/tools/patch_nso.py`), and it is 512 MB in all build outputs, so reference frames can simply be produced with an ordinary build output. `truth_out.sh` is the approach from before this cut went into the rewriter: it copies a build output that is still at 260 MB to `<source>-truth` and changes this one instruction. It first checks whether the source build output still has the original instruction at that location; for current build outputs it reports red and exits, and it no longer needs to be used.
 

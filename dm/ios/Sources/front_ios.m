@@ -1,4 +1,5 @@
 #include <math.h>
+#include "../../host/game_addrs.h"
 
 
 

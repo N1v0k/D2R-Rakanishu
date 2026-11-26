@@ -29,7 +29,7 @@ DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 sys.path.insert(0, os.path.join(DM, 'ios', 'tools'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 DATA_VERSION = 3
 SCHEMA = 1
 EXCEL = ('skills.txt', 'skilldesc.txt', 'uniqueitems.txt', 'setitems.txt', 'Runes.txt', 'armor.txt', 'weapons.txt', 'misc.txt', 'itemtypes.txt', 'hireling.txt', 'gems.txt',
@@ -40,8 +40,8 @@ STRINGS = ('item-names', 'item-runes', 'item-gems', 'item-modifiers', 'item-name
 BINS = {'uniqueitems.bin': 0x15c, 'setitems.bin': 0x1cc, 'runes.bin': 0xe8}
 TABLES = tuple('global/excel/' + f for f in EXCEL) + tuple('local/lng/strings/%s.json' % f for f in STRINGS) + ('hd/items/items.json', 'hd/items/uniques.json', 'hd/items/sets.json') + \
     tuple('global/excel/' + f for f in BINS)
-TABLES_SHA = 'b2e74d9dff8f85ded64cab3dfdab71fcb6b39a7ff68a162cdb0f2fbacf6097d7'
-RESULT_SHA = 'ab87179ce3acd10ca6b013a51621653faf805d0371956223b4aaad360bf78d7e'
+TABLES_SHA = 'd48d329f5b9c39a669affd44d4901cfa47c1e9d36144b8aeae418f208cf9f021'
+RESULT_SHA = '5ca81ede9e2d7bf5afa71e46819143289ef5edef3bb68880264ba62172f59bc3'
 CLASSES = (('ama', 'Amazon', 'Am'), ('sor', 'Sorceress', 'So'), ('nec', 'Necromancer', 'Ne'), ('pal', 'Paladin', 'Pa'), ('bar', 'Barbarian', 'Ba'),
            ('dru', 'Druid', 'Dr'), ('ass', 'Assassin', 'As'), ('war', 'Warlock', 'Wa'))
 STAT_KEYS = {'str': 'strchrstr', 'dex': 'strchrdex', 'vit': 'strchrvit', 'ene': 'strchreng'}

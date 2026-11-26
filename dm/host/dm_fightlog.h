@@ -14,6 +14,7 @@ enum {
     DM_FL_SKILLS = 8,
     DM_FL_TPS = 25,
     DM_FL_LEAD = 2 * DM_FL_TPS,
+    DM_FL_REACH = 10 * DM_FL_TPS,
     DM_FL_PAUSE = 5 * DM_FL_TPS,
     DM_FL_GRACE = 2 * DM_FL_TPS,
     DM_FL_MIN = 3 * DM_FL_TPS,
@@ -22,6 +23,7 @@ enum {
     DM_FL_HITS = 256,
     DM_FL_PREROLL = 8,
 };
+_Static_assert(DM_FL_LEAD <= DM_FL_REACH, "the lead's upper bound covers the default lead");
 enum { DM_FL_END_KILL = 1, DM_FL_END_DEATH, DM_FL_END_PAUSE, DM_FL_END_AREA, DM_FL_END_LEFT };
 enum { DM_FL_RANK_NORMAL, DM_FL_RANK_MINION, DM_FL_RANK_CHAMPION, DM_FL_RANK_UNIQUE, DM_FL_RANK_SUPER };
 enum { DM_FL_OUT_PLAYER, DM_FL_OUT_MINION, DM_FL_IN_PLAYER, DM_FL_IN_MINION };
@@ -193,13 +195,21 @@ enum { DM_FL_MAGIC = 0x4c46444d, DM_FL_VERSION_1 = 1, DM_FL_VERSION = 2, DM_FL_I
 enum { DM_FL_BAD_SIZE = 1, DM_FL_BAD_MAGIC, DM_FL_BAD_VERSION, DM_FL_BAD_CRC, DM_FL_BAD_COUNT, DM_FL_BAD_FIGHT };
 
 
-int dm_fl_owner(dm_fl_state *s, const char *who, const uint8_t *image, size_t n);
+
+
+int dm_fl_owner(dm_fl_state *s, const char *who, const uint8_t *image, size_t n, int *skipped);
+
+
+
+int dm_fl_merge(dm_fl_state *s, const uint8_t *image, size_t n, int newer, int *added, int *skipped);
 int dm_fl_owned_by(dm_fl_state *s, const char *who);
 
 
 size_t dm_fl_image(dm_fl_state *s, char who[64], uint8_t *buf, size_t cap, uint32_t *gen);
 void dm_fl_saved(dm_fl_state *s, uint32_t gen);
 void dm_fl_unsaved(dm_fl_state *s);
+
+
 
 
 int dm_fl_store_load(dm_fl_state *s, const char *root, const char *who);

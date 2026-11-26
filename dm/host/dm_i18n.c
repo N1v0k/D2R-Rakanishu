@@ -7,6 +7,7 @@
 
 
 #include "dm_i18n.h"
+#include "game_addrs.h"
 #include "dm_i18n_tab.h"
 #include <TargetConditionals.h>
 #include <stdio.h>
@@ -99,7 +100,7 @@ const char *dm_untag(const char *s) {
 const char *dm_str(uint8_t *b, const char *key) {
     if (!b) return dm_ui(key);
     struct { const char *k; uint64_t n; } s = { key, strlen(key) };
-    const char *r = ((const char *(*)(void *))(b + 0x7f5630))(&s);
+    const char *r = ((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&s);
     return r && *r && strcmp(r, key) ? r : dm_ui(key);
 }
 

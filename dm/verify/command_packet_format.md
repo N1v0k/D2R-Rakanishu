@@ -6,10 +6,10 @@ Internally the game is split into two halves, client and server: the client turn
 
 ## Capture point
 
-- The client command dispatch function `main + 0x6e5b40(G, unit, packet, length)`. At entry:
+- The client command dispatch function `main + GA_C2S_DISPATCH(G, unit, packet, length)`. At entry:
   `x0` = G (the game object, the same base address as in [tick_state_format.md](tick_state_format.md)), `x1` = the unit sending the packet (may be 0), `x2` → the packet bytes (packet number = first byte, must be < 0x67), `w3` = length.
 - The handler table `main + 0x20a4190` (0x67 entries; an empty entry means an illegal packet number).
-- **System-class messages** take another path: `main + 0x6310b0(buf, packet length)` (jump table `0x1daf73c`), buf = u32 client number + packet. The packet receive pump `0x5d3960` first drains the system-class queue each tick, then processes command packets.
+- **System-class messages** take another path: `main + GA_C2S_SYS_HANDLE(buf, packet length)` (jump table `0x1daf73c`), buf = u32 client number + packet. The packet receive pump `GA_C2S_RECV_PUMP` first drains the system-class queue each tick, then processes command packets.
 
   | Packet no. | Length | Meaning | Replay handling |
   |---|---|---|---|
@@ -39,7 +39,7 @@ The host side records with `DM_C2S_LOG=<path>`, in the same format field by fiel
 
 ## Two layers of criteria
 
-1. **Server layer**: the host takes no controller input; at the tick whose number = tick, in file order, it hands each packet as-is to `0x6e5b40` (`DM_C2S_REPLAY=<file>`, which also turns off commands the client would issue on its own; for testing only), and the 6-slot state is required to match the ground truth tick by tick.
+1. **Server layer**: the host takes no controller input; at the tick whose number = tick, in file order, it hands each packet as-is to `GA_C2S_DISPATCH` (`DM_C2S_REPLAY=<file>`, which also turns off commands the client would issue on its own; for testing only), and the 6-slot state is required to match the ground truth tick by tick.
    - **System-class messages must be recorded from the ground truth and injected by the host tick by tick.** The tick number and value with which `0x6f` arrives determine at which tick the server inserts a sync message (in several hundred places the server compares +0x6c4 / +0x6c0 before sending a message and resends as needed), which depends on how fast the client is and is inherently different on the two sides, so it is timing-dependent input.
    - During replay, the host's own system-class messages are all discarded from the file's first tick on (the `0x67` join before game entry is let through as usual), and instead the original bytes recorded from the ground truth are injected at their original tick numbers; within one tick, system-class messages are injected first and command packets dispatched afterwards, matching the order of the packet receive pump.
    - After the file's last tick, the messages the host client issues on its own are let through again.

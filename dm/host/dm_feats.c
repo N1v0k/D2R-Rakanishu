@@ -41,6 +41,7 @@
 
 
 #include "dm_feats.h"
+#include "game_addrs.h"
 #include "dm_effects.h"
 #include "dm_fightlog.h"
 #include "dm_gear_compose.h"
@@ -68,10 +69,10 @@ static char g_row_name[DM_FT_NAME_KEYS][NAME_CAP];
 
 static uint64_t rd(uint64_t a) { return a ? *(volatile uint64_t *)(uintptr_t)a : 0; }
 static uint32_t rd32(uint64_t a) { return *(volatile uint32_t *)(uintptr_t)a; }
-static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + 0x5b9290))(u, id, 0); }
+static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + GA_STAT_GET))(u, id, 0); }
 static const char *game_str(const char *key, int plain) {
     struct { const char *k; uint64_t n; } s = { key, strlen(key) };
-    const char *r = ((const char *(*)(void *))(uintptr_t)(B + 0x7f5630))(&s);
+    const char *r = ((const char *(*)(void *))(uintptr_t)(B + GA_LOC_STRING_GET))(&s);
     if (!dm_ft_game_text_ok(r, key, plain)) { static int logged; if (logged++ < 3) LOG("ASSUME feats.game_name: no game text for %s", key); return ""; }
     return dm_untag(r);
 }
@@ -212,8 +213,8 @@ static void test_gold(uint64_t G, uint64_t player, uint32_t t) {
     }
     if (next >= n || t < q[next].at || atomic_load(&g_pick_n)) return;
     int amount = q[next].amount, own = q[next].own; next++;
-    if (own) ((int (*)(uint64_t, uint64_t, uint32_t, int))(uintptr_t)(B + 0x6be7b0))(G, player, rd32(player + 8), amount);
-    else { uint64_t out[32]; int made = 0; ((void (*)(uint64_t, uint64_t, int, uint64_t *, int *, int))(uintptr_t)(B + 0x659b70))(G, player, amount, out, &made, 32); }
+    if (own) ((int (*)(uint64_t, uint64_t, uint32_t, int))(uintptr_t)(B + GA_GOLD_DROP_OWN))(G, player, rd32(player + 8), amount);
+    else { uint64_t out[32]; int made = 0; ((void (*)(uint64_t, uint64_t, int, uint64_t *, int *, int))(uintptr_t)(B + GA_GOLD_PILE_SPAWN))(G, player, amount, out, &made, 32); }
     int k = 0;
     for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2e30 + 8 * (uint64_t)b); u && k < TEST_PILES; u = rd(u + 0x158)) {
         if (!dm_ftr_unit(u, 0x1c0) || rd32(u) != 4 || rd32(u + 0xc) != 3 || item_code(u) != 0x20646c67) continue;
@@ -246,7 +247,7 @@ void dm_feats_test_pick(uint8_t *b) {
     if (sent >= n) { if (n) { atomic_store(&g_pick_n, 0); sent = 0; } return; }
     uint8_t pk[17] = { 0x16 };
     memcpy(pk + 1, &g_pick[sent][0], 4); memcpy(pk + 5, &g_pick[sent][1], 4); memcpy(pk + 9, &g_pick[sent][2], 4);
-    ((void (*)(void *, int))(uintptr_t)(b + 0x2ceab0))(pk, 17);
+    ((void (*)(void *, int))(uintptr_t)(b + GA_CLIENT_SEND))(pk, 17);
     LOG("[gold-test] pick up %u at %u,%u", g_pick[sent][0], g_pick[sent][1], g_pick[sent][2]);
     sent++; wait = PICK_GAP;
 }
@@ -255,7 +256,7 @@ void dm_feats_test_pick(uint8_t *b) {
 
 static uint64_t version_table(uint64_t G) {
     unsigned v = *(volatile uint8_t *)(uintptr_t)(G + 0x106);
-    return v >= 1 && v <= 3 ? rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + (uint64_t)v * 16)) : 0;
+    return v >= 1 && v <= 3 ? rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + (uint64_t)v * 16)) : 0;
 }
 
 
@@ -273,14 +274,14 @@ static int file_merc(const char *wd, const char *name) {
 
 
 static int merc_act(uint64_t G, uint64_t player, uint64_t t, int hid) {
-    uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(uintptr_t)(B + 0x6c3130))(G, player, 7, 0);
+    uint64_t m = ((uint64_t (*)(uint64_t, uint64_t, int, int))(uintptr_t)(B + GA_PET_FIND))(G, player, 7, 0);
     if (m && !dm_ftr_unit(m, 0x10)) return -1;
     if (!m) { if (hid == FILE_NONE) return 0; if (hid < 0) return -1; }
     int act = dm_ftr_hireling_act(t, m ? 8 : 4, m ? rd32(m + 4) : (uint32_t)hid);
     return act > 0 ? act : -1;
 }
-static uint32_t item_code(uint64_t it) { return ((uint32_t (*)(uint64_t))(uintptr_t)(B + 0x570260))(it); }
-static uint32_t item_two_hands(uint64_t it) { return ((int (*)(uint64_t))(uintptr_t)(B + 0x572240))(it) != 0; }
+static uint32_t item_code(uint64_t it) { return ((uint32_t (*)(uint64_t))(uintptr_t)(B + GA_ITEM_CODE))(it); }
+static uint32_t item_two_hands(uint64_t it) { return ((int (*)(uint64_t))(uintptr_t)(B + GA_ITEM_IS_2HANDED))(it) != 0; }
 
 
 static dm_ft_pages g_pages;

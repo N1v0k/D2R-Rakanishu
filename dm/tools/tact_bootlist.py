@@ -16,10 +16,11 @@
 
 
 import sys, os, mmap, struct, zlib, hashlib, collections
+GAME_VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../PRODUCT'), encoding='utf-8').readline().split('-')[0]
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 chk, out = sys.argv[1], sys.argv[2]
-R = (sys.argv[3] if len(sys.argv) > 3 else os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/RomFS')) + '/data'
-NSO = sys.argv[4] if len(sys.argv) > 4 else os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/ExeFS/main')
+R = (sys.argv[3] if len(sys.argv) > 3 else os.path.join(DM_ROOT, 'data/switch', GAME_VERSION, 'Update/RomFS')) + '/data'
+NSO = sys.argv[4] if len(sys.argv) > 4 else os.path.join(DM_ROOT, 'data/switch', GAME_VERSION, 'Update/ExeFS/main')
 BUILD_ID = open(NSO, 'rb').read(0x50)[0x40:0x50].hex()
 maps = {}
 def mm(fn):

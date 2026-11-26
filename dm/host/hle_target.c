@@ -11,6 +11,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include <TargetConditionals.h>
 #include <mach/mach.h>
 #include <math.h>

@@ -33,6 +33,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_custom.h"
 #include "dm_splash.h"
@@ -131,7 +132,7 @@ static void note_hit(const uint64_t *regs) {
     for (int i = 0; i < DOT; i++) { if (g_dot[i].unit == id) { at = i; break; } if (!g_dot[i].unit && room < 0) room = i; }
     if (at >= 0) g_dot[at].hits += total;
     else if (room >= 0 && ((int32_t)rd32(d + 0x38) > 0 || (int32_t)rd32(d + 0x24) > 0)) {
-        int life = ((int (*)(uint64_t, int, int))(uintptr_t)(base() + 0x5b9290))(defender, 6, 0);
+        int life = ((int (*)(uint64_t, int, int))(uintptr_t)(base() + GA_STAT_GET))(defender, 6, 0);
         g_dot[room] = (dot_t){id, rd32(regs[22] + 0x170), life > total ? life - total : 0, 0, 0};
     }
 }
@@ -162,11 +163,11 @@ void svc_damage(uint64_t *regs) {
     if (observe < 0) { const char *e = getenv("DM_QA_STATE"); observe = e && !strcmp(e, "1"); }
     uint64_t target = regs[0], attacker = regs[21];
     if (observe && target && attacker && (int)regs[1] == 6 && (int32_t)regs[2] <= 0 && rd32(target) == 1 && !owned(target) && theirs(attacker)) {
-        int before = ((int (*)(uint64_t, int, int))(uintptr_t)(base() + 0x5b9290))(target, 6, 0);
+        int before = ((int (*)(uint64_t, int, int))(uintptr_t)(base() + GA_STAT_GET))(target, 6, 0);
         if (before > 0) atomic_fetch_add(&g_qa_kills, 1);
     }
 #endif
-    ((void (*)(uint64_t, int, int, int))(uintptr_t)(base() + 0x5bc1f0))(regs[0], (int)regs[1], (int)regs[2], (int)regs[3]);
+    ((void (*)(uint64_t, int, int, int))(uintptr_t)(base() + GA_STAT_SET))(regs[0], (int)regs[1], (int)regs[2], (int)regs[3]);
 }
 
 
@@ -197,7 +198,7 @@ void dm_dmgnum_tick(uint64_t G) {
     unsigned ep = atomic_load(&g_epoch);
     if (G != g_game || ep != epoch) { g_game = G; epoch = ep; memset(g_dot, 0, sizeof g_dot); }
     uint32_t now = rd32(G + 0x170); if (now % DOT_STEP) return;
-    int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(base() + 0x5b9290);
+    int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(base() + GA_STAT_GET);
     uint64_t t0 = log_on() ? now_ns() : 0;
     int found = 0;
     for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + 0x400 + 8 * (uint64_t)b); u; u = rd(u + 0x158)) {
@@ -248,8 +249,8 @@ void dm_combat_fixture_speed(uint8_t *b,uint64_t unit,int side) {
     if(!speed_enabled || !b || !unit || side<0 || side>1 || applied[side]==unit || rd32(unit)!=0 || !rd(unit+0x88))return;
     const int stats[4]={93,105,99,102};int observed[4];
     for(int k=0;k<4;k++) {
-        ((void (*)(uint64_t,int,int,int))(b+0x5bc1f0))(unit,stats[k],speed_fixture[k],0);
-        observed[k]=((int (*)(uint64_t,int,int))(b+0x5b9290))(unit,stats[k],0);
+        ((void (*)(uint64_t,int,int,int))(b+GA_STAT_SET))(unit,stats[k],speed_fixture[k],0);
+        observed[k]=((int (*)(uint64_t,int,int))(b+GA_STAT_GET))(unit,stats[k],0);
     }
     applied[side]=unit;
     LOG("[combat-speed] {\"side\":%d,\"base\":[%d,%d,%d,%d],\"observed\":[%d,%d,%d,%d]}",side,
@@ -282,10 +283,10 @@ void dm_combat_fixture_cast(uint64_t game,uint64_t player) {
     uint8_t *b = base(); if (!b) return;
     uint64_t f = game?rd32(game+0x170):dm_guest_frame(); int pre = pre_at > 0 && f >= (uint64_t)pre_at;
     if (!pre && (at <= 0 || (limit && k>=limit) || f < (uint64_t)at || f < next)) return;
-    uint64_t pl = game?player:((uint64_t (*)(uint32_t))(uintptr_t)(b + 0x45f9d0))(rd32((uint64_t)(uintptr_t)(b + 0x2d20e4c))), pp = pl ? rd(pl + 0x38) : 0; if (!pp) return;
+    uint64_t pl = game?player:((uint64_t (*)(uint32_t))(uintptr_t)(b + GA_CLIENT_PLAYER_GET))(rd32((uint64_t)(uintptr_t)(b + GA_LOCAL_PLAYER_SLOT))), pp = pl ? rd(pl + 0x38) : 0; if (!pp) return;
     int lv = dm_unit_level(pl); if (lv == 0 || lv == 1 || lv == 40 || lv == 75 || lv == 103 || lv == 109) return;
     int px = *(volatile uint16_t *)(uintptr_t)(pp + 2), py = *(volatile uint16_t *)(uintptr_t)(pp + 6); uint32_t best = 0, cls = 0; long bd = 30 * 30 + 1;
-    uint64_t monsters=game?game+0x2230+0x400:(uint64_t)(uintptr_t)(b+0x2d603a0+0x400);
+    uint64_t monsters=game?game+0x2230+0x400:(uint64_t)(uintptr_t)(b+GA_CLIENT_UNIT_TABLE+0x400);
     for (int bk = 0; bk < 128; bk++) for (uint64_t u = rd(monsters + 8 * bk), j = 0; u && j < 256; u = rd(u + 0x158), j++) {
         uint32_t m = rd32(u + 0xc), c = rd32(u + 4); uint64_t q = rd(u + 0x38); if (m == 0 || m == 12 || c == 271 || c == 338 || c == 359 || c == 560 || c == 561 || !q) continue;
         if(!pre && ntarget) { int want=0; for(int i=0;i<ntarget;i++) want|=c==(unsigned)target_class[i]; if(!want)continue; }
@@ -298,7 +299,7 @@ void dm_combat_fixture_cast(uint64_t game,uint64_t player) {
     uint8_t sel[9] = { 0x3c, (uint8_t)s, (uint8_t)(s >> 8), 0, left ? 0x80 : 0, 0xff, 0xff, 0xff, 0xff }, use[9] = { left ? 0x06 : 0x0d, 1, 0, 0, 0, (uint8_t)best, (uint8_t)(best >> 8), (uint8_t)(best >> 16), (uint8_t)(best >> 24) };
     if(game) {
         static int selected=-1;
-        int (*dispatch)(uint64_t,uint64_t,uint64_t,uint32_t)=(void *)(b+0x6e5b40);
+        int (*dispatch)(uint64_t,uint64_t,uint64_t,uint32_t)=(void *)(b+GA_C2S_DISPATCH);
         volatile uint32_t *busy=(volatile uint32_t *)(uintptr_t)(game+0x19050);uint32_t saved=*busy;
         *busy=1;
         if(selected!=s || pre){dispatch(game,pl,(uint64_t)(uintptr_t)sel,9);selected=pre?-1:s;}
@@ -307,7 +308,7 @@ void dm_combat_fixture_cast(uint64_t game,uint64_t player) {
         int actual=record?*(int16_t *)(uintptr_t)record:-1;
         LOG("[combat-request] {\"tick\":%llu,\"skill\":%d,\"selected\":%d,\"target\":%u,\"class\":%u,\"mode_before\":%d,\"mode_after\":%u,\"result\":%d}",(unsigned long long)f,s,actual,best,cls,before,rd32(pl+0xc),result);
     } else {
-        ((void (*)(const uint8_t *, int))(uintptr_t)(b + 0x2ceab0))(sel, 9); ((void (*)(const uint8_t *, int))(uintptr_t)(b + 0x2ceab0))(use, 9);
+        ((void (*)(const uint8_t *, int))(uintptr_t)(b + GA_CLIENT_SEND))(sel, 9); ((void (*)(const uint8_t *, int))(uintptr_t)(b + GA_CLIENT_SEND))(use, 9);
     }
     LOG("DM_TEST_CAST: frame %llu skill %d on monster %u (class %u, %ld cells^2 away)%s", (unsigned long long)f, s, best, cls, bd, left ? " left" : "");
 }

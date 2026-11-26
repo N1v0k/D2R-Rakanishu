@@ -15,6 +15,7 @@
 
 #pragma once
 #include <stddef.h>
+#include "game_addrs.h"
 #include <stdint.h>
 
 enum { DM_TIPX_HEAD = 1, DM_TIPX_WARN = 2 };

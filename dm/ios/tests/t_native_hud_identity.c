@@ -1,4 +1,5 @@
 #include "dm_touch_game_identity.h"
+#include "../../host/game_addrs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,13 +20,13 @@ static int failed_read(uint64_t a,void *o,size_t n){(void)a;(void)o;(void)n;retu
 static void put32(unsigned char *p,uint32_t n){memcpy(p,&n,4);}
 int main(void){
  const uint64_t base=0x123000000;unsigned char widget[7][0xc98]={{0}};uint64_t frame[8]={0},regs[31]={0},caller=0,hud=0;
- regs[29]=(uint64_t)&frame[2];frame[3]=base+0x3e2f74;dm_tg_hud_cohort c;dm_tg_hud_reset(&c,1);
+ regs[29]=(uint64_t)&frame[2];frame[3]=base+GA_AT_HUD_BIND_GET_RET;dm_tg_hud_cohort c;dm_tg_hud_reset(&c,1);
  for(int i=0;i<6;i++) {put32(widget[i]+0xb18,(uint32_t)i);frame[1]=(uint64_t)widget[i];regs[19]=(uint64_t)i;CHECK(dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud)==0);}
  CHECK(c.confirmed && c.seen==63 && c.hud_identity!=0);uint64_t identity=c.hud_identity;
- for(int i=0;i<6;i++){frame[1]=(uint64_t)widget[i];regs[19]=(uint64_t)(i+6);CHECK(dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud)==DM_TG_IDENTITY_NATIVE);CHECK(caller==base+0x3e2f74 && hud==identity);}
+ for(int i=0;i<6;i++){frame[1]=(uint64_t)widget[i];regs[19]=(uint64_t)(i+6);CHECK(dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud)==DM_TG_IDENTITY_NATIVE);CHECK(caller==base+GA_AT_HUD_BIND_GET_RET && hud==identity);}
  unsigned char original[sizeof widget];memcpy(original,widget,sizeof widget);
- frame[3]=base+0x2fa1d0;for(int i=0;i<12;i++){regs[19]=(uint64_t)i;CHECK(dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud)==0);}CHECK(c.hud_identity==identity && c.confirmed);
- frame[3]=base+0x3e2f74;regs[19]=16;CHECK(!dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud));
+ frame[3]=base+GA_AT_NONHUD_BIND_GET_CALLER;for(int i=0;i<12;i++){regs[19]=(uint64_t)i;CHECK(dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud)==0);}CHECK(c.hud_identity==identity && c.confirmed);
+ frame[3]=base+GA_AT_HUD_BIND_GET_RET;regs[19]=16;CHECK(!dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud));
  regs[19]=0;frame[1]=(uint64_t)widget[5];CHECK(!dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud));
  regs[19]=11;widget[5][0xc90]=1;CHECK(!dm_tg_hud_identity(&c,regs,base,1,1,dm_tg_vm_read,&caller,&hud));widget[5][0xc90]=0;
  CHECK(!dm_tg_hud_identity(&c,regs,base,1,1,failed_read,&caller,&hud));

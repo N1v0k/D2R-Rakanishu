@@ -188,7 +188,7 @@ Not one of the original hit rules changes; only "where the tap is" does. The tes
 
 ## 7. Current limits and good next steps
 
-- **Names, health bars and item labels are still drawn at orthographic positions**: their positions come from the game's world → screen projection (`main+0x90d110`, also used by `w_project` in `dm_world.c`). The proper fix is to return perspective coordinates at that function's exit.
+- **Names, health bars and item labels are still drawn at orthographic positions**: their positions come from the game's world → screen projection (`main+GA_UNIT_PROJECT_SCREEN`, also used by `w_project` in `dm_world.c`). The proper fix is to return perspective coordinates at that function's exit.
 - **Dungeons have missing walls and look dark**: the scenes are designed for a top-down view and that shows in perspective.
 - **Tap-to-walk on the ground** does not exist (the original touch controls do not have it either).
 - **First person** is picture only; input is not converted.

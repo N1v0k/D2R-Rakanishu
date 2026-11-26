@@ -20,7 +20,7 @@ The Android version works like the iOS shell: the release page has an **APK that
 
 ## What you need
 
-- The files of the game you bought: `ExeFS` and `RomFS` of the Switch version 1.0.34.0 (PC 3.3.94012); the upstream project describes how to prepare them from your own copy
+- The files of the game you bought: `ExeFS` and `RomFS` of the Switch version 1.0.35 (PC 3.4.95035); the upstream project describes how to prepare them from your own copy
 - The source of this repository **from the same release as the APK** (the App checks and tells you if they differ)
 - Python 3.9 or later with these packages: `python3 -m pip install pillow numpy lz4 capstone`
 - A C/C++ compiler: clang (gcc works for the enemy picture library too; `CC` / `CXX` name another). The tool compiles two small native libraries with it: the texture deswizzler and the enemy picture library (once, cached in `DM_ROOT`)
@@ -38,7 +38,7 @@ From the repository root:
 python3 dm/tools/d2rm_android.py <game files directory> <output directory>
 ```
 
-`<game files directory>` is the `Update` directory of the Switch version 3.3.94012 (with `ExeFS` and `RomFS` in it). The tool rewrites the game program for Android, extracts and translates every shader, generates the touch overlay and a few data tables, and writes `<output directory>/android/`:
+`<game files directory>` is the `Update` directory of the Switch version 3.4.95035 (with `ExeFS` and `RomFS` in it). The tool rewrites the game program for Android, extracts and translates every shader, generates the touch overlay and a few data tables, and writes `<output directory>/android/`:
 
 ```
 android/out/          the rewritten game program and its tables

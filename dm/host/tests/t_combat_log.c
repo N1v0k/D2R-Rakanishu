@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define main damage_baseline_main
 #include "t_dmgnum.c"
+#include "../game_addrs.h"
 #undef main
 #include <assert.h>
 
@@ -8,7 +9,7 @@ int main(void) {
     assert(setenv("DM_TEST_COMBAT_LOG","1",1)==0);
     dm_combat_log_start();
     strcpy(g_mod[0].name,"main");
-    g_mod[0].base=(uint8_t *)(uintptr_t)life_stub-0x5b9290;g_nmod=1;
+    g_mod[0].base=(uint8_t *)(uintptr_t)life_stub-GA_STAT_GET;g_nmod=1;
     unit player,monster;make(&player,0,1,0);make(&monster,1,2,0);
     player.life=10000;monster.life=20000;
     put32(game,0x170,123);game[0x104]=2;
@@ -84,16 +85,16 @@ int main(void) {
     probe_reaction_out(reaction);probe_skill_out(event);
     uint64_t stack[114]={0};stack[0]=(uintptr_t)game;stack[1]=(uintptr_t)&player;stack[2]=999;stack[3]=7;stack[113]=42;
     probe_proc_stack_in(stack);assert(probe_stack[0].skill==42 && probe_stack[0].skill_level==7);probe_skill_out(stack);
-    stack[0]=(uintptr_t)&player;stack[1]=(uintptr_t)&monster;
+    stack[21]=(uintptr_t)&player;stack[3]=(uintptr_t)&monster;
     stack[19]=(uintptr_t)rec;stack[22]=(uintptr_t)game;
     probe_poison_in(stack);
     assert(probe_stack[0].game==(uintptr_t)game && probe_stack[0].damage==(uintptr_t)rec);
     assert(probe_ring[(probe_head-1)%PROBE_RING].tick==1);
     probe_poison_done(stack);
-    memset(stack,0,sizeof stack);stack[0]=(uintptr_t)game;stack[3]=1;stack[101]=(uintptr_t)base()+0x664f60;
+    memset(stack,0,sizeof stack);stack[0]=(uintptr_t)game;stack[3]=1;stack[101]=(uintptr_t)base()+GA_AT_MISSILE_HIT_CALL_RET;
     probe_missile_hit_in(stack);
     assert(probe_ring[(probe_head-1)%PROBE_RING].value[0]==65 && probe_ring[(probe_head-1)%PROBE_RING].value[1]==1);
-    assert(probe_ring[(probe_head-1)%PROBE_RING].value[2]==0x664f60);
+    assert(probe_ring[(probe_head-1)%PROBE_RING].value[2]==GA_AT_MISSILE_HIT_CALL_RET);
     probe_skill_out(stack);stack[2]=UINT64_MAX;
     probe_missile_area_in(stack);assert(!probe_stack[0].target);probe_skill_out(stack);
     event[0]=(uintptr_t)game;event[1]=(uintptr_t)&player;event[2]=(uintptr_t)&monster;

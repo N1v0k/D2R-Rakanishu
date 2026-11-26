@@ -137,6 +137,7 @@ def rewrite(b):
     out = os.path.join(b.work, 'build', 'cache', 'dm', 'out', product(b) + '-' + b.target + ('-qa-combat' if b.qa_combat else ''))
     tool = os.path.join(b.dm, 'tools', 'patch_nso.py')
     src = hashlib.sha256(open(tool, 'rb').read()).hexdigest()
+    src += ' ' + hashlib.sha256(open(os.path.join(b.dm, 'host', 'game_addrs.def'), 'rb').read()).hexdigest()
     if b.qa_combat:
         src += ' ' + hashlib.sha256(open(os.path.join(b.dm, 'tools', 'patch_nso_qa.py'), 'rb').read()).hexdigest()
     marker = os.path.join(out, REWRITE_DONE)

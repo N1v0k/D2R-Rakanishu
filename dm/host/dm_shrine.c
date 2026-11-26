@@ -35,6 +35,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_custom.h"
 #include <string.h>
@@ -43,11 +44,11 @@ enum {
     A_SOURCE = 0x00, A_TARGET = 0x08, A_DUR = 0x18, A_STATE = 0x24,
     U_STATLIST = 0x88, U_TIMER = 0xd8, U_VER = 0x1bd,
     L_FLAGS = 0x1c, L_STATE = 0x20, L_END = 0x24, L_NEXT = 0x68, L_HEAD0 = 0xd0, L_HEAD1 = 0xd8,
-    TABLES = 0x2d64a18, D_CURSE = 0x360,
+    TABLES = GA_DATA_TABLES, D_CURSE = 0x360,
     FL_CURSE = 0x20, FL_BASE = 0x80000000u,
     RUN_STAT = 96, RUN_PCT = 50, STAMINA_STATE = 136,
     STATE_FIRST = 128, STATE_LAST = 137,
-    FN_APPLY = 0x7b8280, FN_UNLINK = 0x5ba550, FN_FREE = 0x5ba850, FN_TIMER = 0x5eb890, FN_STAT = 0x5bbe20, FN_STATEBIT = 0x5b7b70,
+    FN_APPLY = GA_STATE_APPLY_TIMED, FN_UNLINK = GA_STATLIST_UNLINK, FN_FREE = GA_STATLIST_FREE, FN_TIMER = GA_EVENT_TIMER_SET, FN_STAT = GA_STATLIST_SET, FN_STATEBIT = GA_STATE_SET_BIT,
 };
 enum { MAX_SEEN = 64, MAX_MASK = 16, MAX_SAME = 4, MAX_CUT = 16, MAX_DEPTH = 8 };
 

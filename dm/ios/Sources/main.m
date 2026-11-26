@@ -650,7 +650,7 @@ static void boot_prepare(void) {
     NSString *found = g_romfs;
     if (!found) {
         plog("boot: 🔴 RomFS 没经过起宿主前的校验（不应发生）：%s", romwhy);
-        plog("boot: 请推送原版 RomFS：xcrun devicectl device copy to --device <设备> --domain-type appDataContainer --domain-identifier <包名> --source $DM_ROOT/data/switch/3.3.94012/Update/RomFS --destination 'Library/Application Support/romfs'");
+        plog("boot: 请推送原版 RomFS：xcrun devicectl device copy to --device <设备> --domain-type appDataContainer --domain-identifier <包名> --source $DM_ROOT/data/switch/3.4.95035/Update/RomFS --destination 'Library/Application Support/romfs'");
         abort();
     }
     romfs = found;

@@ -4,6 +4,7 @@
 
 #pragma once
 #include <stdint.h>
+#include "game_addrs.h"
 typedef struct {
     int open;
     int gold, stash_gold;

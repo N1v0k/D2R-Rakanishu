@@ -34,6 +34,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <pthread/qos.h>
 #include <stdatomic.h>
 uint32_t thr_cur_handle(void);
@@ -45,8 +46,8 @@ static void (*g_init)(uint64_t, uint64_t);
 static void g_fns(void) {
     if (g_dec) return;
     module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
-    g_init = (void (*)(uint64_t, uint64_t))(m->base + 0x11f4c70);
-    g_dec = (uint64_t (*)(uint64_t, uint64_t, uint64_t))(m->base + 0x11f4af0);
+    g_init = (void (*)(uint64_t, uint64_t))(m->base + GA_GRANNY_DECODER_INIT);
+    g_dec = (uint64_t (*)(uint64_t, uint64_t, uint64_t))(m->base + GA_GRANNY_BLOCK_DECODE);
 }
 
 

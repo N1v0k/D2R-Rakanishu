@@ -168,7 +168,7 @@ static void sim_oskill_check(uint8_t *b,const dm_sim_data *d,uint64_t pl,dm_sim_
         int si=-1;for(int j=0;j<D.nsk && si<0;j++)if(D.sk[j].id==id)si=j;
         int own=si>=0 && D.sk[si].cls==c->cls,pg=own?D.sk[si].page:0,ly=c->cls*8+pg-1;
         int rule=gstat(b,pl,97,id)+gstat(b,pl,127,0)+(own?gstat(b,pl,83,c->cls)+gstat(b,pl,107,id)+(pg>=1 && pg<=3?gstat(b,pl,188,ly):0):0);
-        int game=((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,node,0);
+        int game=((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,node,0);
         if(rule!=game) {
             c->capture_bad|=SIM_GRANT_BAD;
             static uint64_t said;uint64_t key=(uint64_t)id<<20|(uint64_t)(rule&1023)<<10|(uint64_t)(game&1023);
@@ -231,7 +231,7 @@ static int sim_oskill_after(uint8_t *b,uint64_t pl,int cls,int id,uint64_t cand,
     int own=si>=0 && D.sk[si].cls==cls,pg=own?D.sk[si].page:0,ly=cls*8+pg-1,tab=own && pg>=1 && pg<=3;
     int change=sim_bonus_change(b,cls,id,cand,olds,nold);
     uint64_t node=skill_node(pl,id);
-    if(node && *(int32_t *)(node+0x38)>=1)return *(int32_t *)(node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,node,0)+change;
+    if(node && *(int32_t *)(node+0x38)>=1)return *(int32_t *)(node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,node,0)+change;
     int granted=gstat(b,pl,97,id)+gstat(b,cand,97,id)-gsum(b,olds,nold,97,id);
     if(granted<=0)return 0;
     int bonus=gstat(b,pl,127,0)+(own?gstat(b,pl,83,cls)+gstat(b,pl,107,id):0)+(tab?gstat(b,pl,188,ly):0);
@@ -251,5 +251,5 @@ static int sim_elem_after(uint8_t *b,const dm_sim_data *d,uint64_t pl,int cls,in
 #define DELTA(st,layer) (gstat(b,cand,st,layer)-gsum(b,olds,nold,st,layer))
     int change=DELTA(107,id)+DELTA(127,0)+DELTA(83,cls)+(pg>=1 && pg<=3?DELTA(188,ly):0)+(d->skill[id]->etype==DM_EL_FIRE?fire:0);
 #undef DELTA
-    return *(int32_t *)(node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,node,0)+change;
+    return *(int32_t *)(node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,node,0)+change;
 }

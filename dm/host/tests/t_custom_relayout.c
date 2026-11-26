@@ -14,6 +14,7 @@
 
 
 #include "t_custom_carousel_fake.h"
+#include "../game_addrs.h"
 #include "../dm_custom.c"
 #include <stdio.h>
 #include <stdlib.h>
@@ -150,7 +151,7 @@ int main(void) {
     char *d = mkdtemp(tmpl); if (!d) { perror("mkdtemp"); return 1; }
     dm_custom_init(d);
     strlcpy(g_mod[0].name, "main", sizeof g_mod[0].name); g_mod[0].base = main_mem; g_nmod = 1;
-    page_vt[0] = A(main_mem) + 0xae5f28; sel_vt[2] = A(relayout_noop);
+    page_vt[0] = A(main_mem) + GA_OPTIONS_PAGE_UPDATE; sel_vt[2] = A(relayout_noop);
     root_w.b[0x50] = 1; put64(&root_w, 0x58, A(root_kids));
 
 

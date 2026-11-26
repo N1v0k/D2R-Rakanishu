@@ -12,6 +12,7 @@
 
 
 #include "dm_streak.h"
+#include "game_addrs.h"
 #include "dm_feats.h"
 #include "dm_fightlog.h"
 #include "dm_bossrush.h"
@@ -33,11 +34,11 @@ static int g_hud[DM_SK_HUD_N];
 
 static uint64_t rd(uint64_t a) { return a ? *(volatile uint64_t *)(uintptr_t)a : 0; }
 static uint32_t rd32(uint64_t a) { return *(volatile uint32_t *)(uintptr_t)a; }
-static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + 0x5b9290))(u, id, 0); }
+static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + GA_STAT_GET))(u, id, 0); }
 
 static uint32_t exp_max(uint64_t G, uint64_t player) {
     uint8_t set = *(volatile uint8_t *)(uintptr_t)(G + 0x106); if (set < 1 || set > 3) return 0;
-    uint64_t T = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + set * 16)), x = T ? rd(T + 0x1500) : 0; if (!x) return 0;
+    uint64_t T = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + set * 16)), x = T ? rd(T + 0x1500) : 0; if (!x) return 0;
     uint32_t cls = rd32(player + 4); if (cls >= 8) cls = 0;
     int32_t top = (int32_t)rd32(x + 4 * cls); if (top < 1 || top > 255) return 0;
     return rd32(x + (uint64_t)top * 0x24 + 4 * cls);
@@ -98,8 +99,8 @@ static void test_seed(dm_sk_state *s) {
 static void credit(const uint64_t *regs) {
     if (g_mode <= DM_SK_OFF || !regs[1] || rd32(regs[1] + 8) != g_player_id || (int32_t)(uint32_t)regs[3] <= 0) return;
     uint64_t lr = regs[101] - (uint64_t)(uintptr_t)B, dead;
-    if (lr == 0x7d831c) dead = regs[19];
-    else if (lr == 0x7dcfb0 || lr == 0x7dd098) dead = rd(regs[29] - 8);
+    if (lr == GA_AT_KILL_REWARD_CALL_RET) dead = regs[19];
+    else if (lr == GA_AT_KILL_REWARD_XP_RET1 || lr == GA_AT_KILL_REWARD_XP_RET2) dead = rd(regs[29] - 8);
     else return;
     if (dead) dm_sk_credit(&g_sk, rd32(regs[0] + 0x170), rd32(dead + 8), (uint32_t)regs[3]);
 }
@@ -129,7 +130,7 @@ static void ended(uint64_t G, uint64_t player, const dm_sk_end *e, uint32_t *exp
         if (bonus > 0x7fffffff) bonus = 0x7fffffff;
     }
     if (bonus) {
-        ((void (*)(uint64_t, uint64_t, int))(uintptr_t)(B + 0x7ddc40))(G, player, (int)bonus);
+        ((void (*)(uint64_t, uint64_t, int))(uintptr_t)(B + GA_EXP_ADD))(G, player, (int)bonus);
         after = (uint32_t)ustat(player, 13);
         if (after != before + (uint32_t)bonus) LOG("ASSUME streak.grant_exact: experience %u + bonus %llu gave %u", before, (unsigned long long)bonus, after);
         *exp = after;

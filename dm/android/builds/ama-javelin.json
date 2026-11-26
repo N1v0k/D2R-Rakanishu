@@ -26,8 +26,8 @@
   "tags": ["leveling", "endgame", "lightning", "bosses", "magicfind"],
   "difficulty": 2,
   "mode": {"core": "softcore", "ladder": "nonladder"},
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [35, 24, 34],
   "trees": [3, 2],
   "profile": {
@@ -152,5 +152,5 @@
     {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 16 (3.4)", "url": "https://news.blizzard.com/en-us/article/24316567/diablo-ii-resurrected-ladder-season-16", "seen": "2026-11-03", "patch": "3.4", "kind": "database", "lang": "en",
      "note": {"de": "Ganz gelesen; keine Änderung an der Amazone", "en": "Read in full; no change to the Amazon"}}
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

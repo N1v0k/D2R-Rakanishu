@@ -8,21 +8,22 @@
 
 #pragma once
 #include <stdint.h>
+#include "game_addrs.h"
 #include <string.h>
 
 enum {
-    DM_VT_TEXT = 0x20ba4c8,
-    DM_VT_INPUT = 0x20b8718,
-    DM_VT_NUMINPUT = 0x20b91c0,
-    DM_VT_TOGGLE = 0x20bc110,
-    DM_VT_TABBAR = 0x20ba3a8,
-    DM_VT_SLOT = 0x2089fa0,
-    DM_VT_SLOT_B = 0x2089ab8,
-    DM_VT_SLOT_C = 0x2088fc8,
-    DM_VT_IMAGE = 0x20b8650,
-    DM_VT_BUTTON = 0x20b7b00,
-    DM_VT_CAROUSEL = 0x20b7c28,
-    DM_VT_SLIDER = 0x20bad70,
+    DM_VT_TEXT = GA_VT_TEXTBOX,
+    DM_VT_INPUT = GA_VT_INPUT_TEXT,
+    DM_VT_NUMINPUT = GA_VT_NUMERIC_INPUT,
+    DM_VT_TOGGLE = GA_VT_TOGGLE_BUTTON,
+    DM_VT_TABBAR = GA_VT_TABBAR,
+    DM_VT_SLOT = GA_VT_EQUIP_SLOT,
+    DM_VT_SLOT_B = GA_VT_ITEM_GRID,
+    DM_VT_SLOT_C = GA_VT_BELT,
+    DM_VT_IMAGE = GA_VT_IMAGE,
+    DM_VT_BUTTON = GA_VT_BUTTON,
+    DM_VT_CAROUSEL = GA_VT_CAROUSEL,
+    DM_VT_SLIDER = GA_VT_SETTINGS_SLIDER,
 };
 
 static inline uint64_t dm_widget_vt(const uint8_t *base, uint64_t w) { return w && base ? *(const uint64_t *)(uintptr_t)w - (uint64_t)(uintptr_t)base : 0; }

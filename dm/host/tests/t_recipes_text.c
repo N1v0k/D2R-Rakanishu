@@ -69,9 +69,10 @@ int main(void) {
     CHECK(g_tdone && g_tcount == WITH_TEXT, "the pass finishes with every text");
     CHECK(calls[250] == 1, "the sequential pass skips the priority record");
     CHECK(f > 20 && f < 40, "about 85 / 3 frames for the rest");
-    snprintf(path, sizeof path, "%s/recipe_text_1_d3_3.3.94012.tsv", dir);
-    FILE *fp = fopen(path, "r"); char head[64] = "";
-    CHECK(fp && fgets(head, sizeof head, fp) && !strcmp(head, "#recipe text 3.3.94012 85\n"), "the file's header count = the texts present");
+    snprintf(path, sizeof path, "%s/recipe_text_1_d3_%s.tsv", dir, GAME_VERSION_main);
+    FILE *fp = fopen(path, "r"); char head[64] = "", want[64];
+    snprintf(want, sizeof want, "#recipe text %s 85\n", GAME_VERSION_main);
+    CHECK(fp && fgets(head, sizeof head, fp) && !strcmp(head, want), "the file's header = the table's game version and the texts present");
     if (fp) fclose(fp);
 
 
@@ -91,7 +92,7 @@ int main(void) {
     CHECK(get(250, t, sizeof t) > 0 && !strncmp(t, "R250 L2", 7), "new language: the waiting record first, in the new language");
     CHECK(have(1) && !strncmp((get(1, t, sizeof t), t), "R1 L2", 5), "sequential texts in the new language too");
     done_frames(400);
-    snprintf(path, sizeof path, "%s/recipe_text_2_d3_3.3.94012.tsv", dir);
+    snprintf(path, sizeof path, "%s/recipe_text_2_d3_%s.tsv", dir, GAME_VERSION_main);
     CHECK(access(path, R_OK) == 0 && g_tcount == WITH_TEXT, "the new language gets its own file");
     atomic_store(&g_dm_lang, 1); start(); frame();
     CHECK(get(250, t, sizeof t) > 0 && !strncmp(t, "R250 L1", 7), "back to language 1: its file again");
@@ -120,7 +121,7 @@ int main(void) {
     int calls10 = calls[10]; f = 0;
     while (atomic_load(&g_twant) && f < 50) { frame(); f++; }
     CHECK(calls[10] == calls10 + 1 && !have(250) && g_tcount == 0 && !atomic_load(&g_twant), "a later failure clears the published priority text and stops");
-    snprintf(path, sizeof path, "%s/recipe_text_4_d3_3.3.94012.tsv", dir);
+    snprintf(path, sizeof path, "%s/recipe_text_4_d3_%s.tsv", dir, GAME_VERSION_main);
     CHECK(access(path, F_OK) != 0, "no file after a failure");
     before = made_calls; calls10 = calls[10];
     for (int i = 0; i < 10; i++) { have(250); frame(); }
@@ -136,7 +137,22 @@ int main(void) {
 
     CHECK(get(-1, t, sizeof t) == 0 && get(TEXT_RECS, t, sizeof t) == 0 && get(250, t, 0) == 0, "out of range / no room");
 
-    for (int l = 1; l <= 4; l++) { snprintf(path, sizeof path, "%s/recipe_text_%d_d3_3.3.94012.tsv", dir, l); unlink(path); }
+
+
+
+    atomic_store(&g_dm_lang, 6);
+    static const struct { const char *name, *head; int loads; } cases[] = {
+        {"3.3.94012", "3.3.94012", 0}, {NULL, "3.3.94012", 0}, {NULL, NULL, 1}};
+    for (int i = 0; i < 3; i++) {
+        snprintf(path, sizeof path, "%s/recipe_text_6_d3_%s.tsv", dir, cases[i].name ? cases[i].name : GAME_VERSION_main);
+        fp = fopen(path, "w"); if (fp) { fprintf(fp, "#recipe text %s 1\n1\tR1 L6\n", cases[i].head ? cases[i].head : GAME_VERSION_main); fclose(fp); }
+        text_clear(); pthread_mutex_lock(&g_tmu); g_tlang = 6; pthread_mutex_unlock(&g_tmu);
+        CHECK(text_load() == cases[i].loads && have(1) == cases[i].loads, cases[i].loads ? "this version's file loads" : "another version's file is not read");
+        unlink(path);
+    }
+    text_clear();
+
+    for (int l = 1; l <= 4; l++) { snprintf(path, sizeof path, "%s/recipe_text_%d_d3_%s.tsv", dir, l, GAME_VERSION_main); unlink(path); }
     rmdir(dir);
     printf("t_recipes_text: %d checks, %d failed\n", checks, fails);
     return fails != 0;

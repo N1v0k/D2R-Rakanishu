@@ -19,7 +19,7 @@ English: [README.md](README.md)
 发布页的 `D2RMobile-android.apk` 不含任何游戏内容（由 `dm/android/tools/shell_apk.sh` 出：三张从游戏文件生成的表换成替身，运行时读导入的 `derived.tsv`，做法同 iOS 壳）。游戏内容用你自己的游戏文件在电脑上做：
 
 ```sh
-python3 dm/tools/d2rm_android.py <Switch 版 3.3.94012 的 Update 目录> <输出目录>
+python3 dm/tools/d2rm_android.py <Switch 版 3.4.95035 的 Update 目录> <输出目录>
 ```
 
 它改写游戏程序（安卓目标）、把全部着色器翻成 Vulkan 包、生成触屏覆盖层与几张数据表，写出 `<输出目录>/android/`。需要的工具见脚本开头（Python 包、.NET SDK、Vulkan SDK 里的 `spirv-opt` / `spirv-val` / `glslc`），缺什么它会逐项报。

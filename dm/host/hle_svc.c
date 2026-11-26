@@ -3,6 +3,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include <stdatomic.h>
 #include <sys/mman.h>
@@ -82,22 +83,22 @@ static module_t *mod_named(const char *n) { for (int i = 0; i < g_nmod; i++) if 
 static _Atomic unsigned long long g_gheap_last[3];
 int dm_guest_heap_stat(unsigned long long *total_mb, unsigned long long *free_mb, unsigned long long *maxblk_kb) {
     module_t *mm = mod_named("main"), *ms = mod_named("sdk"); if (!mm || !ms || !g_heap_cur) return 0;
-    uint8_t *al = mm->base + 0x32137a0; if (!al[0]) return 0;
-    uint64_t fr = ((uint64_t (*)(void *))(ms->base + 0x2f9d78))(al), mx = ((uint64_t (*)(void *))(ms->base + 0x2f9dbc))(al);
+    uint8_t *al = mm->base + GA_MAIN_HEAP_ALLOC; if (!al[0]) return 0;
+    uint64_t fr = ((uint64_t (*)(void *))(ms->base + GA_STD_ALLOC_FREE_SIZE))(al), mx = ((uint64_t (*)(void *))(ms->base + GA_STD_ALLOC_MAX_BLOCK))(al);
     *total_mb = g_heap_cur >> 20; *free_mb = fr >> 20; *maxblk_kb = mx >> 10;
     g_gheap_last[0] = *total_mb; g_gheap_last[1] = *free_mb; g_gheap_last[2] = *maxblk_kb; return 1;
 }
 
 int dm_guest_heap_free_bytes(unsigned long long *free_bytes) {
     module_t *mm = mod_named("main"), *ms = mod_named("sdk"); if (!mm || !ms || !g_heap_cur) return 0;
-    uint8_t *al = mm->base + 0x32137a0; if (!al[0]) return 0;
-    *free_bytes = ((uint64_t (*)(void *))(ms->base + 0x2f9d78))(al); return 1;
+    uint8_t *al = mm->base + GA_MAIN_HEAP_ALLOC; if (!al[0]) return 0;
+    *free_bytes = ((uint64_t (*)(void *))(ms->base + GA_STD_ALLOC_FREE_SIZE))(al); return 1;
 }
 
 
 void dm_guest_heap_last(unsigned long long v[3]) { for (int i = 0; i < 3; i++) v[i] = atomic_load(&g_gheap_last[i]); }
 HLE_FORCE("_ZN2nn3mem17StandardAllocator8AllocateEmm", "照原版分配，只在返回空时报红（原版调用方多处不判空）", void *, hle_stdalloc_allocate, void *self, size_t size, size_t align) {
-    static void *(*orig)(void *, size_t, size_t); if (!orig) { module_t *ms = mod_named("sdk"); orig = (void *(*)(void *, size_t, size_t))(ms->base + 0x2f9974); }
+    static void *(*orig)(void *, size_t, size_t); if (!orig) { module_t *ms = mod_named("sdk"); orig = (void *(*)(void *, size_t, size_t))(ms->base + GA_STD_ALLOC_ALLOCATE); }
     void *p = orig(self, size, align);
     if (!p && size) { static _Atomic int n; if (atomic_fetch_add(&n, 1) < 8) LOG("【红】游戏堆分配返回空：申请 %zu 字节（对齐 %zu），分配器 %p；上次读数 主堆 %llu MB、余量 %llu MB、最大可分配块 %llu KB", size, align, self,
         (unsigned long long)g_gheap_last[0], (unsigned long long)g_gheap_last[1], (unsigned long long)g_gheap_last[2]); }

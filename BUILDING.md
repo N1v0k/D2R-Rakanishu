@@ -44,7 +44,7 @@ export JAVA_HOME=/path/to/jdk17
 export ANDROID_HOME=/path/to/android-sdk
 export DM_PYTHON=/path/to/python3
 export DM_ROOT=/path/to/build-root      # every build artifact goes under here
-export DM_ROMFS_SRC=/path/to/your/3.3.94012/Update/RomFS
+export DM_ROMFS_SRC=/path/to/your/3.4.95035/Update/RomFS
 ```
 
 `shell_apk.sh` sizes its runtime tables from your own game files, then replaces them
@@ -74,7 +74,7 @@ The FriBiDi library inside is LGPL: its exact source archive is attached to ever
 ## Building the APK
 
 Version metadata needs no arguments: the defaults in `dm/android/app/build.gradle`
-are this release's published numbers (versionName `1.0.1`, versionCode `30003`;
+are this release's published numbers (versionName `1.1.0`, versionCode `30004`;
 the player variant appends `-player`), so the commands below build exactly the
 published version metadata. `-PdmVersionName=<name> -PdmVersionCode=<n>` override
 them for test builds only.
@@ -131,6 +131,6 @@ python3 dm/tools/d2rm_android.py /path/to/your/Update /path/to/pack
    unzip -Z1 app.apk | while read e; do echo "$e $(unzip -p app.apk "$e" | sha256sum | cut -d' ' -f1)"; done
    ```
 
-Known inputs of the build that must match: game version 3.3.94012 (only used to size
+Known inputs of the build that must match: game version 3.4.95035 (only used to size
 the stub tables), the tool versions above, the pinned downloads of the two recipes, and a
 clean source tree. Build directory paths and the machine user do not affect the result.

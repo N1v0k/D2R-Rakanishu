@@ -26,7 +26,7 @@ case $VARIANT in qa) SFX="" ;; player) SFX=-player ;; *) echo "-PdmVariant must 
 [ $VARIANT != player ] || KIND=release
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); DM=$(cd "$HERE/../.." && pwd)
 ROOT=${DM_ROOT:-$HOME/dm-work}; O=$ROOT/build/android_shell; G=$O/gen
-ROMFS=${DM_ROMFS_SRC:-$ROOT/data/switch/3.3.94012/Update/RomFS}
+ROMFS=${DM_ROMFS_SRC:-$ROOT/data/switch/$(sed -n '1s/-.*//p' "$(dirname "$0")/../../PRODUCT")/Update/RomFS}
 PY=${DM_PYTHON:-$ROOT/build/cache/dm/venv/bin/python}
 export JAVA_HOME=${JAVA_HOME:-$(brew --prefix openjdk@17 2> /dev/null)/libexec/openjdk.jdk/Contents/Home}
 export ANDROID_HOME=${ANDROID_HOME:-$HOME/Library/Android/sdk}; export ANDROID_SDK_ROOT=$ANDROID_HOME
@@ -35,6 +35,7 @@ t() { echo "[$(date +%T)] $*"; }; die() { t "🔴 $*"; exit 1; }
 W=$O/tree$SFX
 rm -rf "$G" "$O/ref" "$O/D2RMobile-android$SFX.apk" && mkdir -p "$G" "$O/ref" "$W" || die "建不了 $O"
 python3 "$DM/android/tools/check_player_env.py" > "$O/check_player_env.log" 2>&1 || { cat "$O/check_player_env.log"; die "player 的 getenv 名单与源码不一致（dm/android/tools/check_player_env.py）"; }
+python3 "$DM/tools/check_game_addrs.py" "$DM/.." > "$O/check_game_addrs.log" 2>&1 || { cat "$O/check_game_addrs.log"; die "Game addresses not written by name (dm/tools/check_game_addrs.py)"; }
 if ! (cd "$DM/.." && git ls-files -z -co --exclude-standard dm THIRD-PARTY-NOTICES.md) > "$O/tree$SFX.lst" 2> /dev/null; then
 
   (cd "$DM/.." && find dm -type f ! -path "*/build/*" ! -path "*/.cxx/*" ! -path "*/.gradle/*" -print0; printf 'THIRD-PARTY-NOTICES.md\0') > "$O/tree$SFX.lst" || die "列不出源码文件"

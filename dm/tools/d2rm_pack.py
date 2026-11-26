@@ -209,8 +209,8 @@ def patched_ready(out):
 
 
 
-    src = hashlib.sha256(open(os.path.join(HERE, 'patch_nso.py'), 'rb').read()).hexdigest()
-    try: rec = open(os.path.join(out, 'build_src.sha256')).read().split()[0]
+    src = [hashlib.sha256(open(p, 'rb').read()).hexdigest() for p in (os.path.join(HERE, 'patch_nso.py'), os.path.join(HERE, '..', 'host', 'game_addrs.def'))]
+    try: rec = [line.split()[0] for line in open(os.path.join(out, 'build_src.sha256')).read().splitlines()]
     except (OSError, IndexError): return False
     return rec == src and all(os.path.isfile(os.path.join(out, m + '.patched.bin')) and os.path.isfile(os.path.join(out, m + '.gates.tsv')) for m in MODS)
 

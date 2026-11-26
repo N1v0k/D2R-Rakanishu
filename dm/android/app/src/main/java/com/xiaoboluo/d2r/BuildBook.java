@@ -743,7 +743,7 @@ final class BuildBook extends View implements PadPage, QuickPage {
 
     private void drawStatus(Canvas c, BuildModel.Guide g, float x, float y, float width, float size) {
         String[] names = {s(R.string.dmAndroidBuildChkTables), s(R.string.dmAndroidBuildChkReview), s(R.string.dmAndroidBuildChkPlay)};
-        boolean[] on = {g.checks.contains("tables-3.3.94012"), g.checks.contains("two-sources") && g.checks.contains("review"), g.played};
+        boolean[] on = {g.checks.contains("tables-" + BuildData.VERSION), g.checks.contains("two-sources") && g.checks.contains("review"), g.played};
         head.setTextSize(size);
         for (int i = 0; i < 3; i++) statusW[i] = head.measureText(names[i]);
 

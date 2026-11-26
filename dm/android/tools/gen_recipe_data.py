@@ -15,14 +15,14 @@ import sys
 DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 sys.path.insert(0, os.path.join(DM, 'ios', 'tools'))
 
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 DATA_VERSION = 3
 
 TABLES = tuple('global/excel/%s' % f for f in ('cubemain.txt', 'cubemain.bin', 'Runes.txt', 'runes.bin', 'armor.txt', 'weapons.txt', 'misc.txt', 'itemtypes.txt', 'uniqueitems.txt', 'setitems.txt', 'gems.txt', 'properties.txt', 'itemstatcost.txt', 'skills.txt', 'skilldesc.txt')) + \
     tuple('local/lng/strings/%s.json' % f for f in ('item-names', 'item-runes', 'item-gems', 'item-modifiers', 'item-nameaffixes', 'levels', 'ui', 'skills')) + ('hd/items/items.json',)
-TABLES_SHA = 'fcfcd181ea12ad7d0c10208385e4c49c3af3454cf83792f0a94b28f59e219ef1'
+TABLES_SHA = '5066a5c0ac9df221a7eaf815af7c9141ccd9c8f407e626a342171469495694bc'
 
-RESULT_SHA = 'e950fadc22c23b973341258a25d1e74f28748df3697b1afffea42eadd1154d79'
+RESULT_SHA = '85d9d749e4e6c7043bd6c7f1d1cc80a8ded80a852143fe2cf77d6341f947848a'
 
 
 TYPE_KEYS = {'any': 'AdvancedItems', 'hpot': 'hp3', 'mpot': 'mp3', 'gemz': 'sku', 'gemr': 'gsr', 'gemd': 'gsw', 'rod': 'stave', 'blun': 'maces', 'hamm': 'maces', 'shld': 'shlds', 'axe': 'axes', 'wand': 'wands',

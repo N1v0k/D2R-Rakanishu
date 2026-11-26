@@ -13,6 +13,7 @@
 
 
 #include "dm_uiscreen.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm.h"
 #include <stdatomic.h>
@@ -98,7 +99,7 @@ uint64_t front_game_res(int docked); void dm_oe_res_changed(void);
 
 
 
-void dm_uiscreen_res_reread(void) { uint8_t *b = main_base(); int rw = atomic_load(&g_rw); if (!b || !rw) return; int32_t *g = (int32_t *)(b + 0x211da38);
+void dm_uiscreen_res_reread(void) { uint8_t *b = main_base(); int rw = atomic_load(&g_rw); if (!b || !rw) return; int32_t *g = (int32_t *)(b + GA_UI_WIDTH);
     if (g[0] == rw && g[1] == atomic_load(&g_uh)) g[1] = atomic_load(&g_rh); atomic_store(&g_rw, 0); }
 
 
@@ -106,7 +107,7 @@ void dm_uiscreen_res_reread(void) { uint8_t *b = main_base(); int rw = atomic_lo
 
 static _Atomic int g_world, g_res_live;
 
-int dm_game_win_init_size(int *w, int *h) { uint8_t *b = main_base(); if (!b) return 0; *w = *(int32_t *)(b + 0x211da30); *h = *(int32_t *)(b + 0x211da34); return *w > 0 && *h > 0; }
+int dm_game_win_init_size(int *w, int *h) { uint8_t *b = main_base(); if (!b) return 0; *w = *(int32_t *)(b + GA_OUTPUT_RES_CAP); *h = *(int32_t *)(b + GA_OUTPUT_RES_CAP_H); return *w > 0 && *h > 0; }
 int dm_uiscreen_res_live(void) { return atomic_load(&g_res_live); }
 
 
@@ -131,10 +132,10 @@ uint64_t dm_game_res(int docked) { uint64_t r = front_game_res(docked); uint32_t
 
 void dm_uiscreen_pump(void) {
     uint8_t *b = main_base(); if (!b) return;
-    { int world = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)) != 0;
+    { int world = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)) != 0;
       int first = !atomic_exchange(&g_res_live, 1);
       if ((atomic_exchange(&g_world, world) != world || (first && !world)) && mode() != DM_UISCREEN_OFF) { LOG("界面画面：%s → 游戏分辨率切到 %u x %u", world ? "玩家单位建立" : first ? "窗口已建好、在前端" : "玩家单位销毁", (unsigned)dm_game_res(1), (unsigned)(dm_game_res(1) >> 32)); dm_oe_res_changed(); } }
-    static int reg; if (!reg) { reg = 1; if (gate_obs_present(OBS_UI_PROJECT)) { gate_obs_set(OBS_UI_PROJECT, ui_project_obs); atomic_store(&g_proj_on, 1); } } int32_t *g = (int32_t *)(b + 0x211da38); int m = mode(), rw = atomic_load(&g_rw);
+    static int reg; if (!reg) { reg = 1; if (gate_obs_present(OBS_UI_PROJECT)) { gate_obs_set(OBS_UI_PROJECT, ui_project_obs); atomic_store(&g_proj_on, 1); } } int32_t *g = (int32_t *)(b + GA_UI_WIDTH); int m = mode(), rw = atomic_load(&g_rw);
     if (!atomic_load(&g_world) && m != DM_UISCREEN_OFF) return;
     if (m == DM_UISCREEN_OFF) { if (rw) { if (g[0] == rw && g[1] == atomic_load(&g_uh)) g[1] = atomic_load(&g_rh); atomic_store(&g_rw, 0); LOG("界面画面：关掉，屏幕高写回 %d", g[1]); } return; }
     int w = g[0], h = g[1]; if (w <= 0 || h <= 0) return;
@@ -145,7 +146,7 @@ void dm_uiscreen_pump(void) {
 }
 int dm_screen_real(int *w, int *h) { int rw = atomic_load(&g_rw);
     if (rw) { *w = rw; *h = atomic_load(&g_rh); return 1; }
-    uint8_t *b = main_base(); if (!b) return 0; *w = *(int32_t *)(b + 0x211da38); *h = *(int32_t *)(b + 0x211da3c); return *w > 0 && *h > 0; }
+    uint8_t *b = main_base(); if (!b) return 0; *w = *(int32_t *)(b + GA_UI_WIDTH); *h = *(int32_t *)(b + GA_UI_HEIGHT); return *w > 0 && *h > 0; }
 void dm_ui_rect(int *x, int *y, int *w, int *h) { int rw = 0, rh = 0; dm_screen_real(&rw, &rh); *x = 0; *y = yoff(); *w = rw; *h = atomic_load(&g_rw) ? atomic_load(&g_uh) : rh; }
 float dm_ui_ny(float ny) { int x, y, w, h, rw = 0, rh = 0; dm_ui_rect(&x, &y, &w, &h); if (!dm_screen_real(&rw, &rh) || h <= 0 || h == rh) return ny; return (ny * rh - y) / h; }
 float dm_ui_ny_back(float ny) { int x, y, w, h, rw = 0, rh = 0; dm_ui_rect(&x, &y, &w, &h); if (!dm_screen_real(&rw, &rh) || rh <= 0 || h == rh) return ny; return (ny * h + y) / rh; }

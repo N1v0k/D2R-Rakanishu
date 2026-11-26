@@ -13,7 +13,7 @@ English: [HARMONYOS.md](HARMONYOS.md)
 - 一台支持该 HAP 最低 API 的鸿蒙手机，启用开发者模式和 USB 调试。本轮只验证了上面的 API 26 设备；系统营销版本号不能直接当成 API 版本。
 - DevEco Studio 及相应 SDK，使用其中的 Java、`hap-sign-tool.jar` 和 `hdc`。
 - 华为开发者账号、自己的调试证书和私钥、包含这台手机的调试 profile。可在 DevEco Studio 的签名配置中登录并生成；手动管理的流程见[官方调试 profile 文档](https://developer.huawei.com/consumer/cn/doc/doccenter-getting-started/agc-help-debug-profile-0000002248181278)。本轮没有验证免开发者账号安装渠道。
-- 自己购买的游戏文件：Switch 版 1.0.34.0（3.3.94012）的 `Update/ExeFS/{main,sdk}` 与 `Update/RomFS/data/`；准备方式见上游项目的说明。
+- 自己购买的游戏文件：Switch 版 1.0.35（3.4.95035）的 `Update/ExeFS/{main,sdk}` 与 `Update/RomFS/data/`；准备方式见上游项目的说明。
 - 运行工具所需的 Python 3.9+ 与 `pillow numpy lz4 capstone unicorn`、.NET SDK、`spirv-opt`、`spirv-val`、`glslc`。`spirv-opt` 要支持 `--trim-capabilities`。已有可用环境无需重复安装。
 
 ## 1. 重签预编译壳并安装

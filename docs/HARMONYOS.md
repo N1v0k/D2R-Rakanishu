@@ -13,7 +13,7 @@ Use the **unsigned HAP** and matching source/tools from the release. If the rele
 - A phone meeting the HAP's minimum API, with developer mode and USB debugging enabled. Only the API 26 device above was checked in this run; marketing OS versions do not directly identify SDK APIs.
 - DevEco Studio and the matching SDK, including Java, `hap-sign-tool.jar` and `hdc`.
 - Your Huawei developer account, debug certificate/private key, and a debug profile containing the target device. DevEco's signing setup can generate these after sign-in. See the [official profile instructions](https://developer.huawei.com/consumer/cn/doc/doccenter-getting-started/agc-help-debug-profile-0000002248181278) for manual management. No account-free installation route was verified.
-- Your purchased game's Switch 1.0.34.0 (3.3.94012) `Update/ExeFS/{main,sdk}` and `Update/RomFS/data/`; the upstream project describes how to prepare them from your own copy.
+- Your purchased game's Switch 1.0.35 (3.4.95035) `Update/ExeFS/{main,sdk}` and `Update/RomFS/data/`; the upstream project describes how to prepare them from your own copy.
 - Python 3.9+ with `pillow numpy lz4 capstone unicorn`, .NET SDK, and `spirv-opt`, `spirv-val`, `glslc`. `spirv-opt` must support `--trim-capabilities`. Reuse an existing working environment.
 
 ## 1. Re-sign and install

@@ -35,6 +35,7 @@
 
 
 #include "dm_bossrush.h"
+#include "game_addrs.h"
 #include "dm_feats.h"
 #include "dm_unit.h"
 #include "hle.h"
@@ -95,16 +96,16 @@ void dm_game_notice(uint8_t *main_base, const char *text) {
 
     { static uint64_t msg[4]; msg[0] = 0xd106c9eabf113da5ull; msg[1] = 0x8fa6af1ab5b75b23ull; msg[2] = 0; msg[3] = 1;
       static char box[200]; strlcpy(box, text, sizeof box);
-      ((void (*)(const char *, void *))(B + 0x3d8b74))(box, msg); }
+      ((void (*)(const char *, void *))(B + GA_NOTIFY_BOX_SHOW))(box, msg); }
 }
 
 void dm_game_chat(uint8_t *main_base, const char *text) {
     B = main_base; static char line[200]; strlcpy(line, text, sizeof line);
     static uint64_t txt[3], who[6], o1[8], o2[8], o3[8], o4[8];
     size_t n = strlen(line); txt[0] = (uint64_t)(uintptr_t)line; txt[1] = n; txt[2] = 0x8000000000000000ull | n;
-    const uint8_t *g = B + 0x2d52c88; memset(who, 0, sizeof who); *(uint32_t *)who = *(const uint32_t *)g; who[1] = *(const uint64_t *)(g + 8); who[2] = *(const uint64_t *)(g + 16); who[3] = 0x8000000000000000ull | who[2];
+    const uint8_t *g = B + GA_CHAT_SPEAKER_TPL; memset(who, 0, sizeof who); *(uint32_t *)who = *(const uint32_t *)g; who[1] = *(const uint64_t *)(g + 8); who[2] = *(const uint64_t *)(g + 16); who[3] = 0x8000000000000000ull | who[2];
     memset(o1, 0, sizeof o1); memset(o2, 0, sizeof o2); memset(o3, 0, sizeof o3); memset(o4, 0, sizeof o4);
-    ((void (*)(uint64_t, void *, int, int, void *, void *, void *, void *, uint64_t, uint64_t))(B + 0xab2ab0))((uint64_t)(uintptr_t)(B + 0x2e3d7d0), txt, 4, 0, who, o1, o2, o3, (uint64_t)(uintptr_t)o4, 0);
+    ((void (*)(uint64_t, void *, int, int, void *, void *, void *, void *, uint64_t, uint64_t))(B + GA_CHAT_ADD_LINE))((uint64_t)(uintptr_t)(B + GA_CHAT_MANAGER), txt, 4, 0, who, o1, o2, o3, (uint64_t)(uintptr_t)o4, 0);
 }
 
 
@@ -120,13 +121,13 @@ void dm_game_chat(uint8_t *main_base, const char *text) {
 
 static int loc_has(uint64_t map, const char *key, size_t n, uint64_t *bucket) {
     uint64_t cnt = rd(map), bk = rd(map + 8); if (!cnt || !bk || (cnt & (cnt - 1))) return -1;
-    uint64_t h[4] = {0}; ((void (*)(uint64_t *, const char *, uint64_t, int))(B + 0x1b6e1e0))(h, key, n, 0); *bucket = bk + 8 * (h[0] & (cnt - 1));
+    uint64_t h[4] = {0}; ((void (*)(uint64_t *, const char *, uint64_t, int))(B + GA_STRING_HASH))(h, key, n, 0); *bucket = bk + 8 * (h[0] & (cnt - 1));
     for (uint64_t nd = rd(*bucket); nd; nd = rd(nd)) if (rd(nd + 0x10) == n && !memcmp((const void *)(uintptr_t)rd(nd + 8), key, n)) return 1;
     return 0;
 }
 static void loc_add(uint64_t map, const char *key, const char *val) {
     size_t n = strlen(key); uint64_t bucket; if (loc_has(map, key, n, &bucket)) return;
-    uint64_t al = rd((uint64_t)(uintptr_t)(B + 0x32116f8)); if (!al) return;
+    uint64_t al = rd((uint64_t)(uintptr_t)(B + GA_GAME_ALLOC)); if (!al) return;
     uint64_t *nd = ((uint64_t *(*)(uint64_t, uint64_t, int))(uintptr_t)rd(rd(al) + 0x10))(al, 0x30, 16); if (!nd) return;
     nd[1] = (uint64_t)(uintptr_t)key; nd[2] = n; nd[3] = 0; nd[4] = (uint64_t)(uintptr_t)val; nd[5] = strlen(val); nd[0] = rd(bucket);
     __atomic_store_n((uint64_t *)(uintptr_t)bucket, (uint64_t)(uintptr_t)nd, __ATOMIC_RELEASE);
@@ -134,11 +135,11 @@ static void loc_add(uint64_t map, const char *key, const char *val) {
 }
 void dm_door_label(uint8_t *main_base, uint64_t G, int cls, const char *key, int in_town) {
     B = main_base; static struct { int cls; char orig[0x40]; } sv[4]; static int nsv;
-    uint64_t T = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + *(uint8_t *)(uintptr_t)(G + 0x106) * 16)); if (!T || (uint64_t)cls >= rd(T + 0x1550)) return;
+    uint64_t T = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + *(uint8_t *)(uintptr_t)(G + 0x106) * 16)); if (!T || (uint64_t)cls >= rd(T + 0x1550)) return;
     char *k = (char *)(uintptr_t)(rd(T + 0x1548) + (uint64_t)cls * 0x168 + 0x42); int i = 0; while (i < nsv && sv[i].cls != cls) i++;
     if (i == nsv) { if (nsv == 4) return; sv[i].cls = cls; memcpy(sv[i].orig, k, sizeof sv[i].orig); nsv++; }
-    if (in_town) { uint32_t li = *(volatile uint32_t *)(B + 0x20ae4e0);
-        loc_add((uint64_t)(uintptr_t)(B + 0x2d71030), key, dm_ui_group(key, dm_lang_group_of((int)li))); loc_add((uint64_t)(uintptr_t)(B + 0x2d70ff0), key, dm_ui_group(key, DM_LG_EN));
+    if (in_town) { uint32_t li = *(volatile uint32_t *)(B + GA_LANG_ID);
+        loc_add((uint64_t)(uintptr_t)(B + GA_STRINGS_CUR_LANG), key, dm_ui_group(key, dm_lang_group_of((int)li))); loc_add((uint64_t)(uintptr_t)(B + GA_STRING_TABLE_EN), key, dm_ui_group(key, DM_LG_EN));
         if (strcmp(k, key)) { memset(k, 0, sizeof sv[i].orig); strlcpy(k, key, sizeof sv[i].orig); LOG("门名牌：物件 %d 串键换成 %s", cls, key); } }
     else if (!strcmp(k, key)) { memcpy(k, sv[i].orig, sizeof sv[i].orig); LOG("门名牌：物件 %d 串键写回 %s", cls, sv[i].orig); }
 }
@@ -155,7 +156,7 @@ int dm_bossrush_owns(uint32_t id) { for (int i = 0; i < R.nboss && i < 3; i++) i
 
 
 static uint64_t free_spot(uint64_t G, uint64_t room, int32_t pos[2]) {
-    uint64_t out = 0; ((void (*)(uint64_t, uint64_t, int32_t *, int, int, uint64_t *, int, int))(B + 0x7160d0))(G, room, pos, 3, 0x400, &out, 4, 100); return out;
+    uint64_t out = 0; ((void (*)(uint64_t, uint64_t, int32_t *, int, int, uint64_t *, int, int))(B + GA_ROOM_FIND_FREE_SPOT))(G, room, pos, 3, 0x400, &out, 4, 100); return out;
 }
 static uint64_t level_of(uint64_t u) { return dm_unit_level_ptr(u); }
 
@@ -194,7 +195,7 @@ static int door_ids(uint64_t G, uint32_t *ids, int max) {
 static uint32_t make_door(uint64_t G, uint64_t player, uint64_t room, int32_t pos[2], int target, int xy[2]) {
     uint64_t rr = free_spot(G, room, pos); if (!rr) return 0;
     uint32_t old[32]; int nold = door_ids(G, old, 32);
-    int ok = ((int (*)(uint64_t, uint64_t, uint64_t, int, int, int, uint64_t, int, uint64_t, uint64_t))(B + 0x7bfde0))(G, player, rr, pos[0], pos[1], target, 0, DOOR_OBJ, 0, 1);
+    int ok = ((int (*)(uint64_t, uint64_t, uint64_t, int, int, int, uint64_t, int, uint64_t, uint64_t))(B + GA_PORTAL_CREATE))(G, player, rr, pos[0], pos[1], target, 0, DOOR_OBJ, 0, 1);
     if (!ok) return 0;
     uint32_t best = 0; int bd = 1 << 30;
     for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + 2 * 0x400 + 8 * b); u; u = rd(u + 0x158)) {
@@ -213,7 +214,7 @@ static int eligible(uint64_t G, uint64_t player) {
 
 static void tz_live(void) { atomic_store(&g_dm_tz_live_ns, (uint64_t)clock_gettime_nsec_np(CLOCK_MONOTONIC) + 1000000000ull); }
 static void tz_set(uint64_t G, int on) {
-    uint64_t (*zone)(uint64_t) = (uint64_t (*)(uint64_t))(B + 0x58f1e0); void (*apply)(uint64_t, uint64_t, int) = (void (*)(uint64_t, uint64_t, int))(B + 0x636a60);
+    uint64_t (*zone)(uint64_t) = (uint64_t (*)(uint64_t))(B + GA_TZ_ZONE_GET); void (*apply)(uint64_t, uint64_t, int) = (void (*)(uint64_t, uint64_t, int))(B + GA_TZ_APPLY);
     if (on) { tz_live();
         if (!R.tz_time) { int64_t now = time(NULL);
             for (int j = 0; j < 4000 && !R.tz_time; j++) { atomic_store(&g_dm_tz_time, now + j * 1800 + 60); uint64_t rc = zone(0); int hit = 0;
@@ -241,7 +242,7 @@ static void tz_set(uint64_t G, int on) {
 
 
 
-static uint8_t *preset_slot(uint8_t ver) { uint64_t T = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + ver * 16)), a5 = T ? rd(T + 0x1060) : 0; return a5 ? (uint8_t *)(uintptr_t)(a5 + 4 * 33) : NULL; }
+static uint8_t *preset_slot(uint8_t ver) { uint64_t T = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + ver * 16)), a5 = T ? rd(T + 0x1060) : 0; return a5 ? (uint8_t *)(uintptr_t)(a5 + 4 * 33) : NULL; }
 static void baal_table(uint64_t G, int off) {
     if (off == R.table_off) return; uint8_t ver = off ? *(uint8_t *)(uintptr_t)(G + 0x106) : R.table_ver; uint8_t *r = preset_slot(ver);
     if (!r || r[0] != 5 || *(uint16_t *)(r + 2) != (off ? 544 : 0)) { LOG("【红】首领连战：怪物预设表第五幕第 33 条不是预期值（%s），不动", off ? "巴尔 544" : "place_nothing"); return; }
@@ -285,8 +286,8 @@ static void boss_drop_watch(uint64_t G, uint32_t t) {
             if (*(uint32_t *)(uintptr_t)(u + 8) <= max_item || (m != 3 && m != 5)) continue; uint64_t p = rd(u + 0x38); if (!p) continue; ix = *(int32_t *)(uintptr_t)(p + 0x10); iy = *(int32_t *)(uintptr_t)(p + 0x14);
             if (abs(ix - x) > 20 || abs(iy - y) > 20) continue; n++; uint32_t iid = *(uint32_t *)(uintptr_t)(u + 8);
             int k = 0;
-            for (uint64_t c = rd((uint64_t)(uintptr_t)(B + 0x2d603a0 + 4 * 0x400 + (iid & 0x7f) * 8)); c && k < 64; c = rd(c + 0x158), k++) if (*(uint32_t *)(uintptr_t)(c + 8) == iid) { nc++; break; } size_t L = strlen(lst); if (L < 180) snprintf(lst + L, sizeof lst - L, " %u", *(uint32_t *)(uintptr_t)(u + 4)); }
-        uint8_t d = *(uint8_t *)(uintptr_t)(G + 0x104), ver = *(uint8_t *)(uintptr_t)(G + 0x106); uint64_t T = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + ver * 16)), mt = T ? rd(T + 0xf90) : 0;
+            for (uint64_t c = rd((uint64_t)(uintptr_t)(B + GA_CLIENT_UNIT_TABLE + 4 * 0x400 + (iid & 0x7f) * 8)); c && k < 64; c = rd(c + 0x158), k++) if (*(uint32_t *)(uintptr_t)(c + 8) == iid) { nc++; break; } size_t L = strlen(lst); if (L < 180) snprintf(lst + L, sizeof lst - L, " %u", *(uint32_t *)(uintptr_t)(u + 4)); }
+        uint8_t d = *(uint8_t *)(uintptr_t)(G + 0x104), ver = *(uint8_t *)(uintptr_t)(G + 0x106); uint64_t T = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + ver * 16)), mt = T ? rd(T + 0xf90) : 0;
         uint16_t *blk = mt ? (uint16_t *)(uintptr_t)(mt + (uint64_t)cls * 0x1fc + 0xc0 + d * 0x10) : NULL;
         extern _Atomic int g_dm_l_presses; int lp = atomic_load(&g_dm_l_presses);
         LOG("首领掉落读数：类号 %d 拍 %u 死于 %d,%d（难度 %u，宝藏格 普通 %u / 任务 %u），死后 25 拍尸体 20 格内新落地 %d 件%s%s；客户端有其中 %d 件；「显示物品」键本进程交给游戏 %d 次（%s）",
@@ -325,7 +326,7 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
 
 
     { static int at = -1, wl; if (at < 0) { const char *e = getenv("DM_TEST_WARP_LV"); at = 0; if (e && sscanf(e, "%d:%d", &at, &wl) != 2) at = 0; }
-      if (at > 0 && t >= (uint32_t)at && lv != wl) { at = 0; LOG("测试 DM_TEST_WARP_LV：拍 %u 从关卡 %d 进 %d", t, lv, wl); ((void (*)(uint64_t, uint64_t, int, int))(B + 0x634000))(G, player, wl, 11); return; } }
+      if (at > 0 && t >= (uint32_t)at && lv != wl) { at = 0; LOG("测试 DM_TEST_WARP_LV：拍 %u 从关卡 %d 进 %d", t, lv, wl); ((void (*)(uint64_t, uint64_t, int, int))(B + GA_LEVEL_CHANGE))(G, player, wl, 11); return; } }
     if (R.eligible < 0) { R.eligible = eligible(G, player); R.total = *(uint8_t *)(uintptr_t)(G + 0x104) == 2 ? 12 : 10;
         LOG("首领连战：本局%s资格（难度 %u，共 %d 关）", R.eligible ? "有" : "没有", *(uint8_t *)(uintptr_t)(G + 0x104), R.total); }
 
@@ -377,12 +378,12 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
               if(used){used+=more;const char *rest=queue+used+(queue[used]==';');memmove(queue,rest,strlen(rest)+1);repeat=times-1;rcls=cls;rdx=dx;rdy=dy;rsu=su;}
               int x=0,y=0;unit_xy(player,&x,&y);int32_t pos[2]={x+dx,y+dy};uint64_t rr=free_spot(G,room,pos);
 
-              uint64_t u=!rr?0:su?((uint64_t (*)(uint64_t,uint64_t,int,int,int,int))(B+0x69b310))(G,rr,pos[0],pos[1],cls,0)
-                  :((uint64_t (*)(uint64_t,uint64_t,int,int,int,int,int,int,uint64_t))(B+0x7ce630))(G,rr,1,cls,pos[0],pos[1],1,0,0x50);
+              uint64_t u=!rr?0:su?((uint64_t (*)(uint64_t,uint64_t,int,int,int,int))(B+GA_SUPERUNIQUE_SPAWN))(G,rr,pos[0],pos[1],cls,0)
+                  :((uint64_t (*)(uint64_t,uint64_t,int,int,int,int,int,int,uint64_t))(B+GA_UNIT_SPAWN))(G,rr,1,cls,pos[0],pos[1],1,0,0x50);
               LOG("DM_TEST_SPAWN: tick %u at %d,%d (player %d,%d) spawn %s %d -> %s",t,pos[0],pos[1],x,y,su?"superunique row":"class",cls,u?"ok":"failed");
               if(u && su)cls=(int)*(uint32_t *)(uintptr_t)(u+4);
               if(u) {
-                  int (*stat)(uint64_t,int,int)=(void *)(B+0x5b9290);
+                  int (*stat)(uint64_t,int,int)=(void *)(B+GA_STAT_GET);
                   LOG("[combat-fixture] {\"tick\":%u,\"unit\":%u,\"class\":%d,\"level\":%d,\"difficulty\":%u,\"life\":%d,\"max_life\":%d,\"defense\":%d,\"ar\":%d,\"position\":[%d,%d],\"resists\":[%d,%d,%d,%d,%d,%d]}",
                       t,*(uint32_t *)(u+8),cls,stat(u,12,0),*(uint8_t *)(G+0x104),stat(u,6,0),stat(u,7,0),stat(u,31,0),stat(u,19,0),pos[0],pos[1],
                       stat(u,36,0),stat(u,39,0),stat(u,43,0),stat(u,41,0),stat(u,45,0),stat(u,37,0));
@@ -427,7 +428,7 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         else if (unit_xy(player, &px, &py) && unit_xy(du, &dx, &dy) && abs(px - dx) <= 4 && abs(py - dy) <= 4) {
             int to = back ? LV_TOWN : R.pend_door == R.door_summit ? LV_CHAMBER : R.stage < 5 ? LV_SUMMIT : LV_CHAMBER; R.pend_door = 0;
             if (R.done && !back) say("%s", dm_str(B, "dmBrDoneThisGame"));
-            else { LOG("首领连战：拍 %u 进门 → %d", t, to); R.tp_due = to != LV_TOWN;  ((void (*)(uint64_t, uint64_t, int, int))(B + 0x634000))(G, player, to, 11); return; } } }
+            else { LOG("首领连战：拍 %u 进门 → %d", t, to); R.tp_due = to != LV_TOWN;  ((void (*)(uint64_t, uint64_t, int, int))(B + GA_LEVEL_CHANGE))(G, player, to, 11); return; } } }
 
 
 
@@ -456,7 +457,7 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
 
 
     { static int at = -1; if (at < 0) { const char *e = getenv("DM_TEST_BR_WARP132"); at = e ? atoi(e) : 0; }
-      if (at > 0 && (R.done || (!R.stage && !R.nboss)) && lv == LV_TOWN && t >= (uint32_t)at) { at = 0; LOG("首领连战：测试 DM_TEST_BR_WARP132：拍 %u 照原版王座门进 132", t); ((void (*)(uint64_t, uint64_t, int, int))(B + 0x634000))(G, player, LV_CHAMBER, 11); return; } }
+      if (at > 0 && (R.done || (!R.stage && !R.nboss)) && lv == LV_TOWN && t >= (uint32_t)at) { at = 0; LOG("首领连战：测试 DM_TEST_BR_WARP132：拍 %u 照原版王座门进 132", t); ((void (*)(uint64_t, uint64_t, int, int))(B + GA_LEVEL_CHANGE))(G, player, LV_CHAMBER, 11); return; } }
 
 
     static int tz_off = -1; if (tz_off < 0) { const char *e = getenv("DM_BOSSRUSH_TZ"); tz_off = e && e[0] == '0'; }
@@ -473,7 +474,7 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
     if (R.loot_at && (int32_t)(t - R.loot_at) >= 0) { R.loot_at = 0; int n1 = 0, n2 = 0, all = 0;
         for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2e30 + 8 * b); u; u = rd(u + 0x158)) { uint64_t d = rd(u + 0x10);
             if (*(uint32_t *)(uintptr_t)u != 4 || *(uint32_t *)(uintptr_t)(u + 0xc) != 3 || !d) continue; all++; if (*(uint32_t *)(uintptr_t)d != 7) continue;
-            uint32_t c = ((uint32_t (*)(uint64_t))(B + 0x570260))(u); n1 += !memcmp(&c, "cm1 ", 4); n2 += !memcmp(&c, "cm2 ", 4); }
+            uint32_t c = ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(u); n1 += !memcmp(&c, "cm1 ", 4); n2 += !memcmp(&c, "cm2 ", 4); }
         LOG("首领连战：拍 %u 本局地上物品 %d 件，其中暗金小型神符 %d 件、暗金大型神符 %d 件", t, all, n1, n2); }
 
 
@@ -502,8 +503,8 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         for (int i = 0; i < R.nboss; i++) { if (R.boss_dead[i]) continue; uint64_t u = find_unit(G, 1, R.boss[i], 0);
             if (!u) { missing++; continue; } uint32_t md = *(uint32_t *)(uintptr_t)(u + 0xc);
             if (md == 0 || md == 12) { R.boss_dead[i] = 1; LOG("首领连战：拍 %u 第 %d 关类号 %d 死亡", t, R.stage + 1, k_stage[R.stage].cls[i]); continue; }
-            alive++; R.boss_hp[i] = ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, 6, 0); unit_xy(u, &R.boss_xy[0], &R.boss_xy[1]);
-            if (t % 125 == 0) LOG("首领连战：拍 %u 第 %d 关类号 %d 生命 %d/%d", t, R.stage + 1, k_stage[R.stage].cls[i], R.boss_hp[i] >> 8, ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, 7, 0) >> 8); }
+            alive++; R.boss_hp[i] = ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, 6, 0); unit_xy(u, &R.boss_xy[0], &R.boss_xy[1]);
+            if (t % 125 == 0) LOG("首领连战：拍 %u 第 %d 关类号 %d 生命 %d/%d", t, R.stage + 1, k_stage[R.stage].cls[i], R.boss_hp[i] >> 8, ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, 7, 0) >> 8); }
         if (!alive && !missing) {
             LOG("首领连战：拍 %u 第 %d 关打完", t, R.stage + 1); R.nboss = 0; R.stage++; R.next_at = t + 75;
             if (R.stage >= 11) R.loot_at = t + 50;
@@ -513,9 +514,9 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         if (missing && lv == k_stage[R.stage].lv && t - R.in_since >= 50) for (int i = 0; i < R.nboss; i++) {
             if (R.boss_dead[i] || find_unit(G, 1, R.boss[i], 0)) continue;
             int32_t pos[2] = {R.spawn_xy[i][0], R.spawn_xy[i][1]}; uint64_t rs = room_at(level_of(player), pos[0], pos[1]), rr = rs ? free_spot(G, rs, pos) : 0;
-            uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + 0x7ce630))(G, rr, 1, k_stage[R.stage].cls[i], pos[0], pos[1], 1, 0, 0x10) : 0;
+            uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + GA_UNIT_SPAWN))(G, rr, 1, k_stage[R.stage].cls[i], pos[0], pos[1], 1, 0, 0x10) : 0;
             if (!u) continue;
-            if (R.boss_hp[i] > 0) ((void (*)(uint64_t, int, int, int))(B + 0x5bc1f0))(u, 6, R.boss_hp[i], 0);
+            if (R.boss_hp[i] > 0) ((void (*)(uint64_t, int, int, int))(B + GA_STAT_SET))(u, 6, R.boss_hp[i], 0);
             LOG("首领连战：拍 %u 第 %d 关类号 %d 不在单位表里（人离开过关卡），按原刷点接回：生命 %d → 新单位 id %u", t, R.stage + 1, k_stage[R.stage].cls[i], R.boss_hp[i] >> 8, *(uint32_t *)(uintptr_t)(u + 8));
             R.boss[i] = *(uint32_t *)(uintptr_t)(u + 8); }
         return; }
@@ -536,10 +537,10 @@ void dm_bossrush_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         int32_t pos[2] = {ax + (int)(10 * vx / vl + rx) + (int)(6 * (i - (k_stage[R.stage].n - 1) / 2.0) * -vy / vl), ay + (int)(10 * vy / vl + ry) + (int)(6 * (i - (k_stage[R.stage].n - 1) / 2.0) * vx / vl)};
         uint64_t rs = room_at(lvp, pos[0], pos[1]); if (!rs) { rs = room; pos[0] = px + 8; pos[1] = py; }
         uint64_t rr = free_spot(G, rs, pos);
-        uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + 0x7ce630))(G, rr, 1, k_stage[R.stage].cls[i], pos[0], pos[1], 1, 0, 0x10) : 0;
+        uint64_t u = rr ? ((uint64_t (*)(uint64_t, uint64_t, int, int, int, int, int, int, uint64_t))(B + GA_UNIT_SPAWN))(G, rr, 1, k_stage[R.stage].cls[i], pos[0], pos[1], 1, 0, 0x10) : 0;
         if (u) { int k = R.nboss++; R.boss[k] = *(uint32_t *)(uintptr_t)(u + 8); R.boss_dead[k] = 0; R.boss_hp[k] = 0; R.spawn_xy[k][0] = pos[0]; R.spawn_xy[k][1] = pos[1]; }
         LOG("首领连战：拍 %u 第 %d 关刷类号 %d 在 %d,%d → %s（等级 %d）", t, R.stage + 1, k_stage[R.stage].cls[i], pos[0], pos[1], u ? "成功" : "失败",
-            u ? ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, 12, 0) : 0); }
+            u ? ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, 12, 0) : 0); }
     if (!R.nboss) { R.next_at = t + 25; return; }
     char st[160]; snprintf(st, sizeof st, dm_str(B, "dmBrStage"), R.stage + 1, R.total, dm_str(B, k_stage[R.stage].name), R.stage >= 5 && R.stage < 10 ? dm_str(B, "dmBrTerror") : "");
     say("%s", st);

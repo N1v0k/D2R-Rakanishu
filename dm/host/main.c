@@ -1,6 +1,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "front.h"
 #include <stdatomic.h>
 #ifdef __APPLE__
@@ -30,11 +31,11 @@ static void save_throttle_patch(void) {
     module_t *m = NULL;
     for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
     if (!m) return;
-    int32_t *p = (int32_t *)(m->base + 0x20cefa8);
-    if (*p != 30) { LOG("【红】存档落盘节流：main+0x20cefa8 原值 %d ≠ 30（构建号不符？），不改", *p); return; }
+    int32_t *p = (int32_t *)(m->base + GA_SAVE_WRITE_THROTTLE);
+    if (*p != 30) { LOG("ERROR save.throttle_patch: main+GA_SAVE_WRITE_THROTTLE holds %d, not 30 (other game build?), left unchanged", *p); return; }
     if (sec == 30) return;
     *p = sec < 1 ? 1 : sec;
-    LOG("存档落盘节流：main+0x20cefa8 30 → %d 秒", *p);
+    LOG("save write throttle: main+GA_SAVE_WRITE_THROTTLE 30 -> %d s", *p);
 }
 
 
@@ -48,10 +49,10 @@ static void game_seed_maybe(void) {
     module_t *m = NULL;
     for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
     if (!m) die("DM_GAME_SEED：没有 main 模块");
-    uint32_t *p = (uint32_t *)(m->base + 0x20a0074);
-    if (*p != 0xffffffffu) die("DM_GAME_SEED：main+0x20a0074 原值 %#x ≠ 0xffffffff（构建号不符？）", *p);
+    uint32_t *p = (uint32_t *)(m->base + GA_GAME_SEED_FIXED);
+    if (*p != 0xffffffffu) die("DM_GAME_SEED: main+GA_GAME_SEED_FIXED holds %#x, not 0xffffffff (other game build?)", *p);
     *p = (uint32_t)strtoull(v, NULL, 0);
-    LOG("DM_GAME_SEED：main+0x20a0074 ← %#x", *p);
+    LOG("DM_GAME_SEED: main+GA_GAME_SEED_FIXED <- %#x", *p);
 }
 
 static void guest_main(void) {
@@ -152,6 +153,7 @@ static void host_preload(int argc, char **argv) {
     if (i < argc && !strcmp(argv[i], "--")) for (i++; i < argc && g_argc < 63; i++) g_argv[g_argc++] = argv[i];
     if (!n) { names[n++] = "main"; names[n++] = "sdk"; }
     load_modules(argv[1], names, n);
+    { void dm_port_assume(const char *out_dir); dm_port_assume(argv[1]); }
     uint64_t ta = now_ns();
     probe_install();
     ticks_install();

@@ -27,6 +27,8 @@
 
 
 
+
+
 import csv
 import hashlib
 import io
@@ -39,7 +41,7 @@ DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 sys.path.insert(0, os.path.join(DM, 'ios', 'tools'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 SCHEMA = 1
 MAX_BYTES = 4 * 1024 * 1024
 SETS = (('rotw', 'global/excel/'), ('lod', 'global/excel/base/'))
@@ -47,7 +49,7 @@ NAMES = ('treasureclassex', 'monstats', 'superuniques', 'levels', 'itemratio', '
          'monpreset', 'skills', 'sets')
 STRINGS = ('item-names', 'item-runes', 'item-gems', 'item-nameaffixes', 'item-modifiers', 'monsters')
 TABLES = tuple(p + n + '.txt' for _, p in SETS for n in NAMES) + tuple('local/lng/strings/%s.json' % s for s in STRINGS)
-TABLES_SHA = '2174087e14d65525a607d6fba503a670c813318f8024b09143c75916357325a6'
+TABLES_SHA = 'cbf8886db2bdc58be6f267eec4996f684ae65ddf39eeb4be190e08600c2199f3'
 GAME_LANGUAGES = ('enUS', 'deDE', 'esES', 'frFR', 'itIT', 'koKR', 'plPL', 'ruRU', 'zhCN', 'zhTW', 'esMX', 'jaJP', 'ptBR')
 DIFF = ('', '(N)', '(H)')
 QUALITY, UBER, CLASS = 1, 2, 4
@@ -460,7 +462,7 @@ def build_set(t, strings, monster_names, bosses):
     for u in uniques:
         if u['code'] not in codes:
             raise Refuse('uniqueitems: %s is made of the unknown item %s' % (u['index'], u['code']))
-        rollable = u.get('spawnable') == '1' and u.get('disabled') != '1' and not ladder(u)
+        rollable = u.get('spawnable') == '1' and u.get('disabled') != '1'
         unique_out.append([int(u['*ID']), codes[u['code']], num(u['lvl'], u['index']), num(u['rarity'], u['index']) if rollable else 0,
                            u['index'], condition(u.get('DropConditionCalc'), u['index']) if rollable else 0])
     need(t['sets'], ('index', 'name'), 'sets')
@@ -471,7 +473,7 @@ def build_set(t, strings, monster_names, bosses):
             continue
         if s['item'] not in codes:
             raise Refuse('setitems: %s is made of the unknown item %s' % (s['index'], s['item']))
-        if s.get('spawnable') != '1' or s.get('disabled') == '1' or ladder(s):
+        if s.get('spawnable') != '1' or s.get('disabled') == '1':
             continue
         if s.get('set') not in set_records:
             raise Refuse('setitems: %s belongs to the unknown set %r' % (s['index'], s.get('set')))

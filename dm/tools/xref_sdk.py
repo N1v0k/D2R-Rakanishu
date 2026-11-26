@@ -1,8 +1,9 @@
 import pickle,struct,bisect,sys
 from capstone import *
+from game_addrs import GL
 img=open('sdk.bin','rb').read();md=Cs(CS_ARCH_ARM64,CS_MODE_ARM);md.detail=True
 syms=pickle.load(open('sdk_syms.pkl','rb'))
-funcs=sorted((v,k) for k,(v,s) in syms.items() if v<0x58d930)
+funcs=sorted((v,k) for k,(v,s) in syms.items() if v<GL.SDK_TEXT_END)
 addrs=[f[0] for f in funcs]
 def fname(a):
     i=bisect.bisect_right(addrs,a)-1; return f'{funcs[i][1]}+{a-funcs[i][0]:#x}'
@@ -18,7 +19,7 @@ for i in range(0,t[2],24):
     off,info,add=struct.unpack_from('<QQq',img,t[23]+i); si=info>>32
     nm=struct.unpack_from('<I',img,sym+si*24)[0]; got[off]=img[strt+nm:img.index(b'\0',strt+nm)].decode()
 plt={}
-for o in range(0,0x58d930,4):
+for o in range(0,GL.SDK_TEXT_END,4):
     w=struct.unpack_from('<I',img,o)[0]
     if w&0x9F00001F==0x90000010:
         i2=list(md.disasm(img[o:o+16],o))
@@ -27,7 +28,7 @@ for o in range(0,0x58d930,4):
             if page+off in got: plt[o]=got[page+off]
 want={a:n for a,n in plt.items() if n in sys.argv[1:]}
 print(want)
-for o in range(0,0x58d930,4):
+for o in range(0,GL.SDK_TEXT_END,4):
     w=struct.unpack_from('<I',img,o)[0]
     if w>>26==0x25 or w>>26==0x05:
         tgt=o+(((w&0x3ffffff)^0x2000000)-0x2000000)*4

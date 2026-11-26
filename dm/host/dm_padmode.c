@@ -33,6 +33,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm_hud.h"
 #include "dm_cursor.h"
 #include "dm_input.h"
@@ -49,13 +50,13 @@
 #include <TargetConditionals.h>
 
 static const struct { uint32_t off; const char *pad, *touch; } k_pfx[] = {
-    { 0x1d21db5, "Controller/Console/Switch/", "0touch_console_switch_lay/" },
-    { 0x1d2c33f, "Controller/Console/", "Ztouch_console_lay/" },
-    { 0x1d3b705, "Controller/", "Xtouch_lay/" },
-    { 0x1d0f5b8, "Controller/ControllerButtons/%s/%s", "Ztouch_controller_buttons_ui/%s_%s" },
-    { 0x1d076c7, "Controller/Cursor/Idle", "Xtouch_cursor_lay/Idle" },
-    { 0x1d3acbc, "Controller/Cursor/Hold", "Xtouch_cursor_lay/Hold" },
-    { 0x1d4d5ea, "Controller/Cursor/Held", "Xtouch_cursor_lay/Held" },
+    { GA_STR_UI_CONSOLE_SWITCH, "Controller/Console/Switch/", "0touch_console_switch_lay/" },
+    { GA_STR_UI_CONSOLE, "Controller/Console/", "Ztouch_console_lay/" },
+    { GA_STR_UI_CTRL_ROOT, "Controller/", "Xtouch_lay/" },
+    { GA_STR_UI_CTRL_BUTTON_GLYPH, "Controller/ControllerButtons/%s/%s", "Ztouch_controller_buttons_ui/%s_%s" },
+    { GA_STR_UI_CTRL_CURSOR_IDLE, "Controller/Cursor/Idle", "Xtouch_cursor_lay/Idle" },
+    { GA_STR_UI_CTRL_CURSOR_HOLD, "Controller/Cursor/Hold", "Xtouch_cursor_lay/Hold" },
+    { GA_STR_UI_CTRL_CURSOR_HELD, "Controller/Cursor/Held", "Xtouch_cursor_lay/Held" },
 };
 enum { BOUNCE_FRAMES = 60 };
 static int g_have;
@@ -73,7 +74,7 @@ uint32_t dm_padmode_rebuilds(void) { return atomic_load(&g_rebuilds); }
 
 
 
-#define GLYPH_OFF 0x1d0f5b8
+#define GLYPH_OFF GA_STR_UI_CTRL_BUTTON_GLYPH
 static const char *const k_glyph[DM_GLYPH_N] = { NULL, "Ztouch_controller_buttons_ui/%sK%s", "Ztouch_controller_buttons_ui/%sX%s", "Ztouch_controller_buttons_ui/%sP%s" };
 static const char *const k_glyph_mark[DM_GLYPH_N] = { NULL, "kbd_glyphs", "xbox_glyphs", "ps_glyphs" };
 static int g_glyph_have[DM_GLYPH_N] = { 1 }, g_glyph, g_glyph_next;
@@ -91,7 +92,7 @@ int dm_padmode_kbd(void) { return g_glyph == DM_GLYPH_KBD; }
 static int glyph_swap_ok(uint8_t *b) {
     int dm_ingame_now(void), dm_ui_panel_state(void), dm_ui_fe_drag_ok(void);
     if (!dm_ingame_now()) return dm_ui_fe_drag_ok();
-    return !(*(volatile uint8_t *)(b + 0x2d5ff51) | *(volatile uint8_t *)(b + 0x2d5ff67)) && !dm_ui_panel_state();
+    return !(*(volatile uint8_t *)(b + GA_PANEL_PAUSE_MENU) | *(volatile uint8_t *)(b + GA_PANEL_PAUSE_2)) && !dm_ui_panel_state();
 }
 static int pfx_write(uint8_t *b, int pad) {
     for (unsigned i = 0; i < sizeof k_pfx / sizeof *k_pfx; i++) { const char *p = (const char *)(b + k_pfx[i].off);
@@ -117,13 +118,13 @@ static void str_load(void) {
 }
 static uint64_t str_node(uint64_t map, const char *key, size_t n) {
     uint64_t cnt = rd8(map), bk = rd8(map + 8); if (!cnt || !bk || (cnt & (cnt - 1))) return 0;
-    uint64_t h[4] = {0}; ((void (*)(uint64_t *, const char *, uint64_t, int))(g_b + 0x1b6e1e0))(h, key, n, 0);
+    uint64_t h[4] = {0}; ((void (*)(uint64_t *, const char *, uint64_t, int))(g_b + GA_STRING_HASH))(h, key, n, 0);
     for (uint64_t nd = rd8(bk + 8 * (h[0] & (cnt - 1))); nd; nd = rd8(nd)) if (rd8(nd + 0x10) == n && !memcmp((const void *)(uintptr_t)rd8(nd + 8), key, n)) return nd;
     return 0;
 }
 static void str_apply(int pad) {
     static int warned; int nset = 0, nbad = 0;
-    for (int i = 0; i < g_nstr; i++) { uint64_t nd = str_node((uint64_t)(uintptr_t)(g_b + 0x2d71030), g_str[i].key, g_str[i].klen); if (!nd) { nbad++; continue; }
+    for (int i = 0; i < g_nstr; i++) { uint64_t nd = str_node((uint64_t)(uintptr_t)(g_b + GA_STRINGS_CUR_LANG), g_str[i].key, g_str[i].klen); if (!nd) { nbad++; continue; }
         uint64_t *v = (uint64_t *)(uintptr_t)(nd + 0x20);
         if (nd != g_str[i].node) {
             uint64_t ov = v[0], ol = v[1]; if (ov == (uint64_t)(uintptr_t)g_str[i].val) continue;
@@ -264,7 +265,7 @@ static void hint_pump(void) {
 
         { const char *w = dm_str(g_b, g_hint[h].ours_key); if (w && strcmp(ours, w)) { if (*nodep && ((uint64_t *)(uintptr_t)(*nodep + 0x20))[0] == (uint64_t)(uintptr_t)ours) ((uint64_t *)(uintptr_t)(*nodep + 0x20))[1] = strlen(w); strlcpy(ours, w, sizeof g_hint[h].ours); } }
         int on = g_cur && atomic_load(&g_hint[h].on) > 0; if (atomic_load(&g_hint[h].on) > 0) atomic_fetch_sub(&g_hint[h].on, 1);
-        uint64_t nd = str_node((uint64_t)(uintptr_t)(g_b + 0x2d71030), g_hint[h].key, strlen(g_hint[h].key)); if (!nd) continue;
+        uint64_t nd = str_node((uint64_t)(uintptr_t)(g_b + GA_STRINGS_CUR_LANG), g_hint[h].key, strlen(g_hint[h].key)); if (!nd) continue;
         uint64_t *v = (uint64_t *)(uintptr_t)(nd + 0x20);
         if (nd != *nodep) { if (v[0] == (uint64_t)(uintptr_t)ours) continue; *nodep = nd; g_hint[h].orig = v[0]; g_hint[h].olen = v[1]; }
         uint64_t want = on ? (uint64_t)(uintptr_t)ours : g_hint[h].orig, wl = on ? strlen(ours) : g_hint[h].olen;
@@ -328,10 +329,10 @@ static struct {
 static void legend_bind(uint8_t *b) {
     if (g_lg_api.base == b) return;
     g_lg_api.base = b;
-    g_lg_api.make = (void (*)(void *, int, int, void *))(b + 0xaa9358);
-    g_lg_api.add = (void (*)(uint64_t, void *))(b + 0xaa9ef4);
-    g_lg_api.remove = (void (*)(uint64_t, int))(b + 0xaaa610);
-    g_lg_api.append = (void (*)(uint64_t, uint64_t))(b + 0xaaa1f8);
+    g_lg_api.make = (void (*)(void *, int, int, void *))(b + GA_LEGEND_ENTRY_MAKE);
+    g_lg_api.add = (void (*)(uint64_t, void *))(b + GA_LEGEND_ADD);
+    g_lg_api.remove = (void (*)(uint64_t, int))(b + GA_LEGEND_REMOVE);
+    g_lg_api.append = (void (*)(uint64_t, uint64_t))(b + GA_LEGEND_APPEND);
 }
 void dm_padmode_legend(int act, const char *text) {
     uint64_t f = dm_guest_frame(); if (f != g_lg_frame) { g_lg_frame = f; g_lg_n = 0; }
@@ -350,13 +351,13 @@ void dm_padmode_legend_drop(int act) { uint64_t f = dm_guest_frame(); if (f != g
 void dm_padmode_legend_hide(const char *legend, int act) { uint64_t f = dm_guest_frame(); if (f != g_lh_frame) { g_lh_frame = f; g_lh_n = 0; } if (g_lh_n < 4) { g_lh[g_lh_n].legend = legend; g_lh[g_lh_n].act = act; g_lh_n++; } }
 static uint64_t legend_obj(uint8_t *b, int *visible) {
     *visible = 0; if (!b) return 0;
-    uint64_t root = rd8((uint64_t)(uintptr_t)(b + 0x2f05458)), ch = root ? rd8(root + 0x58) : 0, n = root ? rd8(root + 0x60) : 0;
+    uint64_t root = rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)), ch = root ? rd8(root + 0x58) : 0, n = root ? rd8(root + 0x60) : 0;
     for (uint64_t i = 0; ch && i < n && i < 256; i++) { uint64_t w = rd8(ch + 8 * i); const char *nm = w ? (const char *)(uintptr_t)rd8(w + 8) : NULL;
         if (nm && !strcmp(nm, "ControllerOverlay")) { *visible = *(uint8_t *)(uintptr_t)(w + 0x50) != 0; return rd8(w + 0x440); } }
     return 0;
 }
 static void legend_free(uint8_t *b, uint64_t *ent) {
-    if (!(ent[4] >> 63) && (*(volatile uint8_t *)(b + 0x3211700) & 1)) { uint64_t al = rd8((uint64_t)(uintptr_t)(b + 0x32116f8)); ((void (*)(uint64_t, uint64_t))rd8(rd8(al) + 0x28))(al, ent[2]); }
+    if (!(ent[4] >> 63) && (*(volatile uint8_t *)(b + GA_GAME_ALLOC_READY) & 1)) { uint64_t al = rd8((uint64_t)(uintptr_t)(b + GA_GAME_ALLOC)); ((void (*)(uint64_t, uint64_t))rd8(rd8(al) + 0x28))(al, ent[2]); }
 }
 static uint64_t legend_find(uint8_t *b, uint64_t lg, int act) {
     uint64_t ent[8] = { 0 }; struct { const char *p; uint64_t n; } sv = { "", 0 }; g_lg_api.make(ent, act, 0, &sv); legend_free(b, ent);
@@ -375,7 +376,7 @@ static int legend_ours(uint64_t e, const char *text) { size_t n = strlen(text); 
 
 static uint64_t legend_at(uint8_t *b, uint64_t w, uint64_t xy, int dep) {
     if (!w || dep > 8 || !*(uint8_t *)(uintptr_t)(w + 0x50) || !*(uint8_t *)(uintptr_t)(w + 0x51)) return 0;
-    uint64_t vt = rd8(w) - (uint64_t)(uintptr_t)b; if (vt == 0x20b7960 || vt == 0x20b7a30) return                                                                                                                                                                                                                            rd8(w + 0x90) && (((int (*)(uint64_t, uint64_t))rd8(rd8(w) + 0x48))(w, xy) & 1) ? w : 0;
+    uint64_t vt = rd8(w) - (uint64_t)(uintptr_t)b; if (vt == GA_VT_LEGEND_BAR_GAME || vt == GA_VT_LEGEND_BAR_FRONT) return                                                                                                                                                                                                                            rd8(w + 0x90) && (((int (*)(uint64_t, uint64_t))rd8(rd8(w) + 0x48))(w, xy) & 1) ? w : 0;
     uint64_t ch = rd8(w + 0x58), n = rd8(w + 0x60); for (uint64_t i = n < 256 ? n : 0; ch && i-- > 0; ) { uint64_t r = legend_at(b, rd8(ch + 8 * i), xy, dep + 1); if (r) return r; }
     return 0;
 }
@@ -383,20 +384,20 @@ static uint64_t legend_at(uint8_t *b, uint64_t w, uint64_t xy, int dep) {
 
 static uint64_t legend_top(uint8_t *b, uint64_t w, int dep) {
     if (!w || dep > 8 || !*(uint8_t *)(uintptr_t)(w + 0x50) || !*(uint8_t *)(uintptr_t)(w + 0x51)) return 0;
-    uint64_t vt = rd8(w) - (uint64_t)(uintptr_t)b; if (vt == 0x20b7960 || vt == 0x20b7a30) return rd8(w + 0x88) && rd8(w + 0x90) && rd8(w + 0x90) <= 12 ? w : 0;
+    uint64_t vt = rd8(w) - (uint64_t)(uintptr_t)b; if (vt == GA_VT_LEGEND_BAR_GAME || vt == GA_VT_LEGEND_BAR_FRONT) return rd8(w + 0x88) && rd8(w + 0x90) && rd8(w + 0x90) <= 12 ? w : 0;
     uint64_t ch = rd8(w + 0x58), n = rd8(w + 0x60); for (uint64_t i = n < 256 ? n : 0; ch && i-- > 0; ) { uint64_t r = legend_top(b, rd8(ch + 8 * i), dep + 1); if (r) return r; }
     return 0;
 }
 int dm_padmode_legend_has(uint32_t glyph) {
     extern module_t g_mod[]; extern int g_nmod; uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base;
-    uint64_t root = b ? rd8((uint64_t)(uintptr_t)(b + 0x2f05458)) : 0, lg = root ? legend_top(b, root, 0) : 0; if (!lg) return 0;
+    uint64_t root = b ? rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)) : 0, lg = root ? legend_top(b, root, 0) : 0; if (!lg) return 0;
     { const char *nm = (const char *)(uintptr_t)rd8(lg + 8); if (glyph == 0xe005 && nm && !strcmp(nm, "MainMenuLegend")) return 0; }
     uint64_t arr = rd8(lg + 0x88), n = rd8(lg + 0x90); for (uint64_t i = 0; i < n; i++) if (*(int32_t *)(uintptr_t)(arr + 0x40 * i + 8) == 1 && *(uint32_t *)(uintptr_t)(arr + 0x40 * i) == glyph) return 1;
     return 0;
 }
 uint64_t dm_padmode_legend_click(float nx, float ny) {
     extern module_t g_mod[]; extern int g_nmod; uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base;
-    if (!b || !g_cur) return 0; int W = *(int32_t *)(b + 0x211da38), H = *(int32_t *)(b + 0x211da3c); uint64_t root = rd8((uint64_t)(uintptr_t)(b + 0x2f05458)); if (!root || W <= 0 || H <= 0) return 0;
+    if (!b || !g_cur) return 0; int W = *(int32_t *)(b + GA_UI_WIDTH), H = *(int32_t *)(b + GA_UI_HEIGHT); uint64_t root = rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)); if (!root || W <= 0 || H <= 0) return 0;
     int x = (int)(nx * W), y = (int)(ny * H); uint64_t lg = legend_at(b, root, (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32), 0); if (!lg) return 0;
     uint64_t arr = rd8(lg + 0x88), n = rd8(lg + 0x90); if (!arr || n > 12) return 0;
     float em = H * 0.0281f, gap = 0.67f * em, wd[12], tot = 0;
@@ -408,7 +409,7 @@ uint64_t dm_padmode_legend_click(float nx, float ny) {
     uint64_t e = arr + 0x40 * (uint64_t)hit; uint32_t gl = *(uint32_t *)(uintptr_t)e; uint64_t btn = 0;
     static const struct { int act; uint64_t btn; } km[] = { { 0, DM_BTN_A }, { 1, DM_BTN_Y }, { 2, DM_BTN_X }, { 4, DM_BTN_RS }, { 7, DM_BTN_ZL }, { 8, DM_BTN_ZR }, { 10, DM_BTN_MINUS }, { 11, DM_BTN_LEFT }, { 14, DM_BTN_RIGHT }, { 12, DM_BTN_UP }, { 13, DM_BTN_DOWN }, { 19, DM_BTN_L }, { 20, DM_BTN_R }, { 23, DM_BTN_B } };
     if (*(int32_t *)(uintptr_t)(e + 8) == 1) for (unsigned k = 0; k < sizeof km / sizeof *km && !btn; k++) {
-        uint64_t ent[8] = { 0 }; struct { const char *p; uint64_t n; } sv = { "", 0 }; ((void (*)(void *, int, int, void *))(b + 0xaa9358))(ent, km[k].act, 0, &sv); legend_free(b, ent);
+        uint64_t ent[8] = { 0 }; struct { const char *p; uint64_t n; } sv = { "", 0 }; ((void (*)(void *, int, int, void *))(b + GA_LEGEND_ENTRY_MAKE))(ent, km[k].act, 0, &sv); legend_free(b, ent);
         if ((int32_t)ent[1] == 1 && (uint32_t)ent[0] == gl) btn = km[k].btn; }
     if (!btn && gl == 0xe008) btn = DM_BTN_LS;
     if (!btn && gl == 0xe005) btn = DM_BTN_PLUS;
@@ -423,8 +424,8 @@ uint64_t dm_padmode_legend_click(float nx, float ny) {
 
 int dm_padmode_hud_click(float nx, float ny, uint64_t *btn) {
     extern module_t g_mod[]; extern int g_nmod; uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base;
-    if (!b || !g_cur) return 0; int W = *(int32_t *)(b + 0x211da38), H = *(int32_t *)(b + 0x211da3c); uint64_t root = rd8((uint64_t)(uintptr_t)(b + 0x2f05458)); if (!root || W <= 0 || H <= 0) return 0;
-    if (*(volatile uint8_t *)(b + 0x2d5ff51) | *(volatile uint8_t *)(b + 0x2d5ff67)) return 0;
+    if (!b || !g_cur) return 0; int W = *(int32_t *)(b + GA_UI_WIDTH), H = *(int32_t *)(b + GA_UI_HEIGHT); uint64_t root = rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)); if (!root || W <= 0 || H <= 0) return 0;
+    if (*(volatile uint8_t *)(b + GA_PANEL_PAUSE_MENU) | *(volatile uint8_t *)(b + GA_PANEL_PAUSE_2)) return 0;
     uint64_t hud = pm_find(root, "HUDPanel", 5); if (!hud || !*(uint8_t *)(uintptr_t)(hud + 0x50) || !*(uint8_t *)(uintptr_t)(hud + 0x51)) return 0;
     uint64_t xy = (uint64_t)(uint32_t)(nx * W) | ((uint64_t)(uint32_t)(ny * H) << 32), ch = rd8(hud + 0x58), n = rd8(hud + 0x60);
     static const struct { const char *nm; uint64_t btn; } km[] = { { "SkillButton1", DM_BTN_A }, { "SkillButton2", DM_BTN_B }, { "SkillButton3", DM_BTN_Y }, { "SkillButton4", DM_BTN_X }, { "SkillButton5", DM_BTN_R }, { "SkillButton6", DM_BTN_ZR },
@@ -489,7 +490,7 @@ static void legend_pump(uint8_t *b, uint64_t frame) {
       static long off = -1; if (off < 0) { const char *e = getenv("DM_TEST_LEGEND_OFF"); off = e ? atol(e) : 0; }
       if (!off || frame < (uint64_t)off) for (int i = 0; i < n; i++) dm_padmode_legend(tv[i].a, tv[i].t); }
     legend_bind(b);
-    if (g_cur && frame - g_lh_frame <= 2) for (int i = 0; i < g_lh_n; i++) { uint64_t w = pm_find(rd8((uint64_t)(uintptr_t)(b + 0x2f05458)), g_lh[i].legend, 0);
+    if (g_cur && frame - g_lh_frame <= 2) for (int i = 0; i < g_lh_n; i++) { uint64_t w = pm_find(rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)), g_lh[i].legend, 0);
         if (w && legend_find(b, w, g_lh[i].act)) { g_lg_api.remove(w, g_lh[i].act); static int lgd; if (lgd++ < 8) LOG("手柄提示条：%s 上原版的动作 %d 那一条拿掉（这一页把这个键收掉了）", g_lh[i].legend, g_lh[i].act); } }
     int visible; uint64_t lg = legend_obj(b, &visible);
     if (lg != dm_wref_get(&g_lg_widget)) { g_lg_on_n = 0; dm_wref_set(&g_lg_widget, lg); }
@@ -517,11 +518,11 @@ static void legend_pump(uint8_t *b, uint64_t frame) {
 }
 static void diff_text(uint8_t *b, uint64_t frame) {
     if (!g_cur || !atomic_load(&g_pause_open) || frame % 6) return;
-    uint64_t w = pm_find(rd8((uint64_t)(uintptr_t)(b + 0x2f05458)), "TouchPadDiffTxt", 0); if (!w || rd8(w) - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    uint64_t w = pm_find(rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)), "TouchPadDiffTxt", 0); if (!w || rd8(w) - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     dm_hud_info h; dm_hud_get(&h); int n = atomic_load(&g_diff_pend); if (!n) n = h.players; if (!n) return;
     char t[64]; snprintf(t, sizeof t, dm_str(b, "dmPadDiffLine"), n); size_t L = strlen(t);
     if (rd8(w + 0x90) == L && !memcmp((const void *)(uintptr_t)rd8(w + 0x88), t, L)) return;
-    ((void (*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, t, L); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void (*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, t, L); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 
 
@@ -536,7 +537,7 @@ void dm_padmode_step(uint8_t *b, uint64_t frame) {
     { static long at = -1; if (at < 0) { const char *e = getenv("DM_TEST_PADMODE_LANG_RESET"); at = e ? atol(e) : 0; }
       if (at > 0 && frame >= (uint64_t)at) { at = 0; dm_padmode_lang_reset(); } }
 #endif
-    { uint64_t tc = atomic_exchange(&g_test_cur, 0); if (tc >> 63) { int dm_ui_hover_now(int, int); int W = *(int32_t *)(b + 0x211da38), H = *(int32_t *)(b + 0x211da3c), x = (int)(((tc >> 16) & 0xffff) / 65535.0 * W), y = (int)((tc & 0xffff) / 65535.0 * H);
+    { uint64_t tc = atomic_exchange(&g_test_cur, 0); if (tc >> 63) { int dm_ui_hover_now(int, int); int W = *(int32_t *)(b + GA_UI_WIDTH), H = *(int32_t *)(b + GA_UI_HEIGHT), x = (int)(((tc >> 16) & 0xffff) / 65535.0 * W), y = (int)((tc & 0xffff) / 65535.0 * H);
         int ok = dm_ui_hover_now(x, y); LOG("测试 padcur：手柄光标放到 (%d,%d) → %d", x, y, ok); } }
     diff_text(b, frame);
     legend_pump(b, frame);
@@ -550,14 +551,14 @@ void dm_padmode_step(uint8_t *b, uint64_t frame) {
       if (n < 0) { n = 0; const char *e = getenv("DM_TEST_PADMODE"); for (const char *q = e; q && *q && n < 8; ) { unsigned long long f; int m; if (sscanf(q, "%llu:%d", &f, &m) != 2) break; ev[n].f = f; ev[n].m = m; n++; q = strchr(q, ','); if (q) q++; } }
       if (k < n && frame >= ev[k].f) { dm_padmode_request(ev[k].m); chk = frame + BOUNCE_FRAMES + 5; k++; }
       if (g_have && chk && frame >= chk && (n || getenv("DM_TEST_PADMODE_READ"))) { chk = 0; char o[512]; size_t L = 0; o[0] = 0;
-          for (int i = 0; i < g_nstr && i < 3; i++) { struct { const char *s; uint64_t n; } q = { g_str[i].key, g_str[i].klen }; const char *r = ((const char *(*)(void *))(b + 0x7f5630))(&q);
+          for (int i = 0; i < g_nstr && i < 3; i++) { struct { const char *s; uint64_t n; } q = { g_str[i].key, g_str[i].klen }; const char *r = ((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&q);
               L += (size_t)snprintf(o + L, L < sizeof o ? sizeof o - L : 0, "%s%s=「%s」", i ? "、" : "", g_str[i].key, r ? r : "(空)"); }
           LOG("DM_TEST_PADMODE：帧 %llu 模式 %s，原版取串 %s", (unsigned long long)frame, g_cur ? "手柄" : "触屏", o); } }
 #endif
 #if TARGET_OS_OSX
 
 
-    if (g_glyph_have[DM_GLYPH_KBD] && frame % 10 == 0) { int kb = g_glyph == DM_GLYPH_KBD; uint64_t root = rd8((uint64_t)(uintptr_t)(b + 0x2f05458)), a = root ? pm_find(root, "TouchBlissKey", 0) : 0, k = a ? pm_find(root, "TouchBlissKeyK", 0) : 0;
+    if (g_glyph_have[DM_GLYPH_KBD] && frame % 10 == 0) { int kb = g_glyph == DM_GLYPH_KBD; uint64_t root = rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)), a = root ? pm_find(root, "TouchBlissKey", 0) : 0, k = a ? pm_find(root, "TouchBlissKeyK", 0) : 0;
         for (int i = 0; i < 2 && a && k; i++) { uint64_t w = i ? k : a; int32_t *r = (int32_t *)(uintptr_t)(w + 0x70), x = (i ? kb : !kb) ? -1665 : 99999; if (r[0] != x) { r[0] = x; ((void (*)(uint64_t))rd8(rd8(w) + 0x10))(w); } } }
 #endif
 
@@ -568,7 +569,7 @@ void dm_padmode_step(uint8_t *b, uint64_t frame) {
 #endif
     if (g_have && frame % 30 == 0) str_apply(g_cur);
     if (!g_have) return;
-    { uint32_t dm_oe_ui_opmode_reads(void); static uint64_t fp0; static uint32_t nfp; uint64_t root = rd8((uint64_t)(uintptr_t)(b + 0x2f05458)), ch = root ? rd8(root + 0x58) : 0, n = root ? rd8(root + 0x60) : 0, fp = n * 0x9e3779b97f4a7c15ull;
+    { uint32_t dm_oe_ui_opmode_reads(void); static uint64_t fp0; static uint32_t nfp; uint64_t root = rd8((uint64_t)(uintptr_t)(b + GA_UI_ROOT)), ch = root ? rd8(root + 0x58) : 0, n = root ? rd8(root + 0x60) : 0, fp = n * 0x9e3779b97f4a7c15ull;
       for (uint64_t i = 0; ch && i < n && i < 256; i++) fp = (fp << 7 | fp >> 57) ^ rd8(ch + 8 * i);
       if (fp != fp0) { fp0 = fp; nfp++; } g_sig = dm_oe_ui_opmode_reads() + nfp; }
     int w = atomic_load(&g_want), wx, cx;
@@ -596,8 +597,8 @@ void dm_padmode_step(uint8_t *b, uint64_t frame) {
     if (g_cur) {
         int dm_swapskill_wset(void); int bank = dm_swapskill_wset() ? 16 : 0; char o[240]; size_t L = 0; o[0] = 0;
         static const struct { uint32_t lg; const char *nm; } face[6] = { { 0x2000, "A" }, { 0x1000, "B" }, { 0x8000, "X" }, { 0x4000, "Y" }, { 0x200, "R" }, { 0x800, "ZR" } };
-        for (int f = 0; f < 6; f++) for (int i = 0; i < 6; i++) { uint32_t lg, sl[2], id[2] = { 0xffffffffu, 0xffffffffu }; memcpy(&lg, b + 0x2d13cbc + 12 * i, 4); memcpy(sl, b + 0x2d13cbc + 12 * i + 4, 8); if (lg != face[f].lg) continue;
-            for (int k = 0; k < 2; k++) if (sl[k] < 12) { memcpy(&id[k], b + 0x2d5f0c0 + (uint64_t)(bank + sl[k]) * 28, 4); if (id[k] == 0xffffffffu && bank) memcpy(&id[k], b + 0x2d5f0c0 + (uint64_t)sl[k] * 28, 4); }
+        for (int f = 0; f < 6; f++) for (int i = 0; i < 6; i++) { uint32_t lg, sl[2], id[2] = { 0xffffffffu, 0xffffffffu }; memcpy(&lg, b + GA_PAD_BUTTON_SLOTS + 12 * i, 4); memcpy(sl, b + GA_PAD_BUTTON_SLOTS + 12 * i + 4, 8); if (lg != face[f].lg) continue;
+            for (int k = 0; k < 2; k++) if (sl[k] < 12) { memcpy(&id[k], b + GA_SKILL_SLOT_BINDS + (uint64_t)(bank + sl[k]) * 28, 4); if (id[k] == 0xffffffffu && bank) memcpy(&id[k], b + GA_SKILL_SLOT_BINDS + (uint64_t)sl[k] * 28, 4); }
             L += (size_t)snprintf(o + L, L < sizeof o ? sizeof o - L : 0, " %s=%d/%d", face[f].nm, (int)id[0], (int)id[1]); }
         LOG("手柄 / 触屏布局：技能格（技能号，/ 后是按着 ZL 的第二组，-1 = 空；当前武器组 %d）%s", dm_swapskill_wset(), o); }
 }

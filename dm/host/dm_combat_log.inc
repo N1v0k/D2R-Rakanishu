@@ -41,7 +41,7 @@ static void combat_capture(const uint64_t *regs) {
     if(head-atomic_load_explicit(&combat_tail,memory_order_acquire)>=COMBAT_RING) {
         atomic_fetch_add_explicit(&combat_lost,1,memory_order_relaxed);return;
     }
-    int (*get)(uint64_t,int,int)=(int (*)(uint64_t,int,int))(uintptr_t)(base()+0x5b9290);
+    int (*get)(uint64_t,int,int)=(int (*)(uint64_t,int,int))(uintptr_t)(base()+GA_STAT_GET);
     combat_event *e=&combat_ring[head%COMBAT_RING];
     *e=(combat_event){.seq=serial,.epoch=epoch,.tick=tick,
         .has_attacker=attacker!=0,.attacker_type=attacker?rd32(attacker):0,

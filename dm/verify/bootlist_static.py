@@ -9,9 +9,10 @@
 
 
 import os, sys
+GAME_VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../PRODUCT'), encoding='utf-8').readline().split('-')[0]
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 lst = sys.argv[1]
-rom = sys.argv[2] if len(sys.argv) > 2 else os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/RomFS/data')
+rom = sys.argv[2] if len(sys.argv) > 2 else os.path.join(DM_ROOT, 'data/switch', GAME_VERSION, 'Update/RomFS/data')
 bad, seen, n, fhs = [], set(), 0, {}
 holes = {}
 def hole_info(p):

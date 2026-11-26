@@ -24,10 +24,30 @@ import struct, re, sys, os
 from itertools import combinations
 import lz4.block
 from capstone import *
+from game_addrs import GA, GAME
+
+
+def ins_b(at, to): return 0x14000000 | (((to - at) >> 2) & 0x3ffffff)
+def ins_bl(at, to): return 0x94000000 | (((to - at) >> 2) & 0x3ffffff)
+def ins_cbz(at, to, rt, x=False, nonzero=False): return (x << 31) | (0x35000000 if nonzero else 0x34000000) | (((to - at) >> 2) & 0x7ffff) << 5 | rt
+def ins_tbz(at, to, rt, bit): return (bit >> 5) << 31 | 0x36000000 | (bit & 0x1f) << 19 | (((to - at) >> 2) & 0x3fff) << 5 | rt
+def ins_adrp(at, to, rd):
+    pages = ((to & ~0xfff) - (at & ~0xfff)) >> 12
+    return 0x90000000 | (pages & 3) << 29 | ((pages >> 2) & 0x7ffff) << 5 | rd
+def hx(word): return struct.pack('<I', word).hex()
 
 src, outdir, NAME = sys.argv[1], sys.argv[2], sys.argv[3]
-assert sys.argv[4:] in ([], ['--qa-combat']), 'unsupported rewrite option'
-QA_COMBAT = sys.argv[4:] == ['--qa-combat']
+CHECK = '--check' in sys.argv[4:]
+OPTS = [a for a in sys.argv[4:] if a != '--check']
+assert OPTS in ([], ['--qa-combat']), 'unsupported rewrite option'
+QA_COMBAT = OPTS == ['--qa-combat']
+mismatches = []
+def expect(ok, msg):
+
+    if ok: return True
+    if not CHECK: raise AssertionError(msg)
+    mismatches.append(msg)
+    return False
 d = open(src, 'rb').read()
 assert d[:4] == b'NSO0'
 flags = struct.unpack_from('<I', d, 0xc)[0]
@@ -51,43 +71,43 @@ PATCH_OFF = (len(IMG) + 0xFFFF) & ~0xFFFF
 
 
 
-CUTS = {'db0507f36b84200ac05f75d76ed5026f': [
+CUTS = [
 
 
-    (0xaa9f88, '9c000094', '011200d4', '提示条追加 bl 0xaaa1f8 → svc #0x90：总数最多 8 条，优先撤宿主可选提示给原版操作留位，防第 9 个内嵌文字控件越界（dm_padmode.c）', '仅宿主'),
+    (GA.AT_LEGEND_APPEND_CALL, hx(ins_bl(GA.AT_LEGEND_APPEND_CALL, GA.LEGEND_APPEND)), '011200d4', '提示条追加 bl GA.LEGEND_APPEND → svc #0x90：总数最多 8 条，优先撤宿主可选提示给原版操作留位，防第 9 个内嵌文字控件越界（dm_padmode.c）', '仅宿主'),
 
 
-    (0x8524c4, '0808a2d2', '0800a4d2', '显存分配器初始化配置：mov x8,#0x10400000（260 MB）→ mov x8,#0x20000000（512 MB），随后 movk #0xa0,lsl48 与 str [sp,#0x238] 不变；'
-     '原预算下内部分辨率 > 约 345 万像素时（2736x1260 过、2864x1240 崩）渲染目标放不下，main+0x174b018 返回空、main+0x17417a4 读空崩溃；'
+    (GA.AT_VRAM_BUDGET, '0808a2d2', '0800a4d2', '显存分配器初始化配置：mov x8,#0x10400000（260 MB）→ mov x8,#0x20000000（512 MB），随后 movk #0xa0,lsl48 与 str [sp,#0x238] 不变；'
+     '原预算下内部分辨率 > 约 345 万像素时（2736x1260 过、2864x1240 崩）渲染目标放不下，main+GA.RENDER_TARGET_ALLOC 返回空、main+GA.AT_RENDER_TARGET_USE 读空崩溃；'
      '只是显存预算，不进游戏逻辑：cvd5 逐拍对拍在 1600x900 与 2868x1320 两档均一致'),
-    (0x1979bc, 'e8a79f1a', 'e8d79f1a', '离线放行窗口：读存档设置键（0x1d53e80 处字串）的上次在线时刻，'
+    (GA.AT_OFFLINE_WINDOW_CMP, 'e8a79f1a', 'e8d79f1a', '离线放行窗口：读存档设置键（GA.STR_SETTING_LAST_ONLINE 处字串）的上次在线时刻，'
      '「当前时刻 − 上次在线 < 0x0009356907420000 ns（= 30 天）」置位 [x20+0x2c]；lt→gt'),
-    (0x5b14dc, 'e8a79f1a', 'e8d79f1a', '调 0xddab50（缓冲区 [x10+0x138]+x25、剩余长度、回调 0x527d50、表 0x209cdb8、9 项）返回值 <1 置位，'
-     '为真时走 0x5b14f8 分支；lt→gt（业务含义未从字串定出）'),
-    (0x5f3184, 'e8a79f1a', 'e8d79f1a', '数据表 [0x2d64a18+idx*16] → +0xf90 记录（0x1fc 字节）+0x4c 下标 → +0xfd0 记录（0x128 字节）+0xf1 有符号字节 <0 置位，'
+    (GA.AT_OFFLINE_GATE_B_CMP, 'e8a79f1a', 'e8d79f1a', '调 GA.CALC_EVAL（缓冲区 [x10+0x138]+x25、剩余长度、回调 GA.SKILL_CALC_TERM_CB、表 GA.SKILL_CALC_FN_TABLE、9 项）返回值 <1 置位，'
+     '为真时走 GA.AT_OFFLINE_GATE_B_TAKEN 分支；lt→gt（业务含义未从字串定出）'),
+    (GA.AT_OFFLINE_GATE_C_CMP, 'e8a79f1a', 'e8d79f1a', '数据表 [GA.DATA_TABLES+idx*16] → +0xf90 记录（0x1fc 字节）+0x4c 下标 → +0xfd0 记录（0x128 字节）+0xf1 有符号字节 <0 置位，'
      '与（w26>0x24）相与后作第 4 参传下游；lt→gt（业务含义未从字串定出）'),
-    (0x1d53e80, '55736572204c617374204f6e6c696e6500', '566f6963654c616e677561676500000000',
+    (GA.STR_SETTING_LAST_ONLINE, '55736572204c617374204f6e6c696e6500', '566f6963654c616e677561676500000000',
      '只读字串 "User Last Online" → "VoiceLanguage"：第 1 处改读一个必定存在的设置键，「上次在线」取到小数值，差值恒超 30 天，配合 gt 恒放行'),
 
 
-    (0x8019ec, '280f0034', 'e8feff34', '前端引导首次进入分支：cbz w8,#0x801bd0（LogoMenuPanel → Logo 视频 → 标题页）改为 cbz w8,#0x8019c8'
-     '（落到直达路径的 0x23e5e0(1) → 0xb156a0 进主菜单；跳过 0x8019bc 起置联机模式 [0x2d7badc]=1 的两条，联机模式保持启动初值 0 = 离线，'
-     '不触发 0x80ec44 的联网检查、断网弹窗与回标题页）；r4 版目标 0x8019bc 会置联机模式 1，实测仍回标题页并弹断网框'),
+    (GA.AT_BOOT_FIRST_ENTRY, hx(ins_cbz(GA.AT_BOOT_FIRST_ENTRY, GA.AT_BOOT_LOGO_PATH, 8)), hx(ins_cbz(GA.AT_BOOT_FIRST_ENTRY, GA.AT_BOOT_DIRECT_MENU, 8)), '前端引导首次进入分支：cbz w8,#GA.AT_BOOT_LOGO_PATH（LogoMenuPanel → Logo 视频 → 标题页）改为 cbz w8,#GA.AT_BOOT_DIRECT_MENU'
+     '（落到直达路径的 GA.FRONTEND_PREP(1) → GA.MAIN_MENU_ENTER 进主菜单；跳过 GA.AT_BOOT_SET_ONLINE 起置联机模式 [GA.ONLINE_MODE]=1 的两条，联机模式保持启动初值 0 = 离线，'
+     '不触发 GA.ONLINE_CHECK 的联网检查、断网弹窗与回标题页）；r4 版目标 GA.AT_BOOT_SET_ONLINE 会置联机模式 1，实测仍回标题页并弹断网框'),
 
 
-    (0x1b0ee60, 'fc6fbaa9fa6701a9', '011000d4c0035fd6', 'TACT BLTE 块 zlib 解码入口（DecodeZlib）→ svc #0x80 ; ret：宿主用 libdeflate 实现'
+    (GA.TACT_DECODE_ZLIB, 'fc6fbaa9fa6701a9', '011000d4c0035fd6', 'TACT BLTE 块 zlib 解码入口（DecodeZlib）→ svc #0x80 ; ret：宿主用 libdeflate 实现'
      '（hle_tact.c，调用号登记在 hle.h SVC_HOST_TACT_ZLIB）；改写器先打剪口再扫描，svc #0x80 自动成为宿主门，门块保存恢复 x30，ret 回原调用者', '仅宿主'),
 
 
-    (0x5d3a88, 'a27a0194', '211000d4', '收包泵 0x5d3960 投递客户端命令包的调用点 bl 0x632510 → svc #0x81：宿主缺省以原参数原样调用 0x632510（返回值调用方不用）；'
+    (GA.AT_RECV_CMD_CALL, hx(ins_bl(GA.AT_RECV_CMD_CALL, GA.C2S_RECV)), '211000d4', '收包泵 GA.C2S_RECV_PUMP 投递客户端命令包的调用点 bl GA.C2S_RECV → svc #0x81：宿主缺省以原参数原样调用 GA.C2S_RECV（返回值调用方不用）；'
      'DM_C2S_REPLAY 时丢弃客户端自发命令、改由拍入口按文件注入（diag.c，调用号登记在 hle.h SVC_HOST_C2S_DELIVER）', '仅宿主'),
-    (0x5d39c8, 'ba750194', '411000d4', '收包泵 0x5d3960 投递系统类消息的调用点 bl 0x6310b0 → svc #0x82：宿主缺省以原参数原样调用 0x6310b0（返回值调用方不用）；'
+    (GA.AT_RECV_SYS_MSG_CALL, hx(ins_bl(GA.AT_RECV_SYS_MSG_CALL, GA.C2S_SYS_HANDLE)), '411000d4', '收包泵 GA.C2S_RECV_PUMP 投递系统类消息的调用点 bl GA.C2S_SYS_HANDLE → svc #0x82：宿主缺省以原参数原样调用 GA.C2S_SYS_HANDLE（返回值调用方不用）；'
      'DM_C2S_REPLAY 时，回放文件首拍起丢弃宿主客户端自发的系统类消息（之前的加入消息放行），改由拍入口按文件注入（diag.c，调用号登记在 hle.h SVC_HOST_C2S_SYS）', '仅宿主'),
 
 
 
 
-    (0x211da30, '8007000038040000', '0010000070080000', '输出分辨率上限初值 1920x1080 → 4096x2160（数据段）：宿主按屏幕比例给的宽度（如 iPhone 19.5:9 的 1956x900）'
+    (GA.OUTPUT_RES_CAP, '8007000038040000', '0010000070080000', '输出分辨率上限初值 1920x1080 → 4096x2160（数据段）：宿主按屏幕比例给的宽度（如 iPhone 19.5:9 的 1956x900）'
      '须不超上限才会被选中；Mac 前端仍给原值 1600x900 / 1280x720，行为不变', '仅宿主'),
 
 
@@ -95,8 +115,8 @@ CUTS = {'db0507f36b84200ac05f75d76ed5026f': [
 
 
 
-    (0xe10e48, '09e880522903098a', 'e903192a1f2003d5', '运行模式通知发窗口尺寸事件的宽度：mov w9,#0x740; and x9,x25,x9 → mov w9,w25; nop（取低 32 位，不再用原版两档宽度推出的常数掩码）', '仅宿主'),
-    (0xe12e88, '09e880528902098a', 'e903142a1f2003d5', '启动初始化选分辨率（0xe12d70）同一处掩码：mov w9,#0x740; and x9,x20,x9 → mov w9,w20; nop（structck 参数门下游掩码检查查出；启动时事件接收对象通常未建，平时不显形）', '仅宿主'),
+    (GA.AT_OPMODE_WIDTH_MASK, '09e880522903098a', 'e903192a1f2003d5', '运行模式通知发窗口尺寸事件的宽度：mov w9,#0x740; and x9,x25,x9 → mov w9,w25; nop（取低 32 位，不再用原版两档宽度推出的常数掩码）', '仅宿主'),
+    (GA.AT_RES_INIT_WIDTH_MASK, '09e880528902098a', 'e903142a1f2003d5', '启动初始化选分辨率（GA.RES_INIT_SELECT）同一处掩码：mov w9,#0x740; and x9,x20,x9 → mov w9,w20; nop（structck 参数门下游掩码检查查出；启动时事件接收对象通常未建，平时不显形）', '仅宿主'),
 
 
 
@@ -107,18 +127,13 @@ CUTS = {'db0507f36b84200ac05f75d76ed5026f': [
 
 
 
-    (0xb15e20, '0281002d', '1f2003d5', '经典画面切换写起点 / 目标（stp s2, s0, [x8, #4]）→ nop：目标恒为 1.0（新画面）'),
-    (0xb15e24, '1f0d00b9', '1f2003d5', '经典画面切换清进度（str wzr, [x8, #0xc]）→ nop'),
+    (GA.AT_CLASSIC_TOGGLE_TARGET, '0281002d', '1f2003d5', '经典画面切换写起点 / 目标（stp s2, s0, [x8, #4]）→ nop：目标恒为 1.0（新画面）'),
+    (GA.AT_CLASSIC_TOGGLE_PROGRESS, '1f0d00b9', '1f2003d5', '经典画面切换清进度（str wzr, [x8, #0xc]）→ nop'),
 
 
 
 
-    (0xb1a660, '083a8252', 'e8ff9f52', '界面画布宽上限 mov w8, #4560 → mov w8, #0xffff（画布宽 = 屏宽）', '仅宿主'),
-
-
-
-
-
+    (GA.AT_UI_CANVAS_WIDTH_CAP, '083a8252', 'e8ff9f52', '界面画布宽上限 mov w8, #4560 → mov w8, #0xffff（画布宽 = 屏宽）', '仅宿主'),
 
 
 
@@ -132,64 +147,69 @@ CUTS = {'db0507f36b84200ac05f75d76ed5026f': [
 
 
 
-    (0x7f669c, '370b0036', '59000014', '字符串表装载 tbz w23, #0（是否装 legacy 表 A）→ b 0x7f6800：表 A 无读者（选表标志恒 0 → 表 B），整段 17 个 legacy 文件不装'),
-
-
-    (0x11f02dc, '05120094', '611000d4', '段读取 0x11f0110 逐块解码 bl 0x11f4af0(ctx, 块, 长度) → svc #0x83：宿主缺省以原参数原样调用并回填 w0（hle.h SVC_HOST_GRANNY_A）', '仅宿主'),
 
 
 
 
 
-
-    (0x468f2c, '3d1f0094', '011100d4', '物品落地取掉落音调用点 bl 0x470c20 → svc #0x88：宿主原样代调后按规则把一档物品的掉落音换成提示音（其余原样）', '仅宿主'),
-    (0x8fa590, '0d6a0494', 'e11000d4', '物品外观路径调用点 bl 0xa14dc4 → svc #0x87：宿主原样代调后按规则改指地上物品的带光变体（存储 / 穿戴 / 腰带 / 镶嵌不碰）', '仅宿主'),
+    (GA.AT_STRINGS_LEGACY_TEST, hx(ins_tbz(GA.AT_STRINGS_LEGACY_TEST, GA.AT_STRINGS_LOAD_OK, 23, 0)), hx(ins_b(GA.AT_STRINGS_LEGACY_TEST, GA.AT_STRINGS_LOAD_OK)), '字符串表装载 tbz w23, #0（是否装 legacy 表 A）→ b GA.AT_STRINGS_LOAD_OK：表 A 无读者（选表标志恒 0 → 表 B），整段 17 个 legacy 文件不装'),
 
 
-
-
-    (0x5d8040, 'a005fe97', '411100d4', '玩家进局取出生点调用点 bl 0x5596c0 → svc #0x8a：宿主原样代调，进局在城镇时出生点换成小站旁（hle.h SVC_HOST_JOIN_SPAWN）', '仅宿主'),
-    (0x5d8400, 'b004fe97', '611100d4', '进局给尸体取落点调用点 bl 0x5596c0 → svc #0x8b：同上，尸体与人取同一个点（hle.h SVC_HOST_JOIN_CORPSE）', '仅宿主'),
-    (0x11f0914, '77100094', '811000d4', '段读取 0x11f07d0 逐块解码 bl 0x11f4af0(ctx, 块, 长度) → svc #0x84：同上（hle.h SVC_HOST_GRANNY_B）', '仅宿主'),
-]}
+    (GA.AT_GRANNY_SECTION_DECODE, hx(ins_bl(GA.AT_GRANNY_SECTION_DECODE, GA.GRANNY_BLOCK_DECODE)), '611000d4', '段读取 GA.GRANNY_SECTION_READ 逐块解码 bl GA.GRANNY_BLOCK_DECODE(ctx, 块, 长度) → svc #0x83：宿主缺省以原参数原样调用并回填 w0（hle.h SVC_HOST_GRANNY_A）', '仅宿主'),
 
 
 
 
-OBS = {'db0507f36b84200ac05f75d76ed5026f': [
-    (0xb1dc60, 1, 'd10603ff', 'UI 消息总线虚函数实现入口（x1 = 消息 {u64 类型哈希, u64 动作哈希, char* 面板名, …}）：'
+
+
+    (GA.AT_DROP_SOUND_CALL, hx(ins_bl(GA.AT_DROP_SOUND_CALL, GA.ITEM_DROP_SOUND)), '011100d4', '物品落地取掉落音调用点 bl GA.ITEM_DROP_SOUND → svc #0x88：宿主原样代调后按规则把一档物品的掉落音换成提示音（其余原样）', '仅宿主'),
+    (GA.AT_ITEM_MODEL_PATH_CALL, hx(ins_bl(GA.AT_ITEM_MODEL_PATH_CALL, GA.UNIT_MODEL_PATH)), 'e11000d4', '物品外观路径调用点 bl GA.UNIT_MODEL_PATH → svc #0x87：宿主原样代调后按规则改指地上物品的带光变体（存储 / 穿戴 / 腰带 / 镶嵌不碰）', '仅宿主'),
+
+
+
+
+    (GA.AT_JOIN_SPAWN_CALL, hx(ins_bl(GA.AT_JOIN_SPAWN_CALL, GA.LEVEL_SPAWN_POINT)), '411100d4', '玩家进局取出生点调用点 bl GA.LEVEL_SPAWN_POINT → svc #0x8a：宿主原样代调，进局在城镇时出生点换成小站旁（hle.h SVC_HOST_JOIN_SPAWN）', '仅宿主'),
+    (GA.AT_JOIN_CORPSE_CALL, hx(ins_bl(GA.AT_JOIN_CORPSE_CALL, GA.LEVEL_SPAWN_POINT)), '611100d4', '进局给尸体取落点调用点 bl GA.LEVEL_SPAWN_POINT → svc #0x8b：同上，尸体与人取同一个点（hle.h SVC_HOST_JOIN_CORPSE）', '仅宿主'),
+    (GA.AT_GRANNY_FIXUP_DECODE, hx(ins_bl(GA.AT_GRANNY_FIXUP_DECODE, GA.GRANNY_BLOCK_DECODE)), '811000d4', '段读取 GA.GRANNY_FIXUP_READ 逐块解码 bl GA.GRANNY_BLOCK_DECODE(ctx, 块, 长度) → svc #0x84：同上（hle.h SVC_HOST_GRANNY_B）', '仅宿主'),
+]
+
+
+
+
+OBS = [
+    (GA.UI_MSG_DISPATCH, 1, 'd10603ff', 'UI 消息总线虚函数实现入口（x1 = 消息 {u64 类型哈希, u64 动作哈希, char* 面板名, …}）：'
      'DM_UIMSG 消息流与 DM_BOOTPROF 启动分段的唯一来源；原指令 sub sp, sp, #0x180'),
-    (0x5d3bc0, 2, 'd10503ff', '服务端拍入口（x0 = 游戏对象 G）：DM_TICKS 逐拍 6 格状态哈希（dm/verify/tick_state_format.md，与真值 swtick.py 同一采集点）；'
+    (GA.SERVER_TICK, 2, 'd10503ff', '服务端拍入口（x0 = 游戏对象 G）：DM_TICKS 逐拍 6 格状态哈希（dm/verify/tick_state_format.md，与真值 swtick.py 同一采集点）；'
      '原指令 sub sp, sp, #0x140'),
-    (0x6e5b40, 3, 'd10103ff', '客户端命令分派入口 (G, 单位, 包, 长度)：DM_C2S_LOG 命令包序列（dm/verify/command_packet_format.md，与真值同一采集点）；'
+    (GA.C2S_DISPATCH, 3, 'd10103ff', '客户端命令分派入口 (G, 单位, 包, 长度)：DM_C2S_LOG 命令包序列（dm/verify/command_packet_format.md，与真值同一采集点）；'
      '原指令 sub sp, sp, #0x40'),
-    (0x6310b0, 4, 'a9bb67fc', '系统类客户端消息处理入口 (buf = u32 客户端号 + 包, 包长)：包号 ≥ 0x67（加入 / 心跳 0x6d / 0x6f 等），收包泵先抽干此队列；'
+    (GA.C2S_SYS_HANDLE, 4, 'a9bb67fc', '系统类客户端消息处理入口 (buf = u32 客户端号 + 包, 包长)：包号 ≥ 0x67（加入 / 心跳 0x6d / 0x6f 等），收包泵先抽干此队列；'
      'DM_C2S_LOG 记为 "q":"sys"；原指令 stp x28, x25, [sp, #-0x50]!'),
-    (0x317298, 5, 'd10183ff', 'SetLanguage 入口（x1 → u32 新语言号，语言名表 main+0x20ae478）：配合上方语言重载剪口，宿主断言新语言为 zhCN；'
+    (GA.LANGUAGE_SET, 5, 'd10183ff', 'SetLanguage 入口（x1 → u32 新语言号，语言名表 main+GA.LANG_NAMES）：配合上方语言重载剪口，宿主断言新语言为 zhCN；'
      '原指令 sub sp, sp, #0x60'),
-]}
+]
 BUILD_ID = d[0x40:0x50].hex()
 
 
 RULESET = os.environ.get('DM_RULESET', 'native')
 assert RULESET in ('native', 'touch-run-v4'), f'未知规则域 {RULESET}'
-RULE_BUILD = 'db0507f36b84200ac05f75d76ed5026f'
+RULE_BUILD = GAME.build_id
 RULE_RUN = RULESET == 'touch-run-v4' and NAME == 'main'
 if RULE_RUN:
     import hashlib
 
 
     if BUILD_ID != RULE_BUILD:
-        sys.exit(f'这一版游戏程序（构建号 {BUILD_ID}）D2R Mobile 还没适配：现在只支持 1.0.34.0（构建号 {RULE_BUILD}）。'
-                 f' | This game program (build ID {BUILD_ID}) is not supported by D2R Mobile yet: only 1.0.34.0 (build ID {RULE_BUILD}) is.')
+        sys.exit(f'这一版游戏程序（构建号 {BUILD_ID}）D2R Mobile 还没适配：现在只支持 {GAME.version}（构建号 {RULE_BUILD}）。'
+                 f' | This game program (build ID {BUILD_ID}) is not supported by D2R Mobile yet: only {GAME.version} (build ID {RULE_BUILD}) is.')
     RULE_ORIG_SHA = hashlib.sha256(IMG).hexdigest()
-cuts = list(CUTS.get(BUILD_ID, []))
+cuts = list(CUTS) if BUILD_ID == RULE_BUILD else []
 
 
 PRIVATE_GATES = os.environ.get("DM_PRIVATE_GATES", "1") != "0"
 PRIVATE_AIM = RULE_RUN and PRIVATE_GATES
 if PRIVATE_AIM:
-    cuts.append((0x2faf04, 'fde7fe97', 'c11000d4',
+    cuts.append((GA.AT_SKILL_AIM_DIR_CALL, hx(ins_bl(GA.AT_SKILL_AIM_DIR_CALL, GA.SKILL_GROUND_DIR)), 'c11000d4',
       'skill-aim-v1-private: skill ground direction call only; svc86 delegates original2b4ef8 then sampled-right/original rotation+grid; zero/nonplayer/non-skill retain original; busy/town/skill/server untouched', '仅宿主'))
 if RULE_RUN:
 
@@ -200,7 +220,7 @@ if RULE_RUN:
 
     SHADOW_SIDE = 1024
     movz_w14 = lambda n: struct.pack('<I', 0x52800000 | (n << 5) | 14).hex()
-    cuts.append((0x168a580, movz_w14(2100), movz_w14(SHADOW_SIDE), f'阴影图边长 mov w14,#2100 → mov w14,#{SHADOW_SIDE}（档位 1）', '仅宿主'))
+    cuts.append((GA.AT_SHADOW_MAP_SIDE, movz_w14(2100), movz_w14(SHADOW_SIDE), f'阴影图边长 mov w14,#2100 → mov w14,#{SHADOW_SIDE}（档位 1）', '仅宿主'))
 if RULE_RUN:
 
 
@@ -210,9 +230,9 @@ if RULE_RUN:
 
     cbz_x8 = lambda at, to: struct.pack('<I', 0xB4000008 | (((to - at) >> 2) & 0x7ffff) << 5).hex()
     str_x19_178 = lambda rt: struct.pack('<I', 0xF9000000 | (0x178 // 8) << 10 | 19 << 5 | rt).hex()
-    cuts.append((0xab5c28, str_x19_178(8), str_x19_178(31), '系统通知的确认动作类别 str x8,[x19,#0x178] → str xzr（不带确认动作）', '仅宿主'))
-    cuts.append((0x3d853c, cbz_x8(0x3d853c, 0x3d8560), cbz_x8(0x3d853c, 0x3d880c), '通知面板：确认动作类别为空 → 不处理 PLUS', '仅宿主'))
-    cuts.append((0x3d8544, cbz_x8(0x3d8544, 0x3d8560), cbz_x8(0x3d8544, 0x3d880c), '通知面板：确认动作哈希为空 → 不处理 PLUS', '仅宿主'))
+    cuts.append((GA.AT_SYS_NOTICE_ACTION_STORE, str_x19_178(8), str_x19_178(31), '系统通知的确认动作类别 str x8,[x19,#0x178] → str xzr（不带确认动作）', '仅宿主'))
+    cuts.append((GA.AT_NOTICE_PLUS_KIND_TEST, cbz_x8(GA.AT_NOTICE_PLUS_KIND_TEST, GA.AT_NOTICE_EMPTY_ACTION), cbz_x8(GA.AT_NOTICE_PLUS_KIND_TEST, GA.AT_NOTICE_FWD_CHILDREN), '通知面板：确认动作类别为空 → 不处理 PLUS', '仅宿主'))
+    cuts.append((GA.AT_NOTICE_PLUS_HASH_TEST, cbz_x8(GA.AT_NOTICE_PLUS_HASH_TEST, GA.AT_NOTICE_EMPTY_ACTION), cbz_x8(GA.AT_NOTICE_PLUS_HASH_TEST, GA.AT_NOTICE_FWD_CHILDREN), '通知面板：确认动作哈希为空 → 不处理 PLUS', '仅宿主'))
 if RULE_RUN:
 
 
@@ -220,7 +240,7 @@ if RULE_RUN:
 
 
 
-    cuts.append((0xc35fb0, struct.pack('<I', 0xB3407D01).hex(), struct.pack('<I', 0xF2800000 | 3000 << 5 | 1).hex(), '技能说明框横坐标给到屏幕外，由原回夹贴右边（不盖技能树）', '仅宿主'))
+    cuts.append((GA.AT_SKILL_TOOLTIP_POS_X, struct.pack('<I', 0xB3407D01).hex(), struct.pack('<I', 0xF2800000 | 3000 << 5 | 1).hex(), '技能说明框横坐标给到屏幕外，由原回夹贴右边（不盖技能树）', '仅宿主'))
 
 
 
@@ -229,8 +249,8 @@ if RULE_RUN:
 
 
 
-    cuts.append((0x89c444, struct.pack('<I', 0x1E2C2000).hex(), struct.pack('<I', 0x1E282000).hex(), '镜头缩放下限比较：fcmp s0,s12（1.0）→ fcmp s0,s8（0.5）', '仅宿主'))
-    cuts.append((0x89c428, struct.pack('<I', 0x52A7F008).hex(), struct.pack('<I', 0x52A7E008).hex(), '镜头缩放下限值：mov w8,#0x3f800000（1.0）→ #0x3f000000（0.5）', '仅宿主'))
+    cuts.append((GA.AT_CAM_ZOOM_FLOOR_CMP, struct.pack('<I', 0x1E2C2000).hex(), struct.pack('<I', 0x1E282000).hex(), '镜头缩放下限比较：fcmp s0,s12（1.0）→ fcmp s0,s8（0.5）', '仅宿主'))
+    cuts.append((GA.AT_CAM_ZOOM_FLOOR_VAL, struct.pack('<I', 0x52A7F008).hex(), struct.pack('<I', 0x52A7E008).hex(), '镜头缩放下限值：mov w8,#0x3f800000（1.0）→ #0x3f000000（0.5）', '仅宿主'))
 
 
 
@@ -238,83 +258,83 @@ if RULE_RUN:
 
 
 
-    cuts.append((0x89ccc8, struct.pack('<I', 0x94362F2C).hex(), struct.pack('<I', 0xD40011E1).hex(), '镜头更新取第二个镜头调用点 bl 0x1628978 → svc #0x8f：宿主原样代调，镜头开着时把原版画面往 3D 镜头前方挪（hle.h SVC_HOST_CAM_AHEAD）', '仅宿主'))
+    cuts.append((GA.AT_CAM_SECOND_CAM_CALL, hx(ins_bl(GA.AT_CAM_SECOND_CAM_CALL, GA.CAM_SECOND_GET)), struct.pack('<I', 0xD40011E1).hex(), '镜头更新取第二个镜头调用点 bl GA.CAM_SECOND_GET → svc #0x8f：宿主原样代调，镜头开着时把原版画面往 3D 镜头前方挪（hle.h SVC_HOST_CAM_AHEAD）', '仅宿主'))
 
 
     if os.environ.get('DM_TARGET') == 'android':
-        cuts.append((0x5d428c, struct.pack('<I', 0x52927C09).hex(), struct.pack('<I', 0x529D4C09).hex(), 'autosave interval low half mov w9,#0x93e0 -> #0xea60: 60 s on Android', '仅宿主'))
-        cuts.append((0x5d4290, struct.pack('<I', 0x72A00089).hex(), struct.pack('<I', 0x72A00009).hex(), 'autosave interval high half movk w9,#4,lsl #16 -> #0: 60 s on Android', '仅宿主'))
+        cuts.append((GA.AT_AUTOSAVE_INTERVAL_LO, struct.pack('<I', 0x52927C09).hex(), struct.pack('<I', 0x529D4C09).hex(), 'autosave interval low half mov w9,#0x93e0 -> #0xea60: 60 s on Android', '仅宿主'))
+        cuts.append((GA.AT_AUTOSAVE_INTERVAL_HI, struct.pack('<I', 0x72A00089).hex(), struct.pack('<I', 0x72A00009).hex(), 'autosave interval high half movk w9,#4,lsl #16 -> #0: 60 s on Android', '仅宿主'))
 
 
-    cuts.append((0x7d6720, struct.pack('<I', 0x97f796b4).hex(), struct.pack('<I', 0xd4001e01).hex(), 'life write of the damage function bl 0x5bc1f0 -> svc #0xf0: host forwards the call as is and reads the hit for the damage numbers (hle.h SVC_HOST_DAMAGE)', '仅宿主'))
-
-
-
-
-
-    cuts.append((0x7db850, '00e1ff97', '211e00d4',
-      'melee record builder resistance call bl 0x7d3c50 -> svc #0xf1: host snapshots the unreduced record of a player hit on a monster and forwards the call (dm_splash.c, hle.h SVC_HOST_MELEE_RESIST)', '仅宿主'))
-    cuts.append((0x7da4e0, 'e8f8ff97', '411e00d4',
-      'melee execute result call bl 0x7d8880 -> svc #0xf2: host forwards the call and then splashes the hit to the monsters the cone in front of it reaches (dm_splash.c, hle.h SVC_HOST_MELEE_RESULT)', '仅宿主'))
+    cuts.append((GA.AT_DAMAGE_LIFE_CALL, hx(ins_bl(GA.AT_DAMAGE_LIFE_CALL, GA.STAT_SET)), struct.pack('<I', 0xd4001e01).hex(), 'life write of the damage function bl GA.STAT_SET -> svc #0xf0: host forwards the call as is and reads the hit for the damage numbers (hle.h SVC_HOST_DAMAGE)', '仅宿主'))
 
 
 
 
-    cuts.append((0x7b8280, 'ff4305d1e87300fd', '611e00d4c0035fd6',
-      'curse/shrine apply entry main+0x7b8280 -> svc #0xf3; ret: host trampoline applies the shrine rules around the original body (dm_shrine.c, hle.h SVC_HOST_SHRINE_APPLY)', '仅宿主'))
+
+    cuts.append((GA.AT_MELEE_RECORD_RESIST_CALL, hx(ins_bl(GA.AT_MELEE_RECORD_RESIST_CALL, GA.COMBAT_REDUCE)), '211e00d4',
+      'melee record builder resistance call bl GA.COMBAT_REDUCE -> svc #0xf1: host snapshots the unreduced record of a player hit on a monster and forwards the call (dm_splash.c, hle.h SVC_HOST_MELEE_RESIST)', '仅宿主'))
+    cuts.append((GA.AT_MELEE_EXEC_RESULT_CALL, hx(ins_bl(GA.AT_MELEE_EXEC_RESULT_CALL, GA.HIT_RESULT_APPLY)), '411e00d4',
+      'melee execute result call bl GA.HIT_RESULT_APPLY -> svc #0xf2: host forwards the call and then splashes the hit to the monsters the cone in front of it reaches (dm_splash.c, hle.h SVC_HOST_MELEE_RESULT)', '仅宿主'))
 
 
 
-    cuts.append((0xa14dc4, 'ffc304d1fc6b00f9', '811e00d4c0035fd6',
-      'unit definition path entry main+0xa14dc4 -> svc #0xf4; ret: host draws an owned item with its chosen look (dm_looks.c, hle.h SVC_HOST_LOOK_MODEL)', '仅宿主'))
-    cuts.append((0x45b460, 'ffc306d1fc6f15a9', 'a11e00d4c0035fd6',
-      'item inventory picture entry main+0x45b460 -> svc #0xf5; ret: host draws an owned item with its chosen look (dm_looks.c, hle.h SVC_HOST_LOOK_ICON)', '仅宿主'))
+
+    cuts.append((GA.STATE_APPLY_TIMED, 'ff4305d1e87300fd', '611e00d4c0035fd6',
+      'curse/shrine apply entry main+GA.STATE_APPLY_TIMED -> svc #0xf3; ret: host trampoline applies the shrine rules around the original body (dm_shrine.c, hle.h SVC_HOST_SHRINE_APPLY)', '仅宿主'))
 
 
 
-    cuts.append((0x576f70, 'ffc301d1fc6f01a9', 'c11e00d4c0035fd6',
-      'item colour entry main+0x576f70 -> svc #0xf6; ret: host colours an owned item with its chosen colour (dm_looks.c, hle.h SVC_HOST_LOOK_COLOUR)', '仅宿主'))
+    cuts.append((GA.UNIT_MODEL_PATH, 'ffc304d1fc6b00f9', '811e00d4c0035fd6',
+      'unit definition path entry main+GA.UNIT_MODEL_PATH -> svc #0xf4; ret: host draws an owned item with its chosen look (dm_looks.c, hle.h SVC_HOST_LOOK_MODEL)', '仅宿主'))
+    cuts.append((GA.ITEM_ICON, 'ffc306d1fc6f15a9', 'a11e00d4c0035fd6',
+      'item inventory picture entry main+GA.ITEM_ICON -> svc #0xf5; ret: host draws an owned item with its chosen look (dm_looks.c, hle.h SVC_HOST_LOOK_ICON)', '仅宿主'))
 
 
 
-    cuts.append((0x6e8740, 'fc6fbaa9fa6701a9', 'e11e00d4c0035fd6',
-      'transmute entry main+0x6e8740 -> svc #0xf7; ret: host lends the unsocket recipe row around the original body (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE)', '仅宿主'))
+    cuts.append((GA.ITEM_COLOUR, 'ffc301d1fc6f01a9', 'c11e00d4c0035fd6',
+      'item colour entry main+GA.ITEM_COLOUR -> svc #0xf6; ret: host colours an owned item with its chosen colour (dm_looks.c, hle.h SVC_HOST_LOOK_COLOUR)', '仅宿主'))
 
 
 
-    cuts.append((0x706860, '7063f997', '011f00d4',
-      'runner insert free-cell search bl 0x55f620 -> svc #0xf8: host forwards, and puts inserts the cube cannot take into the inventory in a lent unsocketing run (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE_SPILL)', '仅宿主'))
+    cuts.append((GA.CUBE_TRANSMUTE, 'fc6fbaa9fa6701a9', 'e11e00d4c0035fd6',
+      'transmute entry main+GA.CUBE_TRANSMUTE -> svc #0xf7; ret: host lends the unsocket recipe row around the original body (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE)', '仅宿主'))
 
 
-    cuts.append((0x706764, '1f49fd97', '211f00d4',
-      'runner insert delete bl 0x658be0 -> svc #0xf9: in a lent unsocketing run the insert goes back into its item instead (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE_KEEP)', '仅宿主'))
+
+    cuts.append((GA.AT_TRANSMUTE_INSERT_FIND_CELL, hx(ins_bl(GA.AT_TRANSMUTE_INSERT_FIND_CELL, GA.INV_FIND_FREE)), '011f00d4',
+      'runner insert free-cell search bl GA.INV_FIND_FREE -> svc #0xf8: host forwards, and puts inserts the cube cannot take into the inventory in a lent unsocketing run (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE_SPILL)', '仅宿主'))
+
+
+    cuts.append((GA.AT_TRANSMUTE_INSERT_DELETE, hx(ins_bl(GA.AT_TRANSMUTE_INSERT_DELETE, GA.ITEM_FREE)), '211f00d4',
+      'runner insert delete bl GA.ITEM_FREE -> svc #0xf9: in a lent unsocketing run the insert goes back into its item instead (dm_unsocket.c, hle.h SVC_HOST_TRANSMUTE_KEEP)', '仅宿主'))
 if RULE_RUN and PRIVATE_GATES:
 
 
 
 
     run_words = [
-        (0x2c620c, 0xb90e511f, 0x52800029, '偏好初始化：mov w9,1（x8仍为2d20000）'),
-        (0x2c6210, 0xd00152c8, 0xb90e5109, '偏好初始化：str w9,[x8,e50]；替代同页重复adrp，保原x8'),
-        (0x369a90, 0xd100c3ff, None, '客户端RunOff入口尾跳原RunOn；保其player0/合法mode/环境门'),
-        (0x369980, 0x340006a0, 0xd503201f, '客户端RunOn仅取消既有player0门之后的零精力拒绝'),
-        (0x2b2c74, 0x340000a0, 0xd503201f, '控制器d29资格仅取消stat10零值限制；幅度比较与停杆保原'),
-        (0x2b2dc0, 0x3900031f, 0xd503201f, '控制器d29仅取消stat10零值清除；幅度归一化保原'),
-        (0x2b30fc, 0x0a090101, 0x52800021, '已通过合法动作/零轴门的移动编码选择位固定Run；幅度不改'),
-        (0x2b3104, 0x2a1f03e1, 0x52800021, '无用户走跑偏好时亦固定Run编码位；方向/幅度不改'),
-        (0x6dc2c4, 0x1a880502, 0x52800062, 'server42合法移动请求固定Run3，原type0/死亡/锁定/幅度/方向门保留'),
-        (0x6dce90, 0x340000e0, 0xd503201f, 'server49仅取消既有player0/mode2门之后的零精力拒绝'),
-        (0x6dcec0, 0xa9bf7bfd, None, 'server4A入口尾跳原49；长度/type0/mode门保留'),
+        (GA.AT_RUN_PREF_INIT_MOV, 0xb90e511f, 0x52800029, '偏好初始化：mov w9,1（x8仍为2d20000）'),
+        (GA.AT_RUN_PREF_INIT_STR, ins_adrp(GA.AT_RUN_PREF_INIT_STR, GA.RUN_PREFERENCE, 8), 0xb90e5109, '偏好初始化：str w9,[x8,e50]；替代同页重复adrp，保原x8'),
+        (GA.RUN_OFF_CLIENT, 0xd100c3ff, None, '客户端RunOff入口尾跳原RunOn；保其player0/合法mode/环境门'),
+        (GA.AT_RUN_ON_CL_STAMINA_GATE, ins_cbz(GA.AT_RUN_ON_CL_STAMINA_GATE, GA.AT_RUN_ON_CL_STAMINA_REJECT, 0), 0xd503201f, '客户端RunOn仅取消既有player0门之后的零精力拒绝'),
+        (GA.AT_CTRL_MOVE_STAMINA_GATE, ins_cbz(GA.AT_CTRL_MOVE_STAMINA_GATE, GA.AT_CTRL_MOVE_STAMINA_ZERO, 0), 0xd503201f, '控制器d29资格仅取消stat10零值限制；幅度比较与停杆保原'),
+        (GA.AT_CTRL_MOVE_STAMINA_CLEAR, 0x3900031f, 0xd503201f, '控制器d29仅取消stat10零值清除；幅度归一化保原'),
+        (GA.AT_CTRL_RUN_SELECT_BIT, 0x0a090101, 0x52800021, '已通过合法动作/零轴门的移动编码选择位固定Run；幅度不改'),
+        (GA.AT_CTRL_RUN_SELECT_DEFAULT, 0x2a1f03e1, 0x52800021, '无用户走跑偏好时亦固定Run编码位；方向/幅度不改'),
+        (GA.AT_SRV_MOVE_RUN_MODE, 0x1a880502, 0x52800062, 'server42合法移动请求固定Run3，原type0/死亡/锁定/幅度/方向门保留'),
+        (GA.AT_RUN_ON_SRV_STAMINA_GATE, ins_cbz(GA.AT_RUN_ON_SRV_STAMINA_GATE, GA.AT_RUN_ON_SRV_STAMINA_REJECT, 0), 0xd503201f, 'server49仅取消既有player0/mode2门之后的零精力拒绝'),
+        (GA.RUN_OFF_SERVER, 0xa9bf7bfd, None, 'server4A入口尾跳原49；长度/type0/mode门保留'),
     ]
     for off, old, new, why in run_words:
         if new is None:
-            target = 0x369900 if off == 0x369a90 else 0x6dce50
+            target = GA.RUN_ON_CLIENT if off == GA.RUN_OFF_CLIENT else GA.RUN_ON_SERVER
             new = 0x14000000 | (((target - off) >> 2) & 0x3ffffff)
         cuts.append((off, struct.pack('<I', old).hex(), struct.pack('<I', new).hex(), 'touch-run-v4：' + why))
 cuts = [c if len(c) == 5 else (*c, '全') for c in cuts]
 for off, ob, nb, why, scope in cuts:
     ob, nb = bytes.fromhex(ob), bytes.fromhex(nb)
-    assert len(ob) == len(nb) and IMG[off:off + len(ob)] == ob, f'剪口原字节不符 {off:#x}：{bytes(IMG[off:off + len(ob)]).hex()}'
+    if not expect(len(ob) == len(nb) and IMG[off:off + len(ob)] == ob, f'剪口原字节不符 {off:#x}：{bytes(IMG[off:off + len(ob)]).hex()}'): continue
     IMG[off:off + len(nb)] = nb
 
 
@@ -810,9 +830,9 @@ for a in sorted(kinds):
 
 
 if RULE_RUN and PRIVATE_GATES:
-    off, word = 0x3e443c, 0x3969c268
-    assert struct.unpack_from('<I', IMG, off)[0] == word
-    assert off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows)
+    off, word = GA.AT_SKILL_HUD_DRAW, 0x3969c268
+    expect(struct.unpack_from('<I', IMG, off)[0] == word, f'私有门原指令不符 {off:#x}')
+    expect(off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows), f'私有门与改写点冲突 {off:#x}')
     start = here()
     emit(STP_PRE(8, 31, 31, -16))
     emit(STP_PRE(29, 30, 31, -16))
@@ -821,8 +841,8 @@ if RULE_RUN and PRIVATE_GATES:
 
 
     emit(0x34000068)
-    emit(LDP_POST(8, 31, 31, 16)); emit(B(here(), 0x3e4460))
-    emit(LDP_POST(8, 31, 31, 16)); emit(word); emit(B(here(), 0x3e4440))
+    emit(LDP_POST(8, 31, 31, 16)); emit(B(here(), GA.AT_SKILL_HUD_DRAW_SKIP))
+    emit(LDP_POST(8, 31, 31, 16)); emit(word); emit(B(here(), GA.AT_SKILL_HUD_DRAW_RET))
     gates.append((ret, 'svc', 0x85, off))
     put_branch(off, start); stat('private_skill_render')
     cuts.append((off, struct.pack('<I', word).hex(), struct.pack('<I', B(off,start)).hex(),
@@ -839,71 +859,71 @@ if QA_COMBAT:
     except ImportError:
         sys.exit('--qa-combat needs patch_nso_qa.py next to patch_nso.py (the qa tool tree carries it)')
     qa_obs = list(patch_nso_qa.POINTS)
-obs = list(OBS.get(BUILD_ID, [])) + qa_obs
+obs = (list(OBS) if BUILD_ID == RULE_BUILD else []) + qa_obs
 if RULE_RUN and PRIVATE_GATES:
-    obs.append((0x43ecc8, 6, "b8686953", "private touch-run-v4 PRE-ldr; full800 host ABI"))
-    obs.append((0x1237c60, 8, "d10143ff", "ui world anchor: camera world->screen entry (camera, point, out); host swaps x0 to a copy whose projection is shifted by the UI rect y (iPad UI kept 16:9 inside a taller screen), game camera untouched"))
+    obs.append((GA.AT_SKILL_BINDING_GET, 6, "b8686953", "private touch-run-v4 PRE-ldr; full800 host ABI"))
+    obs.append((GA.CAMERA_WORLD_TO_SCREEN, 8, "d10143ff", "ui world anchor: camera world->screen entry (camera, point, out); host swaps x0 to a copy whose projection is shifted by the UI rect y (iPad UI kept 16:9 inside a taller screen), game camera untouched"))
 
 
-    obs.append((0x5eb2c0, 10, "a9bc5ff8", "server world-sim entry (game G): while frozen the host swaps x0 to a stand-in whose event queue is empty, so no unit / timer callback runs this tick; the real queue is left untouched"))
-    obs.append((0x4b7230, 11, "d10183ff", "client per-unit tick update entry (unit): while frozen the host swaps x0 to a stand-in unit carrying only the skip flag ([+0x124] bit 23), so the function takes its own early-out to the epilogue; all six call sites are inside the client tick simulation 0x461b80 / 0x461e60"))
-    obs.append((0x4b74d0, 12, "f81e0ff3", "client per-unit per-frame update entry (unit): drives model animation / interpolation from the tick fraction; while frozen the host swaps x0 to a stand-in unit (type 9, no render component) so both the callee 0x2a18d0 and this function take their own early-outs"))
-    obs.append((0x2c3c90, 13, "f81c0ff7", "render per-frame entry, called right after the main loop writes the world frame step [0x20cebb8] and world time [0x3114208]: while frozen the host rewrites the step to 0 and the world time to its value at freeze, the same thing the game's own pause path does at 0x2c1574"))
-    obs.append((0xadc434, 14, "d10143ff", "TextBoxWidget text-changed entry (widget): reads the raw text at +0x88 and rebuilds the display; host rewrites +0x88 for strings our item-notes generator annotated with colour codes (TextBoxWidget draws U+E07E as '*'), exact-match table only, everything else untouched"))
-    obs.append((0x442bc0, 15, "a9ba6ffc", "client event-message entry (x0 = packet; byte 1 = event subtype, jump table 0x1da6752): subtype 0x17 = offline difficulty scale changed -> 0x20f91c chat line + system notification; host rewrites byte 1 past the table (default branch, nothing shown) only for 0x17 and only in a rift game (dm_rift.c); otherwise untouched. orig stp x28, x27, [sp, #-0x60]!"))
-    obs.append((0x634000, 16, "d10143ff", "server level change by level number (game, player, level, kind), used by waypoints / portals / quest moves: in a rift game, when the player leaves a rift map for a level that is neither town nor a rift map, the host swaps w2 to the rift's next map so the destination is replaced inside the single native transition"))
-    obs.append((0x711040, 17, "d101c3ff", "server quest event 'monster killed' entry (game, monster, attacker), the only entry (callers 0x7d8550 kill, 0x7ab8dc); in a rift game, for a monster that died on a rift map, the host swaps x1 to a stand-in whose +0xc0 is null so the function takes its own early return (0x711064): bosses in the rift are combat only, no quest state / quest notifications"))
-    obs.append((0x3d84a0, 18, "d10143ff", "NotificationPanel message handler entry (panel, message): on InputMessage / ControllerActionBegin with action id 9 (the menu key) the native handler re-sends the notice callback and marks the message bus consumed, so the first menu press only dismisses the notice. In touch mode the host swaps x1 to a copy of the message whose action id is not 9: the notice stays until it times out and the menu key opens the menu; controller mode keeps the native behaviour"))
-    obs.append((0x463f40, 19, "f81c0ff7", "client per-frame position-error smoothing entry (s0 = frame length in ticks), called by the main loop right after all units were extrapolated in place and before the per-unit error is added back: the native error is only computed on start / stop (0x4639c0, which runs before the tick loop), so a sharp turn inside a tick snaps the extrapolated position back in one frame; the host adds that frame's jump to the local player's error fields (path +0x2a8 / +0x2ac, same clamp as native) and the native code decays it"))
-    obs.append((0x9da5b0, 20, "d104c3ff", "model yaw component per-frame update entry (x1 = argument block: +8 component, +0x20 -> +8 unit): the body turn speed is instance data on the component (+0x10..+0x2c min / max degrees per second for controller / mouse, +0x34 spring parameter); the host only reads them for the local player when a test switch is set"))
-    obs.append((0x2f7664, 7, "6dbb23e9", "touch target rank: candidate compare entry (closure, unit, kind, s0=score); host raises Boss/elite score, native eligibility unchanged"))
-    obs.append((0xb0d560, 21, "fc1a0fe8", "TooltipsPanel add-tooltip entry (panel, text, target position x2 / x3, style, text2): tooltips are immediate-mode (re-submitted by the hovered widget every frame and cleared after drawing, so the host cannot reach the record at its own time); on touch, in panel state, for an item the player just tapped, the host swaps the target position so the game lays the tooltip out beside the panel instead of over the item grid; everything else passes through unchanged"))
-    obs.append((0xc76f94, 23, "12001d4a", "text colour decoder RGB assembly: host overrides only tagged comparison segments"))
-    obs.append((0x7dd9e0, 9, "d10203ff", "server experience credit to a player (game, player, level, amount), read only: the kill reward 0x7dcb90 reaches it at 0x7dcfac / 0x7dd094 (its frame record at x29, the kill 0x7d82b0's x19 = the dead unit saved at x29 - 8) and by its tail jump 0x7dcf18 (x30 = 0x7d831c, x19 = the dead unit); every other credit (0x7ddc40, 0x7dde80) arrives with another x30. The kill streak takes the amount of the kills it counted"))
-    obs.append((0x7ce800, 22, "d100c3ff", "server place-one-preset-unit entry (game, room, record), only called by the room-activation preset loop 0x7ce930 (8 sites): in a rift game at tier 90+ on a rift map, for a monster record that is not a superunique and not scenery / NPC, the host swaps x2 to a copy whose class is -1 so 0x6910d0 takes its own early return (tbnz w2, #31) and nothing is spawned; the real record is untouched; rift guardian / invader / superunique spawns call 0x7ce630 / 0x69b310 directly and never pass here"))
+    obs.append((GA.SERVER_WORLD_SIM, 10, "a9bc5ff8", "server world-sim entry (game G): while frozen the host swaps x0 to a stand-in whose event queue is empty, so no unit / timer callback runs this tick; the real queue is left untouched"))
+    obs.append((GA.CLIENT_UNIT_TICK, 11, "d10183ff", "client per-unit tick update entry (unit): while frozen the host swaps x0 to a stand-in unit carrying only the skip flag ([+0x124] bit 23), so the function takes its own early-out to the epilogue; all six call sites are inside the client tick simulation GA.CLIENT_TICK_SIM / GA.CLIENT_TICK_SIM2"))
+    obs.append((GA.CLIENT_UNIT_FRAME, 12, "f81e0ff3", "client per-unit per-frame update entry (unit): drives model animation / interpolation from the tick fraction; while frozen the host swaps x0 to a stand-in unit (type 9, no render component) so both the callee GA.UNIT_RENDER_UPDATE and this function take their own early-outs"))
+    obs.append((GA.RENDER_FRAME, 13, "f81c0ff7", "render per-frame entry, called right after the main loop writes the world frame step [GA.WORLD_FRAME_DT] and world time [GA.WORLD_TIME]: while frozen the host rewrites the step to 0 and the world time to its value at freeze, the same thing the game's own pause path does at GA.AT_PAUSE_WORLD_TIME"))
+    obs.append((GA.TEXT_LAYOUT, 14, "d10143ff", "TextBoxWidget text-changed entry (widget): reads the raw text at +0x88 and rebuilds the display; host rewrites +0x88 for strings our item-notes generator annotated with colour codes (TextBoxWidget draws U+E07E as '*'), exact-match table only, everything else untouched"))
+    obs.append((GA.EVENT_MSG_HANDLE, 15, "a9ba6ffc", "client event-message entry (x0 = packet; byte 1 = event subtype, jump table GA.EVENT_MSG_JUMP_TABLE): subtype 0x17 = offline difficulty scale changed -> GA.CHAT_SYSTEM_NOTICE chat line + system notification; host rewrites byte 1 past the table (default branch, nothing shown) only for 0x17 and only in a rift game (dm_rift.c); otherwise untouched. orig stp x28, x27, [sp, #-0x60]!"))
+    obs.append((GA.LEVEL_CHANGE, 16, "d10143ff", "server level change by level number (game, player, level, kind), used by waypoints / portals / quest moves: in a rift game, when the player leaves a rift map for a level that is neither town nor a rift map, the host swaps w2 to the rift's next map so the destination is replaced inside the single native transition"))
+    obs.append((GA.QUEST_MONSTER_KILLED, 17, "d101c3ff", "server quest event 'monster killed' entry (game, monster, attacker), the only entry (callers GA.AT_MON_DEATH_QUEST_CALL kill, GA.AT_ALT_DEATH_QUEST_CALL); in a rift game, for a monster that died on a rift map, the host swaps x1 to a stand-in whose +0xc0 is null so the function takes its own early return (GA.AT_QUEST_KILL_EARLY_RET): bosses in the rift are combat only, no quest state / quest notifications"))
+    obs.append((GA.NOTICE_PANEL_ON_MSG, 18, "d10143ff", "NotificationPanel message handler entry (panel, message): on InputMessage / ControllerActionBegin with action id 9 (the menu key) the native handler re-sends the notice callback and marks the message bus consumed, so the first menu press only dismisses the notice. In touch mode the host swaps x1 to a copy of the message whose action id is not 9: the notice stays until it times out and the menu key opens the menu; controller mode keeps the native behaviour"))
+    obs.append((GA.POS_ERR_SMOOTH, 19, "f81c0ff7", "client per-frame position-error smoothing entry (s0 = frame length in ticks), called by the main loop right after all units were extrapolated in place and before the per-unit error is added back: the native error is only computed on start / stop (GA.POS_ERR_START_STOP, which runs before the tick loop), so a sharp turn inside a tick snaps the extrapolated position back in one frame; the host adds that frame's jump to the local player's error fields (path +0x2a8 / +0x2ac, same clamp as native) and the native code decays it"))
+    obs.append((GA.MODEL_YAW_UPDATE, 20, "d104c3ff", "model yaw component per-frame update entry (x1 = argument block: +8 component, +0x20 -> +8 unit): the body turn speed is instance data on the component (+0x10..+0x2c min / max degrees per second for controller / mouse, +0x34 spring parameter); the host only reads them for the local player when a test switch is set"))
+    obs.append((GA.TARGET_CANDIDATE_CMP, 7, "6dbb23e9", "touch target rank: candidate compare entry (closure, unit, kind, s0=score); host raises Boss/elite score, native eligibility unchanged"))
+    obs.append((GA.TOOLTIP_ADD, 21, "fc1a0fe8", "TooltipsPanel add-tooltip entry (panel, text, target position x2 / x3, style, text2): tooltips are immediate-mode (re-submitted by the hovered widget every frame and cleared after drawing, so the host cannot reach the record at its own time); on touch, in panel state, for an item the player just tapped, the host swaps the target position so the game lays the tooltip out beside the panel instead of over the item grid; everything else passes through unchanged"))
+    obs.append((GA.AT_TEXT_COLOUR_RGB, 23, "12001d4a", "text colour decoder RGB assembly: host overrides only tagged comparison segments"))
+    obs.append((GA.XP_CREDIT_PLAYER, 9, "d10203ff", "server experience credit to a player (game, player, level, amount), read only: the kill reward GA.KILL_REWARD reaches it at GA.AT_KILL_REWARD_XP_CALL1 / GA.AT_KILL_REWARD_XP_CALL2 (its frame record at x29, the kill GA.UNIT_KILL's x19 = the dead unit saved at x29 - 8) and by its tail jump GA.AT_KILL_REWARD_XP_TAIL (x30 = GA.AT_KILL_REWARD_CALL_RET, x19 = the dead unit); every other credit (GA.EXP_ADD, GA.AT_XP_CREDIT_OTHER_CALL) arrives with another x30. The kill streak takes the amount of the kills it counted"))
+    obs.append((GA.PRESET_UNIT_PLACE, 22, "d100c3ff", "server place-one-preset-unit entry (game, room, record), only called by the room-activation preset loop GA.ROOM_PRESETS_PLACE (8 sites): in a rift game at tier 90+ on a rift map, for a monster record that is not a superunique and not scenery / NPC, the host swaps x2 to a copy whose class is -1 so GA.MON_SPAWN takes its own early return (tbnz w2, #31) and nothing is spawned; the real record is untouched; rift guardian / invader / superunique spawns call GA.UNIT_SPAWN / GA.SUPERUNIQUE_SPAWN directly and never pass here"))
 
-    obs.append((0x7dab50, 26, "a9ba6ffc", "attack roll entry (attacker, defender, bonus, defence mode): the units of the roll"))
-    obs.append((0x7db240, 27, "911043ff", "attack roll common return: w0 1 = the roll passed, 0 = failed or an early exit without a roll (the entry tells them apart)"))
-    obs.append((0x7db3e0, 28, "d10183ff", "melee result entry (game, attacker, defender, bonus, flags, range): the units of the attack"))
-    obs.append((0x7db690, 29, "a9457bfd", "melee result common return: w0 outcome flags (bit 0 hit, 0x10 shield block, 0x80 / 0x100 / bit 15 up avoided)"))
-    obs.append((0x7db584, 106, "53017c0a", "melee result after its block and avoidance rolls (also reached from the block roll's success at 0x7db574): w0 raw result, 1 = shield block, other bits avoided (8 = evade, dropped by the conversion that follows)"))
-    obs.append((0x67ae60, 32, "7200101f", "missile impact after the avoidance roll 0x7db6d0: w0 bits 0..4 (1 = block, others avoided), x20 defender, x22 the missile's owner"))
+    obs.append((GA.ATTACK_ROLL, 26, "a9ba6ffc", "attack roll entry (attacker, defender, bonus, defence mode): the units of the roll"))
+    obs.append((GA.AT_ATTACK_ROLL_RET, 27, "911043ff", "attack roll common return: w0 1 = the roll passed, 0 = failed or an early exit without a roll (the entry tells them apart)"))
+    obs.append((GA.MELEE_RESULT, 28, "d10183ff", "melee result entry (game, attacker, defender, bonus, flags, range): the units of the attack"))
+    obs.append((GA.AT_MELEE_RESULT_RET, 29, "a9457bfd", "melee result common return: w0 outcome flags (bit 0 hit, 0x10 shield block, 0x80 / 0x100 / bit 15 up avoided)"))
+    obs.append((GA.AT_MELEE_AVOID_RESULT, 106, "53017c0a", "melee result after its block and avoidance rolls (also reached from the block roll's success at GA.AT_MELEE_BLOCK_HIT): w0 raw result, 1 = shield block, other bits avoided (8 = evade, dropped by the conversion that follows)"))
+    obs.append((GA.AT_MISSILE_AVOID_RESULT, 32, "7200101f", "missile impact after the avoidance roll GA.MISSILE_AVOID_ROLL: w0 bits 0..4 (1 = block, others avoided), x20 defender, x22 the missile's owner"))
 
 
-    obs.append((0x7bcd40, 51, "d10383ff", "server skill dispatcher entry: game, actor, skill, level"))
-    obs.append((0x7bd080, 52, "a94d7bfd", "server skill dispatcher return: w0 result"))
-    obs.append((0x768448, 54, "f9402fe2", "proc callback entry before loading skill from original stack+0x58"))
-    obs.append((0x768450, 55, "39449a68", "proc callback return"))
-    obs.append((0x76865c, 56, "b90053e4", "proc callback entry: game, actor, skill, level"))
-    obs.append((0x768664, 57, "b94053e4", "proc callback return"))
-    obs.append((0x7c0644, 58, "f8687928", "state callback entry: game, actor, skill, level"))
-    obs.append((0x7c064c, 59, "b9012e74", "state callback return"))
-    obs.append((0x7c0654, 60, "a9417bfd", "null-actor tail callback: attribution barrier without an unmatched scope"))
-    obs.append((0x66813c, 61, "aa1303e1", "missile skill callback before copying missile x19 into x1"))
-    obs.append((0x668144, 62, "b9012e75", "missile skill callback return"))
-    obs.append((0x67fa74, 63, "f8697949", "missile skill callback entry: game, missile, skill, level"))
-    obs.append((0x67fa7c, 64, "b9012e74", "missile skill callback return"))
-    obs.append((0x665020, 65, "a9ba6ffc", "missile hit dispatch entry: game, missile"))
-    obs.append((0x6658ec, 66, "910683ff", "missile hit dispatch return"))
-    obs.append((0x67c3a0, 67, "a9bc5ffc", "missile area dispatch entry: game, missile"))
-    obs.append((0x67c478, 68, "911043ff", "missile area dispatch return"))
-    obs.append((0x67f678, 97, "aa1403e0", "abyss target enumeration entry: x20 game, x19 missile"))
-    obs.append((0x67f688, 98, "9105a377", "abyss target enumeration continuation, including null bypass"))
-    obs.append((0x680d1c, 107, "aa1403e0", "missile do dispatch before the do-function call 0x680d24: x20 game, x19 missile"))
-    obs.append((0x680d28, 108, "7100081f", "missile do dispatch after the do-function call returned"))
+    obs.append((GA.SKILL_DISPATCH, 51, "d10383ff", "server skill dispatcher entry: game, actor, skill, level"))
+    obs.append((GA.AT_SKILL_DISPATCH_RET, 52, "a94d7bfd", "server skill dispatcher return: w0 result"))
+    obs.append((GA.AT_PROC_STACK_CB, 54, "f9402fe2", "proc callback entry before loading skill from original stack+0x58"))
+    obs.append((GA.AT_PROC_STACK_CB_RET, 55, "39449a68", "proc callback return"))
+    obs.append((GA.AT_PROC_CB, 56, "b90053e4", "proc callback entry: game, actor, skill, level"))
+    obs.append((GA.AT_PROC_CB_RET, 57, "b94053e4", "proc callback return"))
+    obs.append((GA.AT_STATE_CB, 58, "f8687928", "state callback entry: game, actor, skill, level"))
+    obs.append((GA.AT_STATE_CB_RET, 59, "b9012e74", "state callback return"))
+    obs.append((GA.AT_STATE_CB_NULL_ACTOR, 60, "a9417bfd", "null-actor tail callback: attribution barrier without an unmatched scope"))
+    obs.append((GA.AT_MISSILE_STACK_CB, 61, "aa1303e1", "missile skill callback before copying missile x19 into x1"))
+    obs.append((GA.AT_MISSILE_STACK_CB_RET, 62, "b9012e75", "missile skill callback return"))
+    obs.append((GA.AT_MISSILE_SKILL_CB, 63, "f8697949", "missile skill callback entry: game, missile, skill, level"))
+    obs.append((GA.AT_MISSILE_SKILL_CB_RET, 64, "b9012e74", "missile skill callback return"))
+    obs.append((GA.MISSILE_HIT_DISPATCH, 65, "a9ba6ffc", "missile hit dispatch entry: game, missile"))
+    obs.append((GA.AT_MISSILE_HIT_DISPATCH_RET, 66, "910683ff", "missile hit dispatch return"))
+    obs.append((GA.MISSILE_AREA_DISPATCH, 67, "a9bc5ffc", "missile area dispatch entry: game, missile"))
+    obs.append((GA.AT_MISSILE_AREA_DISPATCH_RET, 68, "911043ff", "missile area dispatch return"))
+    obs.append((GA.AT_ABYSS_TARGETS, 97, "aa1403e0", "abyss target enumeration entry: x20 game, x19 missile"))
+    obs.append((GA.AT_ABYSS_TARGETS_NEXT, 98, "9105a377", "abyss target enumeration continuation, including null bypass"))
+    obs.append((GA.AT_MISSILE_DO_PRE, 107, "aa1403e0", "missile do dispatch before the do-function call GA.AT_MISSILE_DO_CALL: x20 game, x19 missile"))
+    obs.append((GA.AT_MISSILE_DO_RET, 108, "7100081f", "missile do dispatch after the do-function call returned"))
 
-    obs.append((0x68bb38, 39, "2a1f03e3", "monster regeneration life write: x19 game, x20 unit, w2 life"))
+    obs.append((GA.AT_MON_REGEN_LIFE_SET, 39, "2a1f03e3", "monster regeneration life write: x19 game, x20 unit, w2 life"))
 
-    obs.append((0x6476ac, 109, "aa1303e0", "pickup 0x646c10 adding a gold pile to the picker (bl 0x5bc5a0 stat 14 follows): x19 the unit picking up, x20 the pile, w23 the gold added below the limit; reached from 0x64766c / 0x647688 only"))
+    obs.append((GA.AT_PICKUP_GOLD_ADD, 109, "aa1303e0", "pickup GA.ITEM_PICKUP adding a gold pile to the picker (bl GA.STAT_ADD stat 14 follows): x19 the unit picking up, x20 the pile, w23 the gold added below the limit; reached from GA.AT_PICKUP_GOLD_JMP_A / GA.AT_PICKUP_GOLD_JMP_B only"))
 
-    obs.append((0x6f2160, 111, "d101c3ff", "save serializer 0x6f2160 entry (game): every save of the run's players starts here (timed save, the transmute request's save, leaving)"))
-    obs.append((0x7ed8a0, 110, "aa1503e0", "purchase 0x7ec3f0 after handing the shelf's item to the buyer (0x642f70 at 0x7ed898), only on the gamble branch (tbz w27 at 0x7ed89c): x19 the buyer, x24 the item"))
+    obs.append((GA.SAVE_SERIALIZE, 111, "d101c3ff", "save serializer GA.SAVE_SERIALIZE entry (game): every save of the run's players starts here (timed save, the transmute request's save, leaving)"))
+    obs.append((GA.AT_PURCHASE_GAMBLE_GIVEN, 110, "aa1503e0", "purchase GA.SHOP_PURCHASE after handing the shelf's item to the buyer (GA.ITEM_NOTIFY_CLIENT at GA.AT_PURCHASE_GIVE_CALL), only on the gamble branch (tbz w27 at GA.AT_PURCHASE_GAMBLE_TEST): x19 the buyer, x24 the item"))
 for off, oid, ow, why in obs:
     w = struct.unpack_from('<I', IMG, off)[0]
-    assert f'{w:08x}' == ow, f'观测门原指令不符 {off:#x}：{w:08x}'
+    if not expect(f'{w:08x}' == ow, f'观测门原指令不符 {off:#x}：{w:08x}'): continue
 
-    assert off in set(starts) or (oid, off) in {(6, 0x43ecc8), (23, 0xc76f94), (27, 0x7db240), (29, 0x7db690), (32, 0x67ae60), (106, 0x7db584), (52, 0x7bd080), (54, 0x768448), (55, 0x768450), (56, 0x76865c), (57, 0x768664), (58, 0x7c0644), (59, 0x7c064c), (60, 0x7c0654), (61, 0x66813c), (62, 0x668144), (63, 0x67fa74), (64, 0x67fa7c), (66, 0x6658ec), (68, 0x67c478), (97, 0x67f678), (98, 0x67f688), (107, 0x680d1c), (108, 0x680d28), (39, 0x68bb38), (109, 0x6476ac), (110, 0x7ed8a0)} | {(q[1], q[0]) for q in qa_obs}, f'private obs point not approved {off:#x}'
-    assert off < TEXT_END and off not in kinds and not any(lo <= off < hi for wseg in windows for lo, hi in [(wseg[0].address, wseg[-1].address + 4)]), f'观测门与改写点冲突 {off:#x}'
+    if not expect(off in set(starts) or (oid, off) in {(6, GA.AT_SKILL_BINDING_GET), (23, GA.AT_TEXT_COLOUR_RGB), (27, GA.AT_ATTACK_ROLL_RET), (29, GA.AT_MELEE_RESULT_RET), (32, GA.AT_MISSILE_AVOID_RESULT), (106, GA.AT_MELEE_AVOID_RESULT), (52, GA.AT_SKILL_DISPATCH_RET), (54, GA.AT_PROC_STACK_CB), (55, GA.AT_PROC_STACK_CB_RET), (56, GA.AT_PROC_CB), (57, GA.AT_PROC_CB_RET), (58, GA.AT_STATE_CB), (59, GA.AT_STATE_CB_RET), (60, GA.AT_STATE_CB_NULL_ACTOR), (61, GA.AT_MISSILE_STACK_CB), (62, GA.AT_MISSILE_STACK_CB_RET), (63, GA.AT_MISSILE_SKILL_CB), (64, GA.AT_MISSILE_SKILL_CB_RET), (66, GA.AT_MISSILE_HIT_DISPATCH_RET), (68, GA.AT_MISSILE_AREA_DISPATCH_RET), (97, GA.AT_ABYSS_TARGETS), (98, GA.AT_ABYSS_TARGETS_NEXT), (107, GA.AT_MISSILE_DO_PRE), (108, GA.AT_MISSILE_DO_RET), (39, GA.AT_MON_REGEN_LIFE_SET), (109, GA.AT_PICKUP_GOLD_ADD), (110, GA.AT_PURCHASE_GAMBLE_GIVEN)} | {(q[1], q[0]) for q in qa_obs}, f'private obs point not approved {off:#x}'): continue
+    if not expect(off < TEXT_END and off not in kinds and not any(lo <= off < hi for wseg in windows for lo, hi in [(wseg[0].address, wseg[-1].address + 4)]), f'观测门与改写点冲突 {off:#x}'): continue
     put_branch(off, site_obs(off, oid, w)); stat('obs')
 
 
@@ -915,9 +935,10 @@ for off, oid, ow, why in obs:
 
 
 if RULE_RUN and PRIVATE_GATES:
-    off, word, tgt = 0x7cc1e0, 0xd10183ff, 0x634000
-    assert struct.unpack_from('<I', IMG, off)[0] == word and off in set(starts) and tgt in set(starts)
-    assert off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows)
+    off, word, tgt = GA.LEVEL_WARP_TILE, 0xd10183ff, GA.LEVEL_CHANGE
+    expect(struct.unpack_from('<I', IMG, off)[0] == word, f'私有门原指令不符 {off:#x}')
+    expect(off in set(starts) and tgt in set(starts), f'私有门不在函数入口 {off:#x}')
+    expect(off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows), f'私有门与改写点冲突 {off:#x}')
     start = here()
     emit(STP_PRE(8, 31, 31, -16))
     emit(STP_PRE(29, 30, 31, -16))
@@ -929,7 +950,7 @@ if RULE_RUN and PRIVATE_GATES:
     gates.append((ret, 'svc', 0x89, off))
     put_branch(off, start); stat('rift_exit')
     cuts.append((off, struct.pack('<I', word).hex(), struct.pack('<I', B(off, start)).hex(),
-                 'rift exit redirect: tile-link level change entry -> host swaps (level, kind) and x8!=0 takes the branch to level-number change 0x634000; otherwise original ->0x7cc1e4; svc89', '仅宿主'))
+                 'rift exit redirect: tile-link level change entry -> host swaps (level, kind) and x8!=0 takes the branch to level-number change GA.LEVEL_CHANGE; otherwise original ->GA.AT_LEVEL_WARP_TILE_RET; svc89', '仅宿主'))
 
 
 
@@ -947,9 +968,9 @@ if RULE_RUN and PRIVATE_GATES:
 
 
 if RULE_RUN and PRIVATE_GATES:
-    off, word, tgt = 0x6fa9d0, 0x394412aa, 0x6fa9d4
-    assert struct.unpack_from('<I', IMG, off)[0] == word
-    assert off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows)
+    off, word, tgt = GA.AT_SAVE_HDR_DIFFICULTY, 0x394412aa, GA.AT_SAVE_HDR_DIFFICULTY_RET
+    expect(struct.unpack_from('<I', IMG, off)[0] == word, f'私有门原指令不符 {off:#x}')
+    expect(off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows), f'私有门与改写点冲突 {off:#x}')
     start = here()
     emit(STP_PRE(8, 31, 31, -16))
     emit(STP_PRE(29, 30, 31, -16))
@@ -961,7 +982,7 @@ if RULE_RUN and PRIVATE_GATES:
     gates.append((ret, 'svc', 0x8c, off))
     put_branch(off, start); stat('rift_save_act')
     cuts.append((off, struct.pack('<I', word).hex(), struct.pack('<I', B(off, start)).hex(),
-                 'rift save act: save-header writer, right after it loads the current act into w9 -> host swaps w9 to 4 (act V) while the player is in a rift map; x8 stays 0, original insn runs ->0x6fa9d4; svc8c', '仅宿主'))
+                 'rift save act: save-header writer, right after it loads the current act into w9 -> host swaps w9 to 4 (act V) while the player is in a rift map; x8 stays 0, original insn runs ->GA.AT_SAVE_HDR_DIFFICULTY_RET; svc8c', '仅宿主'))
 
 
 
@@ -971,9 +992,9 @@ if RULE_RUN and PRIVATE_GATES:
 
 
 if RULE_RUN and PRIVATE_GATES:
-    off, word, tgt = 0x64a34c, 0x2a1903e9, 0x64a350
-    assert struct.unpack_from('<I', IMG, off)[0] == word
-    assert off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows)
+    off, word, tgt = GA.AT_MERC_PLACE_HELM_TEST, 0x2a1903e9, GA.AT_MERC_PLACE_HELM_TEST_RET
+    expect(struct.unpack_from('<I', IMG, off)[0] == word, f'私有门原指令不符 {off:#x}')
+    expect(off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows), f'私有门与改写点冲突 {off:#x}')
     start = here()
     emit(STP_PRE(8, 31, 31, -16))
     emit(STP_PRE(29, 30, 31, -16))
@@ -985,7 +1006,7 @@ if RULE_RUN and PRIVATE_GATES:
     gates.append((ret, 'svc', 0x8d, off))
     put_branch(off, start); stat('merc_slot')
     cuts.append((off, struct.pack('<I', word).hex(), struct.pack('<I', B(off, start)).hex(),
-                 'merc slots: placement check, monster-owner branch right after the helm type test -> host sets w0=1 for ring/amulet/boots/gloves/belt on a hireling (rift best >= 10 for new equips; always on load); x8 stays 0, original insn runs ->0x64a350; svc8d', '仅宿主'))
+                 'merc slots: placement check, monster-owner branch right after the helm type test -> host sets w0=1 for ring/amulet/boots/gloves/belt on a hireling (rift best >= 10 for new equips; always on load); x8 stays 0, original insn runs ->GA.AT_MERC_PLACE_HELM_TEST_RET; svc8d', '仅宿主'))
 
 
 
@@ -997,9 +1018,9 @@ if RULE_RUN and PRIVATE_GATES:
 
 
 if RULE_RUN and PRIVATE_GATES:
-    off, word, tgt = 0x3beb58, 0xaa1303e0, 0x3beb5c
-    assert struct.unpack_from('<I', IMG, off)[0] == word
-    assert off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows)
+    off, word, tgt = GA.AT_MERC_WEAR_TYPE_ARG, 0xaa1303e0, GA.AT_MERC_WEAR_TYPE_ARG_RET
+    expect(struct.unpack_from('<I', IMG, off)[0] == word, f'私有门原指令不符 {off:#x}')
+    expect(off < TEXT_END and off not in kinds and not any(seg[0].address <= off < seg[-1].address + 4 for seg in windows), f'私有门与改写点冲突 {off:#x}')
     start = here()
     emit(STP_PRE(8, 31, 31, -16))
     emit(STP_PRE(29, 30, 31, -16))
@@ -1011,7 +1032,7 @@ if RULE_RUN and PRIVATE_GATES:
     gates.append((ret, 'svc', 0x8e, off))
     put_branch(off, start); stat('merc_slot_client')
     cuts.append((off, struct.pack('<I', word).hex(), struct.pack('<I', B(off, start)).hex(),
-                 'merc slots (client): hireling can-equip check, between "mov w1,#0x25" and the type test -> host swaps w1 to the item\'s own type for ring/amulet/boots/gloves/belt (rift best >= 10); x8 stays 0, original insn runs ->0x3beb5c; svc8e', '仅宿主'))
+                 'merc slots (client): hireling can-equip check, between "mov w1,#0x25" and the type test -> host swaps w1 to the item\'s own type for ring/amulet/boots/gloves/belt (rift best >= 10); x8 stays 0, original insn runs ->GA.AT_MERC_WEAR_TYPE_ARG_RET; svc8e', '仅宿主'))
 
 
 
@@ -1021,28 +1042,31 @@ if RULE_RUN and PRIVATE_GATES:
 
 
 
-PARAMS = {'db0507f36b84200ac05f75d76ed5026f': [
-    (0xe12d8c, 'd280c813', 0xe12d90, 'f2c07093', 19, 'KRES1', '启动初始化：主机模式输出分辨率 1600x900（{u32 宽, u32 高} 打包）'),
-    (0xe12e1c, 'd280a008', 0xe12e20, 'f2c05a08', 8, 'KRES0', '启动初始化：掌机模式输出分辨率 1280x720'),
-    (0xe10d60, 'd280c818', 0xe10d80, 'f2c07098', 24, 'KRES1', '运行模式变化通知（0x1f）处理：主机模式 1600x900'),
-    (0xe10d5c, 'd280a016', 0xe10d74, 'f2c05a16', 22, 'KRES0', '运行模式变化通知（0x1f）处理：掌机模式 1280x720'),
+PARAMS = [
+    (GA.AT_RES_INIT_DOCKED_LO, 'd280c813', GA.AT_RES_INIT_DOCKED_HI, 'f2c07093', 19, 'KRES1', '启动初始化：主机模式输出分辨率 1600x900（{u32 宽, u32 高} 打包）'),
+    (GA.AT_RES_INIT_HANDHELD_LO, 'd280a008', GA.AT_RES_INIT_HANDHELD_HI, 'f2c05a08', 8, 'KRES0', '启动初始化：掌机模式输出分辨率 1280x720'),
+    (GA.AT_OPMODE_DOCKED_RES_LO, 'd280c818', GA.AT_OPMODE_DOCKED_RES_HI, 'f2c07098', 24, 'KRES1', '运行模式变化通知（0x1f）处理：主机模式 1600x900'),
+    (GA.AT_OPMODE_HANDHELD_RES_LO, 'd280a016', GA.AT_OPMODE_HANDHELD_RES_HI, 'f2c05a16', 22, 'KRES0', '运行模式变化通知（0x1f）处理：掌机模式 1280x720'),
 
 
 
 
-    (0x1663ee8, '52838e49', 0x1663eec, '72a800e9', 9, 'KASPECTUI', '界面常量缓冲 0x15 号槽 [屏宽, 屏高, 宽高比上限]：界面精灵着色器按它在上限以外画两侧黑柱（带约 20–30 像素向内的柔边，宿主另加余量把柔边推出屏幕）'),
-    (0xb152bc, '52838e48', 0xb152c0, '72a800e8', 8, 'KASPECT', '新画面模式视口：边距 = (屏宽 − 屏高 × 上限) / 2，经 0x85bc90 设居中视口'),
-    (0x23e888, '52838e48', 0x23e88c, '72a800e8', 8, 'KASPECT', '新画面模式坐标钳制（0x23e760）：x 夹进 [边距, 边距 + 屏高 × 上限]，宽屏两侧的指针 / 触摸不再被夹回中间'),
-]}
-params = PARAMS.get(BUILD_ID, [])
+    (GA.AT_UI_ASPECT_CAP_LO, '52838e49', GA.AT_UI_ASPECT_CAP_HI, '72a800e9', 9, 'KASPECTUI', '界面常量缓冲 0x15 号槽 [屏宽, 屏高, 宽高比上限]：界面精灵着色器按它在上限以外画两侧黑柱（带约 20–30 像素向内的柔边，宿主另加余量把柔边推出屏幕）'),
+    (GA.AT_VIEWPORT_ASPECT_LO, '52838e48', GA.AT_VIEWPORT_ASPECT_HI, '72a800e8', 8, 'KASPECT', '新画面模式视口：边距 = (屏宽 − 屏高 × 上限) / 2，经 GA.VIEWPORT_SET 设居中视口'),
+    (GA.AT_POINTER_CLAMP_ASPECT_LO, '52838e48', GA.AT_POINTER_CLAMP_ASPECT_HI, '72a800e8', 8, 'KASPECT', '新画面模式坐标钳制（GA.POINTER_CLAMP）：x 夹进 [边距, 边距 + 屏高 × 上限]，宽屏两侧的指针 / 触摸不再被夹回中间'),
+]
+params = list(PARAMS) if BUILD_ID == RULE_BUILD else []
 for oa, wa, ob_, wb, r, key, why in params:
+    ok = True
     for o, w0 in ((oa, wa), (ob_, wb)):
         w = struct.unpack_from('<I', IMG, o)[0]
-        assert f'{w:08x}' == w0, f'参数位原指令不符 {o:#x}：{w:08x}'
-        assert o not in kinds and not any(lo <= o < hi for wseg in windows for lo, hi in [(wseg[0].address, wseg[-1].address + 4)]), f'参数位与改写点冲突 {o:#x}'
+        ok = expect(f'{w:08x}' == w0, f'参数位原指令不符 {o:#x}：{w:08x}') and ok
+        ok = expect(o not in kinds and not any(lo <= o < hi for wseg in windows for lo, hi in [(wseg[0].address, wseg[-1].address + 4)]), f'参数位与改写点冲突 {o:#x}') and ok
+    if not ok: continue
     for o in range(oa + 4, ob_, 4):
         ins = dis(struct.unpack_from('<I', IMG, o)[0], o)
-        assert r not in regs_in(ins), f'参数位中间用到 x{r}：{o:#x} {ins.mnemonic} {ins.op_str}'
+        ok = expect(r not in regs_in(ins), f'参数位中间用到 x{r}：{o:#x} {ins.mnemonic} {ins.op_str}') and ok
+    if not ok: continue
     start = here()
     tmp = 16 if r != 16 else 17
     emit(STR_PRE(tmp, 31, -16) if NOREDZONE else STUR(tmp, 31, -16)); emit_tp(r); emit_slot_addr(r, tmp, key); emit(LDRX(r, r)); emit(LDR_POST(tmp, 31, 16) if NOREDZONE else LDUR(tmp, 31, -16)); emit(B(here(), oa + 4))
@@ -1055,7 +1079,7 @@ for oa, wa, ob_, wb, r, key, why in params:
 rule_blocks = []
 if RULE_RUN:
     def run_branch(off, old, body, why):
-        assert struct.unpack_from('<I', IMG, off)[0] == old, f'Run跳板原字不符 {off:#x}'
+        expect(struct.unpack_from('<I', IMG, off)[0] == old, f'Run跳板原字不符 {off:#x}')
         start = here()
         for word in body(start): emit(word)
         new = B(off, start)
@@ -1065,39 +1089,46 @@ if RULE_RUN:
     def cbz(at, target, r, nonzero=False):
         delta = target-at; assert delta%4==0 and -(1<<20)<=delta<(1<<20)
         return (0x35000000 if nonzero else 0x34000000) | (((delta>>2)&0x7ffff)<<5) | r
-    run_branch(0x6c6648, 0x34000060, lambda a: [
-        0xb9400268, cbz(a+4,a+12,8,True), B(a+8,0x6c664c),
-        cbz(a+12,a+20,0), B(a+16,0x6c664c), B(a+20,0x6c6654)],
+    run_branch(GA.AT_MOVE_SELECT_STAMINA, ins_cbz(GA.AT_MOVE_SELECT_STAMINA, GA.AT_MOVE_SELECT_NO_STAMINA, 0), lambda a: [
+        0xb9400268, cbz(a+4,a+12,8,True), B(a+8,GA.AT_MOVE_SELECT_RUN),
+        cbz(a+12,a+20,0), B(a+16,GA.AT_MOVE_SELECT_RUN), B(a+20,GA.AT_MOVE_SELECT_NO_STAMINA)],
         'touch-run-v4：Run选择仅player0忽略精力门，非player按原stat返回；w8后继覆盖')
-    run_branch(0x6c6290, 0x710006df, lambda a: [
-        0xb9400268, cbz(a+4,a+12,8,True), B(a+8,0x6c62ec), 0x710006df, B(a+16,0x6c6294)],
+    run_branch(GA.AT_RUN_STAMINA_COST, 0x710006df, lambda a: [
+        0xb9400268, cbz(a+4,a+12,8,True), B(a+8,GA.AT_RUN_STAMINA_COST_END), 0x710006df, B(a+16,GA.AT_RUN_STAMINA_COST_NEXT)],
         'touch-run-v4：原合法Run成本段仅player0跳stat10扣除/耗尽降走；非player保持原cmp')
 
 
 
 
-    run_branch(0x4ac368, 0x35000460, lambda a: [
-        0xb9400268, cbz(a+4,a+12,8), B(a+8,a+16), B(a+12,0x4ac3f4),
-        cbz(a+16,a+24,0), B(a+20,0x4ac3f4), B(a+24,0x4ac36c)],
+    run_branch(GA.AT_CL_RUN_STAMINA_CHECK, ins_cbz(GA.AT_CL_RUN_STAMINA_CHECK, GA.AT_CL_RUN_STAMINA_OK, 0, nonzero=True), lambda a: [
+        0xb9400268, cbz(a+4,a+12,8), B(a+8,a+16), B(a+12,GA.AT_CL_RUN_STAMINA_OK),
+        cbz(a+16,a+24,0), B(a+20,GA.AT_CL_RUN_STAMINA_OK), B(a+24,GA.AT_CL_RUN_STAMINA_STOP)],
         'touch-run-v4：client当前受控Run3仅player0跳STA零值自动Stop；原getter值与真实松杆保留，非player保原门')
 
 
 
 
-    run_branch(0x6c6580, 0x51000849, lambda a: [
+    run_branch(GA.AT_MOVE_SELECT_REQ, 0x51000849, lambda a: [
         cbz(a,a+16,8,True), 0x51000849, cbz(a+8,a+16,9,True),
-        0x52800062, 0x51000849, B(a+20,0x6c6584)],
+        0x52800062, 0x51000849, B(a+20,GA.AT_MOVE_SELECT_REQ_NEXT)],
         'touch-run-v4：原通用合法移动仅player0请求Walk2规范为Run3，非player与其它请求保原，w8/原资格不改')
 
+if CHECK:
+    for m in mismatches: print(m)
+    print(f'{NAME}: rule check, {len(mismatches)} mismatches (cuts {len(cuts)}, obs {len(obs)}, params {len(params)})')
+    sys.exit(1 if mismatches else 0)
 os.makedirs(outdir, exist_ok=True)
 P = lambda ext: os.path.join(outdir, f'{NAME}.{ext}')
 open(P('patched.bin'), 'wb').write(IMG + bytearray(PATCH_OFF - len(IMG)) + patch)
 import hashlib
 with open(os.path.join(outdir, 'build_src.sha256'), 'w') as f:
+    import game_addrs
     f.write(hashlib.sha256(open(os.path.abspath(__file__), 'rb').read()).hexdigest() + '  patch_nso.py\n')
+    f.write(hashlib.sha256(open(game_addrs.DEF, 'rb').read()).hexdigest() + '  game_addrs.def\n')
 if PRIVATE_AIM:
     with open(P('aim.tsv'), 'w') as f:
-        f.write('# RULESET\tskill-aim-v1-private\n# ORIGINAL_CALL\t0x2faf04\t97fee7fd\n# ORIGINAL_CALLEE\t0x2b4ef8\n# SKILL_CALLER\t0x2b5b80\n# SVC\t0x86\n# INPUT\tactual GetNpad sampled right; move axis unchanged\n')
+        f.write(f'# RULESET\tskill-aim-v1-private\n# ORIGINAL_CALL\t{GA.AT_SKILL_AIM_DIR_CALL:#x}\t{ins_bl(GA.AT_SKILL_AIM_DIR_CALL, GA.SKILL_GROUND_DIR):08x}\n'
+                f'# ORIGINAL_CALLEE\t{GA.SKILL_GROUND_DIR:#x}\n# SKILL_CALLER\t{GA.AT_SKILL_AIM_PRESS_RET:#x}\n# SVC\t0x86\n# INPUT\tactual GetNpad sampled right; move axis unchanged\n')
         f.write('# IMAGE_SHA256\t'+hashlib.sha256(open(P('patched.bin'),'rb').read()).hexdigest()+'\n')
 if RULE_RUN:
     with open(P('rules.tsv'), 'w') as f:

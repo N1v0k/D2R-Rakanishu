@@ -10,8 +10,8 @@ The game's server-side logic advances in "ticks" (each tick processes all units 
 
 ## Capture point and base address
 
-- **Capture point**: the server tick entry `main + 0x5d3bc0`, taken before the first instruction of the entry executes (the tick number has not yet been incremented).
-- **Base address G** = `x0` at entry. G is the game object, embedded in a game hash-table node: G = node + 0x10 (node = the result of looking up the ID from the slot array `main + 0x2d665d8` in the hash table `*(main + 0x2d685e0)`).
+- **Capture point**: the server tick entry `main + GA_SERVER_TICK`, taken before the first instruction of the entry executes (the tick number has not yet been incremented).
+- **Base address G** = `x0` at entry. G is the game object, embedded in a game hash-table node: G = node + 0x10 (node = the result of looking up the ID from the slot array `main + GA_GAME_SLOTS` in the hash table `*(main + 0x2d685e0)`).
   **All offsets in this document are relative to G**: the `+0x1b8` that the game-creation function `0x5d0bd0` writes relative to the node is `G + 0x1a8` here.
 - **Tick number** = `u32 [G+0x170]` (read at entry, equal to the value before this tick begins).
 - Each tick number is taken only once (the emulator reports the same breakpoint hit repeatedly; deduplicate by tick number); tick numbers must be consecutive one by one, and a gap is reported red.
@@ -67,7 +67,7 @@ FNV-1a 64, offset basis `0xcbf29ce484222325`, multiplier `0x100000001b3`, byte b
 
 For the two sides to be identical tick by tick, the inputs must be identical:
 
-- **Game-creation seed**: the game-creation function `0x5d0bd0` reads `u32 [main + 0x20a0074]`; when it is ≠ `0xffffffff` the seed = {that value, 666}, otherwise it is taken from the system clock. Both sides must write the same value before game creation: on the ground-truth side the driver script's `--game-seed N`, host `DM_GAME_SEED=N`.
+- **Game-creation seed**: the game-creation function `0x5d0bd0` reads `u32 [main + GA_GAME_SEED_FIXED]`; when it is ≠ `0xffffffff` the seed = {that value, 666}, otherwise it is taken from the system clock. Both sides must write the same value before game creation: on the ground-truth side the driver script's `--game-seed N`, host `DM_GAME_SEED=N`.
 - **Game-creation time**: the system time is read once at game creation. On the ground-truth side the driver script's `--fix-time <seconds>`, host `DM_FIXED_TIME=<seconds>`; give the same value.
 - **Save**: both sides each start from a fresh copy of the same standard save (`$DM_ROOT/data/switch/save_ref_warlock`); the save content fingerprint is computed with `dm/verify/savesha.sh` and noted down before the run.
 - **Input**: the input the client sends to the server always follows the command packet sequence recorded from the ground truth (see [command_packet_format.md](command_packet_format.md)). Both command packets and **system-class messages** (`0x6d` heartbeat, `0x6f` progress, etc.) must have their original bytes injected at their original tick numbers, and messages of the same kind produced by the host itself are discarded (the `0x67` join at game entry is let through as usual). The tick number at which a system-class message arrives depends on how fast the client is; among them `0x6f` determines when the server inserts a sync, so it is timing-dependent input; without injecting it the per-tick state will not match.

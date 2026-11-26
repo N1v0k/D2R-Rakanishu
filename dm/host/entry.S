@@ -144,7 +144,7 @@ _dm_thread_enter:
     brk #0
 
 // 4) dm_shrine_apply_body(arg, entry): replays the two shrine instructions displaced
-//    from main+0x7b8280 (see dm_shrine.c) and tail-calls entry to run the rest of the
+//    from main+GA_STATE_APPLY_TIMED (see dm_shrine.c) and tail-calls entry to run the rest of the
 //    original body; the body balances sp and lr itself and returns through x0 to the
 //    host gate that called it. Assembly ships unstripped, so keep these comments neutral.
     .globl _dm_shrine_apply_body
@@ -154,8 +154,8 @@ _dm_shrine_apply_body:
     str d8, [sp, #0xe0]
     br x1
 
-// 5) dm_look_model_body / dm_look_icon_body / dm_look_colour_body: replay the two instructions displaced from main+0xa14dc4,
-//    main+0x45b460 and main+0x576f70 (see dm_looks.c) and branch to x16, the rest of the original body; it returns through x30 to the gate that called it.
+// 5) dm_look_model_body / dm_look_icon_body / dm_look_colour_body: replay the two instructions displaced from main+GA_UNIT_MODEL_PATH,
+//    main+GA_ITEM_ICON and main+GA_ITEM_COLOUR (see dm_looks.c) and branch to x16, the rest of the original body; it returns through x30 to the gate that called it.
     .globl _dm_look_model_body
     .p2align 2
 _dm_look_model_body:
@@ -177,7 +177,7 @@ _dm_look_colour_body:
     stp x28, x27, [sp, #0x10]
     br x16
 
-// 6) dm_unsocket_body(game, player, request, mode): replays the two instructions displaced from main+0x6e8740 (see dm_unsocket.c)
+// 6) dm_unsocket_body(game, player, request, mode): replays the two instructions displaced from main+GA_CUBE_TRANSMUTE (see dm_unsocket.c)
 //    and branches to x16, the rest of the original body; it returns through x30 to the gate that called it.
     .globl _dm_unsocket_body
     .p2align 2

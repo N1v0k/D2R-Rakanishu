@@ -10,6 +10,7 @@
 
 
 #include "../dm_cursor.c"
+#include "../game_addrs.h"
 module_t g_mod[MAX_MOD]; int g_nmod;
 static int busy; static uint64_t frame = 100;
 uint64_t dm_guest_frame(void) { return frame; }
@@ -33,12 +34,12 @@ static void swap_top(void) { root_kids[1] = root_kids[1] == P(&other) ? P(&other
 static int frames_reloading(int max) { int n = 0; while (n < max && dm_ui_reloading()) { n++; next_frame(); } return n; }
 
 int main(void) {
-    unsigned char *base = calloc(1, 0x2f05460); if (!base) return 2;
+    unsigned char *base = calloc(1, GA_UI_ROOT + 8); if (!base) return 2;
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = base;
-    *(int32_t *)(base + 0x211da38) = 1920; *(int32_t *)(base + 0x211da3c) = 1080;
+    *(int32_t *)(base + GA_UI_WIDTH) = 1920; *(int32_t *)(base + GA_UI_HEIGHT) = 1080;
     make(&root, "Root"); make(&settings, "SettingsPanel"); make(&other, "SaveIndicatorPanel"); make(&other2, "SaveIndicatorPanel");
     root_kids[0] = P(&settings); root_kids[1] = P(&other); *(uint64_t *)(root.b + 0x58) = P(root_kids); *(uint64_t *)(root.b + 0x60) = 2;
-    *(uint64_t *)(base + 0x2f05458) = P(&root);
+    *(uint64_t *)(base + GA_UI_ROOT) = P(&root);
     next_frame(); next_frame();
     CHECK(!dm_ui_reloading(), "开始时不在重载");
 

@@ -37,6 +37,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include <math.h>
 #include <stdint.h>
@@ -51,11 +52,11 @@
 static uint8_t *g_b; static int g_log, g_dry, g_trace; static float g_yaw_min; static int g_yaw_trace, g_yaw_stat, g_yaw_native; static struct { unsigned off; float v; } g_set[8]; static int g_nset;
 static struct { uint64_t path; int ok, moving; int32_t x, y, dx, dy; float tau; double per_tick; } g_p;
 
-static uint64_t local_player(void) { return ((uint64_t (*)(uint32_t))(g_b + 0x45f9d0))(*(uint32_t *)(uintptr_t)(g_b + 0x2d20e4c)); }
+static uint64_t local_player(void) { return ((uint64_t (*)(uint32_t))(g_b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(uintptr_t)(g_b + GA_LOCAL_PLAYER_SLOT)); }
 
 static void ts_obs(const uint64_t *regs) {
     float frame = *(const float *)(const void *)&regs[32];
-    uint64_t G = *(uint64_t *)(uintptr_t)(g_b + 0x2d20b80); float tau = G ? (float)(*(uint32_t *)(uintptr_t)(G + 8) - *(uint32_t *)(uintptr_t)(G + 0xc)) / 40.0f : 0;
+    uint64_t G = *(uint64_t *)(uintptr_t)(g_b + GA_GAME_INFO); float tau = G ? (float)(*(uint32_t *)(uintptr_t)(G + 8) - *(uint32_t *)(uintptr_t)(G + 0xc)) / 40.0f : 0;
     uint64_t pl = local_player(), pp = pl ? *(uint64_t *)(uintptr_t)(pl + 0x38) : 0;
     if (!G || !pp || !*(uint8_t *)(uintptr_t)(pp + 0x260)) { g_p.ok = 0; return; }
     int32_t x = *(int32_t *)(uintptr_t)pp, y = *(int32_t *)(uintptr_t)(pp + 4), dx, dy; memcpy(&dx, (void *)(uintptr_t)(pp + 0x8e), 4); memcpy(&dy, (void *)(uintptr_t)(pp + 0x92), 4);

@@ -16,6 +16,7 @@
 
 
 #include <stdint.h>
+#include "game_addrs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,8 +31,8 @@ int dm_padmode_current(void);
 #include "dm_looks.h"
 
 enum {
-    UI_ROOT = 0x2f05458, NPC_ID = 0x2d5ebfc, NPC_TABLE = 0x2d607a0, FN_UNIT = 0x45f5f0, FN_TAB_SELECT = 0xad9b80, TAB_SEL = 0xdc4, TAB_AVAIL = 0xe88,
-    CL_PLAYER_ID = 0x2d20e4c, FN_CL_UNIT = 0x45f9d0, FN_STAT = 0x5b9290, FN_IMAGE = 0xac1704, FN_TEXT_SET = 0x136e5c, FN_TEXT_LAYOUT = 0xadc434,
+    UI_ROOT = GA_UI_ROOT, NPC_ID = GA_NPC_ID, NPC_TABLE = GA_CLIENT_MONSTER_TABLE, FN_UNIT = GA_UNIT_FIND, FN_TAB_SELECT = GA_TAB_SELECT, TAB_SEL = 0xdc4, TAB_AVAIL = 0xe88,
+    CL_PLAYER_ID = GA_LOCAL_PLAYER_SLOT, FN_CL_UNIT = GA_CLIENT_PLAYER_GET, FN_STAT = GA_STAT_GET, FN_IMAGE = GA_IMAGE_SET_PATH, FN_TEXT_SET = GA_TEXT_SET, FN_TEXT_LAYOUT = GA_TEXT_LAYOUT,
     LOOKS_TAB = 4, CHARSI = 154, CELL = 98, GX = 162, GY = 159, TILES = DM_LOOKS_TILES, MAXLOOKS = 256, OFF = 99999, DYE_TILES = 18, DYE_ROW = DM_LOOKS_DYE_ROW,
     SW_X = 12, SW_Y = 72,
     PADLEG_X = -50, PADLEG_END = 610, PADLEG_Y = 1508, PADLEG_KEY = 66, PADLEG_GAP = 26,
@@ -310,7 +311,7 @@ static int looks_slot(uint32_t id) {
 static struct { int ok, x0, y0; float px; } g_cal;
 static int calibrate(uint8_t *b, uint64_t back) {
     static unsigned tries; if (g_cal.ok || tries++ % 30) return g_cal.ok;
-    int W = *(int32_t *)(b + 0x211da38), H = *(int32_t *)(b + 0x211da3c);
+    int W = *(int32_t *)(b + GA_UI_WIDTH), H = *(int32_t *)(b + GA_UI_HEIGHT);
     for (int y = H / 4; !g_cal.ok && y < H * 3 / 4; y += 16) for (int x = 0; x < W; x += 16) if (lu_hit(back, x, y)) {
         int x0 = x - lu_reach(back, x, y, -1, 0), x1 = x + lu_reach(back, x, y, 1, 0), y0 = y - lu_reach(back, x, y, 0, -1);
         if (x1 > x0) { g_cal.ok = 1; g_cal.x0 = x0; g_cal.y0 = y0; g_cal.px = (float)(x1 - x0) / (10 * CELL); LOG("looks: controller grid at %d,%d, %d wide", x0, y0, x1 - x0); }
@@ -331,7 +332,7 @@ static int focus_point(uint8_t *b, uint64_t vp, uint64_t back, int *fx, int *fy)
             LOG("looks: controller focus %s cell %d,%d", *(const char **)(f + 8) ? *(const char **)(f + 8) : "?", c, r); }
         if (c >= 0 && c < 10 && r >= 0 && r < 10) { *fx = GX + c * CELL + CELL / 2; *fy = GY + r * CELL + CELL / 2; return 1; }
     }
-    int cx = *(int32_t *)(b + 0x2d128f8), cy = *(int32_t *)(b + 0x2d128fc);
+    int cx = *(int32_t *)(b + GA_PAD_CURSOR_X), cy = *(int32_t *)(b + GA_PAD_CURSOR_Y);
     if (!lu_hit(back, cx, cy)) return 0;
     *fx = GX + (int)((cx - g_cal.x0) / g_cal.px); *fy = GY + (int)((cy - g_cal.y0) / g_cal.px);
     return 1;
@@ -494,7 +495,7 @@ static void test_pump(uint8_t *b, uint64_t root, uint64_t tabs) {
         const char *d = getenv("DM_TEST_LOOKS_DYE"); if (d) { dye = atoi(d); dye_apply = strstr(d, ":apply") != NULL; } }
     if (shop && !done_menu) {
         uint64_t pn = dm_ui_top(root, "NpcDialogPanel"), ls = pn && *(uint8_t *)(pn + 0x50) ? *(uint64_t *)(pn + 0x248) : 0;
-        if (ls && *(uint64_t *)ls == (uint64_t)(uintptr_t)b + 0x20b8df0) {
+        if (ls && *(uint64_t *)ls == (uint64_t)(uintptr_t)b + GA_VT_LIST) {
             uint64_t ct = *(uint64_t *)(ls + 0xd0); uint64_t n = ct ? *(uint64_t *)(ct + 0x60) : 0;
             if (n >= 2) { *(int32_t *)(ls + 0x140) = 1; dm_ui_key_pulse(DM_BTN_A, 6); done_menu = 1; LOG("[looks] test: NPC %d menu row 1 of %llu", npc_class(b), (unsigned long long)n); }
         }

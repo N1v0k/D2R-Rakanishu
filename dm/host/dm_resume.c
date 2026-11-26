@@ -11,6 +11,7 @@
 
 
 #include "dm_resume_core.h"
+#include "game_addrs.h"
 #include "dm_custom.h"
 #include "dm_hud.h"
 #include "dm_rift.h"
@@ -113,7 +114,7 @@ static int nearest_wp(uint8_t *b, uint64_t G, const dm_resume_pos *p, const char
     uint8_t wps[DM_RESUME_WP_BYTES];
     if (!dm_resume_save_wps(dir, p->who, p->difficulty, wps)) { LOG("ASSUME resume.waypoints: the character file of %s has no readable waypoint section, stays in town", p->who); return 0; }
     int ver = *(volatile uint8_t *)(uintptr_t)(G + 0x106);
-    uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(uintptr_t)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0;
+    uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(uintptr_t)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0;
     uint64_t levels = t ? dm_unit_rd64(t + 0x1480) : 0, defs = t ? dm_unit_rd64(t + 0x14c0) : 0;
     int64_t nl = t ? (int64_t)dm_unit_rd64(t + 0x1488) : 0, nd = t ? (int64_t)dm_unit_rd64(t + 0x14c8) : 0, n = nl < nd ? nl : nd;
     if (!levels || !defs || n <= p->level || n > 1024) { LOG("ASSUME resume.level_tables: no level tables (version %d, %lld levels, %lld definitions), stays in town", ver, (long long)nl, (long long)nd); return 0; }
@@ -134,7 +135,7 @@ static int nearest_wp(uint8_t *b, uint64_t G, const dm_resume_pos *p, const char
 
 void dm_resume_client_pump(uint8_t *b) {
     if (!b || !atomic_load(&g_want_client)) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c));
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT));
     atomic_store(&g_client_level, pl ? dm_unit_level(pl) : -1);
 }
 

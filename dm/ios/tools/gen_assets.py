@@ -19,6 +19,7 @@
 
 import hashlib, os, shutil, subprocess, sys, time
 import gen_paths
+GAME_VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../PRODUCT'), encoding='utf-8').readline().split('-')[0]
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 HERE = os.path.dirname(os.path.abspath(__file__))
 STEPS = [('加宽储藏箱', ['gen_widestash_art.py', '{R}']), ('编年史盖板', ['gen_vault_cover.py']), ('百宝囊框', ['gen_pouch_art.py', '{R}']),
@@ -100,10 +101,10 @@ def run_steps(R, overlay_only=False):
 
 
 def main():
-    R = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('DM_ROMFS_SRC') or os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/RomFS')
+    R = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('DM_ROMFS_SRC') or os.path.join(DM_ROOT, 'data/switch', GAME_VERSION, 'Update/RomFS')
     if not os.path.isfile(os.path.join(R, 'data', 'build_manifest.psv')):
-        sys.exit('🔴 没找到游戏文件：%s/data/build_manifest.psv。把 Switch 版 3.3.94012 的 Update/RomFS 放到这里，或用环境变量 DM_ROMFS_SRC 指过去'
-                 '（见 dm/README.md「从你的游戏文件生成资源」）' % R)
+        sys.exit('🔴 没找到游戏文件：%s/data/build_manifest.psv。把 Switch 版 %s 的 Update/RomFS 放到这里，或用环境变量 DM_ROMFS_SRC 指过去'
+                 '（见 dm/README.md「从你的游戏文件生成资源」）' % (R, GAME_VERSION))
     if not ensure(R): print('原版衍生资源：输入没变，沿用 %s' % gen_paths.gen_dir())
 
 

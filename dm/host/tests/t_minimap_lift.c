@@ -2,6 +2,7 @@
 
 
 #include "../dm_cursor.c"
+#include "../game_addrs.h"
 module_t g_mod[MAX_MOD]; int g_nmod;
 static int busy, ingame=1, uy=314; static uint64_t frame=100;
 uint64_t dm_guest_frame(void) { return frame; }
@@ -25,9 +26,9 @@ static void widget(void *v,const char *name,int y0) {
 }
 static void tick(void) { frame+=6; ui_lift_pump(ptr(root),frame); }
 int main(void) {
- unsigned char *base=calloc(1,0x2f05460); if(!base)return 2;
+ unsigned char *base=calloc(1, GA_UI_ROOT + 8); if(!base)return 2;
  g_nmod=1; strcpy(g_mod[0].name,"main"); g_mod[0].base=base;
- *(uint64_t *)(base+0x2f05458)=ptr(root); *(uint64_t *)(root+0x58)=ptr(children); *(uint64_t *)(root+0x60)=1;
+ *(uint64_t *)(base+GA_UI_ROOT)=ptr(root); *(uint64_t *)(root+0x58)=ptr(children); *(uint64_t *)(root+0x60)=1;
  widget(maps[0],"AutoMap",78); children[0]=ptr(maps[0]); tick(); CHECK(*y(maps[0])==-433);
 
 

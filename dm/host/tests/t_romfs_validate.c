@@ -30,10 +30,10 @@ int main(void) {
         snprintf(cmd, sizeof cmd, "rm '%s/04-00000002.data' && head -c 1000000 '%s/data/04-00000002.data' > '%s/04-00000002.data'", r2, src, r2); if (system(cmd)) return 1;
         if (!check(!dm_romfs_validate(r2, why, sizeof why) && strstr(why, "还没拷完"), "拷到一半的档案被拒")) { fprintf(stderr, "%s\n", why); return 1; }
         int bad = dm_romfs_report(r2, rep, sizeof rep);
-        if (!check(bad == 1 && strstr(rep, "已有 17 / 18") && strstr(rep, "没拷完：04-00000002.data（1 MB / 9 MB）"), "完整清单：没拷完的单列，带现有 / 应有（1000000 字节 = 1 MB、8915855 字节 = 9 MB，按 1048576 折算取整）")) { fprintf(stderr, "%s\n", rep); return 1; }
-        snprintf(cmd, sizeof cmd, "printf 'size 8915855\\n1000000 7915855\\n' > '%s/04-00000002.data.holes'", r2); if (system(cmd)) return 1;
+        if (!check(bad == 1 && strstr(rep, "已有 17 / 18") && strstr(rep, "没拷完：04-00000002.data（1 MB / 9 MB）"), "完整清单：没拷完的单列，带现有 / 应有（1000000 字节 = 1 MB、8915612 字节 = 9 MB，按 1048576 折算取整）")) { fprintf(stderr, "%s\n", rep); return 1; }
+        snprintf(cmd, sizeof cmd, "printf 'size 8915612\\n1000000 7915612\\n' > '%s/04-00000002.data.holes'", r2); if (system(cmd)) return 1;
         if (!check(dm_romfs_validate(r2, why, sizeof why), "剔零档案（前 1000000 字节 + 区段表）合格")) { fprintf(stderr, "%s\n", why); return 1; }
-        snprintf(cmd, sizeof cmd, "printf 'size 8915855\\n1000000 100\\n' > '%s/04-00000002.data.holes'", r2); if (system(cmd)) return 1;
+        snprintf(cmd, sizeof cmd, "printf 'size 8915612\\n1000000 100\\n' > '%s/04-00000002.data.holes'", r2); if (system(cmd)) return 1;
         if (!check(!dm_romfs_validate(r2, why, sizeof why) && strstr(why, "还没拷完"), "区段表与实际长度对不上被拒")) { fprintf(stderr, "%s\n", why); return 1; }
         snprintf(cmd, sizeof cmd, "rm -rf '%s'", r2); system(cmd);
     }

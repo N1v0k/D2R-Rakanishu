@@ -31,6 +31,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "dm_custom.h"
 #include <dirent.h>
 #include <stdatomic.h>
@@ -84,10 +85,10 @@ static const char *want(int bow, int *why_diff) {
 uint64_t dm_guest_frame(void);
 void dm_lootfilter_pump(uint8_t *b, uint64_t pl) {
     static uint64_t next; uint64_t fr = dm_guest_frame(); if (!pl || fr < next) return; next = fr + 30;
-    uint64_t F = (uint64_t)(uintptr_t)(b + 0x2d58520); if (!*(uint64_t *)(F + 0x10)) return;
+    uint64_t F = (uint64_t)(uintptr_t)(b + GA_LOOT_FILTER); if (!*(uint64_t *)(F + 0x10)) return;
     uint64_t inv = *(uint64_t *)(pl + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; int bow = 0;
     for (int k = 0; it && k < 512 && !bow; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
-        if (*(uint32_t *)(it + 0xc) == 1 && ((int (*)(uint64_t, int))(b + 0x574bc0))(it, T_MISSILE)) bow = 1;
+        if (*(uint32_t *)(it + 0xc) == 1 && ((int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE))(it, T_MISSILE)) bow = 1;
         it = *(uint64_t *)(d + 0xb0); }
     if (getenv("DM_TEST_LOOT_BOW")) bow = 1;
     int diff = -1; const char *w = want(bow, &diff); size_t wl = strlen(w);
@@ -100,15 +101,15 @@ void dm_lootfilter_pump(uint8_t *b, uint64_t pl) {
 }
 
 
-int dm_lootfilter_hidden(uint8_t *b, uint64_t item) { return item && !(((int (*)(uint64_t, uint64_t))(b + 0x37f3d4))((uint64_t)(uintptr_t)(b + 0x2d58520), item) & 1); }
+int dm_lootfilter_hidden(uint8_t *b, uint64_t item) { return item && !(((int (*)(uint64_t, uint64_t))(b + GA_LOOTFILTER_VISIBLE))((uint64_t)(uintptr_t)(b + GA_LOOT_FILTER), item) & 1); }
 
 
 uint64_t dm_guest_frame(void);
 void dm_lootfilter_test_dump(uint8_t *b) {
     static long at = -1; if (at < 0) { const char *e = getenv("DM_TEST_LOOTDUMP"); at = e ? atol(e) : 0; } if (at <= 0 || dm_guest_frame() < (uint64_t)at) return; at = 0;
     int n = 0, hid = 0;
-    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(b + 0x2d603a0 + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
-        if (*(uint32_t *)(it + 0xc) != 3) continue; uint64_t d = *(uint64_t *)(it + 0x10); uint32_t code = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); int h = dm_lootfilter_hidden(b, it); n++; hid += h;
+    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
+        if (*(uint32_t *)(it + 0xc) != 3) continue; uint64_t d = *(uint64_t *)(it + 0x10); uint32_t code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); int h = dm_lootfilter_hidden(b, it); n++; hid += h;
         LOG("掉落过滤读数：%.3s 稀有度 %u 标志 %#x → %s", (const char *)&code, d ? *(uint32_t *)d : 0, d ? *(uint32_t *)(d + 0x18) : 0, h ? "藏" : "显示"); }
     LOG("掉落过滤读数：地上 %d 件，其中藏 %d 件", n, hid);
 }

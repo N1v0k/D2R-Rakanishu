@@ -23,6 +23,7 @@
 
 
 #include "dm_bossrush.h"
+#include "game_addrs.h"
 #include "dm_feats.h"
 #include "dm_input.h"
 #include "dm_cursor.h"
@@ -92,7 +93,7 @@ static struct { int16_t row; int8_t d, grp; uint32_t t_die, max_item; int x, y; 
 static uint8_t *B;
 
 static uint64_t rd(uint64_t a) { return a ? *(volatile uint64_t *)(uintptr_t)a : 0; }
-static const char *str_of(const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = dm_untag(((const char *(*)(void *))(B + 0x7f5630))(&s)); return r && *r ? r : key; }
+static const char *str_of(const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = dm_untag(((const char *(*)(void *))(B + GA_LOC_STRING_GET))(&s)); return r && *r ? r : key; }
 static void row_name(int r, char *out, size_t cap) {
     const kb_row *k = &k_rows[r];
     if (k->kind == K_GRP && k->id == 1) { snprintf(out, cap, dm_str(B, "dmKbJoin3"), str_of(k_grp_str[1][0]), str_of(k_grp_str[1][1]), str_of(k_grp_str[1][2])); return; }
@@ -140,7 +141,7 @@ static int row_of(uint64_t u, int *grp, int *gm) {
     return -1;
 }
 static int client_has(uint32_t id) {
-    int k = 0; for (uint64_t c = rd((uint64_t)(uintptr_t)(B + 0x2d603a0 + 1 * 0x400 + (id & 0x7f) * 8)); c && k < 64; c = rd(c + 0x158), k++) if (*(uint32_t *)(uintptr_t)(c + 8) == id) return 1;
+    int k = 0; for (uint64_t c = rd((uint64_t)(uintptr_t)(B + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + (id & 0x7f) * 8)); c && k < 64; c = rd(c + 0x158), k++) if (*(uint32_t *)(uintptr_t)(c + 8) == id) return 1;
     return 0;
 }
 
@@ -175,7 +176,7 @@ void dm_kills_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
     { static int at = -1; if (at < 0) { const char *e = getenv("DM_TEST_SLAY"); at = e ? atoi(e) : 0; }
       if (at > 0 && t >= (uint32_t)at) { at = 0; int nk = 0;
           for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + 1 * 0x400 + 8 * b); u; u = rd(u + 0x158)) { int gg, gm; uint32_t m = *(uint32_t *)(uintptr_t)(u + 0xc);
-              if (row_of(u, &gg, &gm) < 0 || m == 0 || m == 12) continue; nk++; ((void (*)(uint64_t, int, int, int))(B + 0x5bc1f0))(u, 6, 256, 0); }
+              if (row_of(u, &gg, &gm) < 0 || m == 0 || m == 12) continue; nk++; ((void (*)(uint64_t, int, int, int))(B + GA_STAT_SET))(u, 6, 256, 0); }
           LOG("测试 DM_TEST_SLAY：拍 %u 名单上 %d 只生命设成 1 点", t, nk); } }
 
 
@@ -188,10 +189,10 @@ void dm_kills_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
               if (abs(*(int32_t *)(uintptr_t)(ip + 0x10) - px) > 20 || abs(*(int32_t *)(uintptr_t)(ip + 0x14) - py) > 20) continue;
               uint8_t pk[17] = { 0x16 }; uint32_t one = 1; memcpy(pk + 1, (void *)(uintptr_t)(u + 8), 4); memcpy(pk + 5, (void *)(uintptr_t)(ip + 0x10), 4); memcpy(pk + 9, (void *)(uintptr_t)(ip + 0x14), 4); memcpy(pk + 13, &one, 4);
               ids[n++] = *(uint32_t *)(uintptr_t)(u + 8);
-              *(uint32_t *)(uintptr_t)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(B + 0x6e5b40))(G, player, pk, 17); *(uint32_t *)(uintptr_t)(G + 0x19050) = 0;
+              *(uint32_t *)(uintptr_t)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(B + GA_C2S_DISPATCH))(G, player, pk, 17); *(uint32_t *)(uintptr_t)(G + 0x19050) = 0;
               LOG("测试 DM_TEST_PICK_UQ：拍 %u 捡暗金 / 套装 id %u（类号 %u）→ 模式 %u", t, ids[n - 1], *(uint32_t *)(uintptr_t)(u + 4), *(uint32_t *)(uintptr_t)(u + 0xc)); } }
       if (at > 0 && t == (uint32_t)at + 5) for (int i = 0; i < n; i++) { uint64_t dm_diag_srv_item(uint32_t); uint64_t si = dm_diag_srv_item(ids[i]);
-          int r = si ? ((int (*)(uint64_t, uint64_t, uint64_t))(B + 0x78acf0))(G, player, si) : -1; LOG("测试 DM_TEST_PICK_UQ：鉴定 id %u → %d", ids[i], r); } }
+          int r = si ? ((int (*)(uint64_t, uint64_t, uint64_t))(B + GA_ITEM_IDENTIFY))(G, player, si) : -1; LOG("测试 DM_TEST_PICK_UQ：鉴定 id %u → %d", ids[i], r); } }
     int alive_any = 0;
     for (int b = 0; b < 128; b++) for (uint64_t u = rd(G + 0x2230 + 1 * 0x400 + 8 * b); u; u = rd(u + 0x158)) {
         int grp, gm = 0, r = row_of(u, &grp, &gm); if (r < 0) continue;
@@ -204,7 +205,7 @@ void dm_kills_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
         if (E[e].skip || E[e].dead) continue;
         alive_any = 1;
         if (!dead) {
-            int hp = ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, 6, 0), mx = ((int (*)(uint64_t, int, int))(B + 0x5b9290))(u, 7, 0);
+            int hp = ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, 6, 0), mx = ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(u, 7, 0);
             uint32_t *eng = grp >= 0 ? &GS[grp].eng : &E[e].eng;
             if (hp < mx) { if (!*eng) *eng = t; } else if (grp < 0 || !GS[grp].mask) *eng = 0;
             if (!(grp >= 0 ? GS[grp].announced : E[e].announced) && client_has(id)) {
@@ -221,7 +222,7 @@ void dm_kills_tick(uint64_t G, uint64_t player, uint8_t *main_base) {
 
         { const char *e = getenv("DM_TEST_KILL_DROP"); if (e) { char buf[128]; strlcpy(buf, e, sizeof buf);
             for (char *sv, *tk = strtok_r(buf, ",", &sv); tk; tk = strtok_r(NULL, ",", &sv)) { char code[8] = ""; int q = 2; if (sscanf(tk, "%4[^:]:%d", code, &q) < 1) continue;
-                uint32_t c = 0x20202020; memcpy(&c, code, strlen(code) > 4 ? 4 : strlen(code)); uint64_t it = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(B + 0x7c0b20))(G, u, c, q);
+                uint32_t c = 0x20202020; memcpy(&c, code, strlen(code) > 4 ? 4 : strlen(code)); uint64_t it = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(B + GA_ITEM_DROP_BY_CODE))(G, u, c, q);
                 LOG("测试 DM_TEST_KILL_DROP：%s 死时补掉「%s」品质 %d → %s", k_rows[r].key, code, q, it ? "成" : "败"); } } }
         if (grp < 0) { counted(r, d, E[e].eng, t); continue; }
         GS[grp].mask |= (uint8_t)(1 << gm); LOG("刷怪积分牌：拍 %u %s 第 %d 只死（%x）", t, k_rows[r].key, gm + 1, GS[grp].mask);
@@ -255,7 +256,7 @@ static uint64_t kb_find(uint64_t w, const char *name, int dep) {
     return 0;
 }
 static uint8_t *kb_base(void) { static uint8_t *b; if (!b) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base; return b; }
-static uint64_t kb_board(void) { uint8_t *b = kb_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, cp = root ? dm_ui_top(root, "ChroniclePanel") : 0; uint64_t bd = cp ? kb_find(cp, "TouchKillBoard", 1) : 0; return bd ? kb_find(bd, "TouchKB_Body", 0) : 0; }
+static uint64_t kb_board(void) { uint8_t *b = kb_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, cp = root ? dm_ui_top(root, "ChroniclePanel") : 0; uint64_t bd = cp ? kb_find(cp, "TouchKillBoard", 1) : 0; return bd ? kb_find(bd, "TouchKB_Body", 0) : 0; }
 static void kb_show(uint64_t w, int on) { const char *nm = (const char *)*(uint64_t *)(w + 8); if (!nm || strncmp(nm, "Touch", 5)) { LOG("【红】积分牌：要改可见的控件「%s」不是我们的，不写", nm ? nm : "?"); return; } *(uint8_t *)(w + 0x50) = (uint8_t)on; *(uint8_t *)(w + 0x51) = (uint8_t)on; }
 static void kb_rect(uint64_t w, int x, int y, int h);
 static void kb_body(uint64_t w, int on) { kb_rect(w, on ? 0 : 99999, 0, -1); }
@@ -268,9 +269,9 @@ void dm_kills_on_uimsg(const char *cat, const char *act, const char *arg) {
     atomic_store(&g_kb_dirty, 1);
 }
 static void kb_text(uint8_t *b, uint64_t w, const char *s) {
-    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 static void kb_rect(uint64_t w, int x, int y, int h) {
     int32_t *r = (int32_t *)(w + 0x70); if (r[0] == x && r[1] == y && (h < 0 || r[3] == h)) return; r[0] = x; r[1] = y; if (h >= 0) r[3] = h; ((void (*)(uint64_t))*(uint64_t *)(*(uint64_t *)w + 0x10))(w);
@@ -291,7 +292,7 @@ static void kb_toggle(uint64_t w, int on, int on_frame) {
 
 
 static int kb_sort(uint8_t *b, uint64_t dd) {
-    uint64_t t = dd && *(uint64_t *)(dd + 0x718) - (uint64_t)(uintptr_t)b == 0x20ba4c8 ? dd + 0x718 : 0; if (!t) { static int once; if (!once++) LOG("【红】刷怪积分牌：排序下拉里找不到文字控件，按幕顺序"); return 0; }
+    uint64_t t = dd && *(uint64_t *)(dd + 0x718) - (uint64_t)(uintptr_t)b == GA_VT_TEXTBOX ? dd + 0x718 : 0; if (!t) { static int once; if (!once++) LOG("【红】刷怪积分牌：排序下拉里找不到文字控件，按幕顺序"); return 0; }
     const char *s = *(const char **)(t + 0x88); size_t n = *(uint64_t *)(t + 0x90); if (!s || n > 64) return 0;
     const char *c = dm_str(b, "dmKbSortCount"), *f = dm_str(b, "dmKbSortFast");
     return n == strlen(c) && !memcmp(s, c, n) ? 1 : n == strlen(f) && !memcmp(s, f, n) ? 2 : 0;
@@ -304,7 +305,7 @@ void dm_kills_ui_pump(void) {
 
 
 
-    { int dm_padmode_current(void); uint64_t root = *(uint64_t *)(b + 0x2f05458), cp = root ? dm_ui_top(root, "ChroniclePanel") : 0, cx = cp ? kb_find(cp, "TouchCloseBox", 1) : 0; if (cx) kb_rect(cx, dm_padmode_current() ? 99999 : -998, 256, -1);
+    { int dm_padmode_current(void); uint64_t root = *(uint64_t *)(b + GA_UI_ROOT), cp = root ? dm_ui_top(root, "ChroniclePanel") : 0, cx = cp ? kb_find(cp, "TouchCloseBox", 1) : 0; if (cx) kb_rect(cx, dm_padmode_current() ? 99999 : -998, 256, -1);
       if (cp) dm_tab_text_center(b, kb_find(cp, "ChronicleTabs", 1), dm_lang_index()); }
     int on = atomic_load(&g_kb_on); kb_body(bw, on); if (!on) return;
     if (!B) B = b;
@@ -346,7 +347,7 @@ void dm_kills_ui_pump(void) {
         kb_rect(pg, i == act ? 0 : 99999, 0, -1); if (i == act) list = kb_find(pg, "TouchKB_List", 3); }
     if (!list) return;
     if (pad_scroll) {
-        int W = *(int32_t *)(b + 0x211da38), H = *(int32_t *)(b + 0x211da3c), hx[256], hy[256], nh = 0;
+        int W = *(int32_t *)(b + GA_UI_WIDTH), H = *(int32_t *)(b + GA_UI_HEIGHT), hx[256], hy[256], nh = 0;
         for (int gy = 1; gy < 16 && W > 0 && H > 0; gy++) for (int gx = 1; gx < 16; gx++) { int x = W * gx / 16, y = H * gy / 16;
             if (*(uint8_t *)(list + 0x50) && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)list + 0x48))(list, (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32)) & 1)) { hx[nh] = x; hy[nh] = y; nh++; } }
         if (nh) { void dm_ui_ptr(int, float, float, int); float nx = (float)hx[nh / 2] / (float)W, ny = (float)hy[nh / 2] / (float)H; dm_ui_ptr(1, nx, ny, 0); dm_ui_ptr(7, nx, ny, pad_scroll * 360);                                                                                                                                                                                                                               LOG("刷怪积分牌：手柄滚动 %+d（点 %d,%d）", pad_scroll, hx[nh / 2], hy[nh / 2]); }

@@ -1,4 +1,5 @@
 #include "dm_touch_game_identity.h"
+#include "../../host/game_addrs.h"
 #include <string.h>
 #if defined(__APPLE__) || defined(__ANDROID__) || defined(__OHOS__)
 #include <mach/mach.h>
@@ -31,13 +32,13 @@ int dm_tg_hud_identity(dm_tg_hud_cohort *c,const uint64_t *regs,uint64_t base,in
     if(c->world_epoch!=world)dm_tg_hud_reset(c,world);
     uint32_t arg=(uint32_t)regs[19];
     dm_tg_identity_reason=3;
-    if(!game || !world || arg>=12 || base>UINT64_MAX-0x3e2f74)return DM_TG_IDENTITY_UNCONFIRMED;
+    if(!game || !world || arg>=12 || base>UINT64_MAX-GA_AT_HUD_BIND_GET_RET)return DM_TG_IDENTITY_UNCONFIRMED;
     dm_tg_identity_reason=4;
 
     uint64_t fp=regs[29],frame[3]={0},lr=0,widget=0;
     if(fp<8 || fp>UINT64_MAX-16 || !read_fn(fp-8,frame,sizeof frame))return DM_TG_IDENTITY_UNCONFIRMED;
     widget=frame[0];lr=frame[2];dm_tg_identity_lr=lr-base;
-    if(lr!=base+0x3e2f74 || !widget || widget>UINT64_MAX-0xc90)return DM_TG_IDENTITY_UNCONFIRMED;
+    if(lr!=base+GA_AT_HUD_BIND_GET_RET || !widget || widget>UINT64_MAX-0xc90)return DM_TG_IDENTITY_UNCONFIRMED;
 
     uint32_t slot=UINT32_MAX;unsigned char always_alt=255;static unsigned char span[0xc91-0xb18];                                                                                                                                                                       dm_tg_identity_reason=5;
     if(read_fn(widget+0xb18,span,sizeof span)){memcpy(&slot,span,4);always_alt=span[0xc90-0xb18];}

@@ -154,7 +154,7 @@ func_cases() {
 
 
 
-  python3 "$HERE/../ios/tools/gen_romfs_overlay.py" "${DM_ROMFS_SRC:-${DM_ROOT:-$HOME/dm-work}/data/switch/3.3.94012/Update/RomFS}" "$L/romfs_overlay" > /dev/null 2>"$L/func_overlay.err" || { echo "FUNCFAIL 界面覆盖层生成失败：$(tail -1 "$L/func_overlay.err")"; echo 'FUNC 0/0'; return 1; }
+  python3 "$HERE/../ios/tools/gen_romfs_overlay.py" "${DM_ROMFS_SRC:-${DM_ROOT:-$HOME/dm-work}/data/switch/$(sed -n '1s/-.*//p' "$HERE/../PRODUCT")/Update/RomFS}" "$L/romfs_overlay" > /dev/null 2>"$L/func_overlay.err" || { echo "FUNCFAIL 界面覆盖层生成失败：$(tail -1 "$L/func_overlay.err")"; echo 'FUNC 0/0'; return 1; }
   export DM_ROMFS_OVERLAY="$L/romfs_overlay"
   local sem="$L/func.sem.$$"; mkfifo "$sem" || return 1; exec 8<>"$sem"; rm -f "$sem"
   for _ in $(seq 1 "${FUNC_JOBS:-2}"); do echo >&8; done

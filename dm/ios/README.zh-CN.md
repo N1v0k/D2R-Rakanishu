@@ -49,7 +49,7 @@ iOS 不允许普通 App 执行运行时才写进内存的代码，所以游戏�
    ```bash
    xcrun devicectl device copy to --device <设备标识> \
      --domain-type appDataContainer --domain-identifier <包名> \
-     --source $DM_ROOT/data/switch/3.3.94012/Update/RomFS \
+     --source $DM_ROOT/data/switch/3.4.95035/Update/RomFS \
      --destination 'Library/Application Support/romfs'
    ```
 
@@ -168,7 +168,7 @@ cp local.env.example local.env
 |---|---|---|
 | `DM_OUT` | 改写产物目录 | `../tools/product.sh path touch` 的输出 |
 | `DM_IOS_DD` | Xcode 派生数据目录 | `$DM_ROOT/run/ios/dd` |
-| `DM_ROMFS_SRC` | 原版 RomFS（`Update/RomFS`） | `$DM_ROOT/data/switch/3.3.94012/Update/RomFS` |
+| `DM_ROMFS_SRC` | 原版 RomFS（`Update/RomFS`） | `$DM_ROOT/data/switch/3.4.95035/Update/RomFS` |
 | `DM_GEN_ONLY=1` | 只生成 `Gen/` 与工程，不编译 | 不设 |
 | `DM_ASTC_PACK` | ASTC 补充包目录，设了才出配套的覆盖层 | 不设 |
 
@@ -208,7 +208,7 @@ Apple 芯片的 Mac 可以原样运行 iOS 的 arm64 包。脚本做的事：
 
 要点：
 
-- 游戏资源从 Mac 上这个 App 的容器里读（`Library/Application Support/romfs`）。容器里没有时，脚本从 `SMOKE_MAC_ROMFS` 指的目录克隆；这个变量要指到 RomFS 的 `data` 目录，例如 `SMOKE_MAC_ROMFS=$DM_ROOT/data/switch/3.3.94012/Update/RomFS/data`。先跑过 `make_fixture.sh` 就不用管这一条。
+- 游戏资源从 Mac 上这个 App 的容器里读（`Library/Application Support/romfs`）。容器里没有时，脚本从 `SMOKE_MAC_ROMFS` 指的目录克隆；这个变量要指到 RomFS 的 `data` 目录，例如 `SMOKE_MAC_ROMFS=$DM_ROOT/data/switch/3.4.95035/Update/RomFS/data`。先跑过 `make_fixture.sh` 就不用管这一条。
 - 同一个包名在一台 Mac 上只能有一个实例。脚本开跑前发现已有实例就报红，不替你结束它。同一台 Mac 上的 Mac 冒烟、触屏用例、界面回归共用一把锁 `$DM_ROOT/run/ios/macsmoke.lock`，自动排队。
 - 缺省带上一组「真机档位」参数（画面分辨率与左右安全区），让布局和触点换算与手机一致；`DM_MAC_DEVICE_PROFILE=0` 改回按 Mac 窗口原样跑。
 - 包在运行时，系统把它的 `Wrapper` 目录挂载出去。这时删掉或整体替换这层目录会留下卸不掉的失效挂载点，那个路径从此打不开，只有重启能清。所以包在跑的时候不要动它。
@@ -263,7 +263,7 @@ make -C dm/ios/tests test
 
 - 触摸判定状态机 `dm_touch_controls.c` 的各项行为（`t_touch_controls.c`、`t_skill_aim.c`、`t_joy_travel.c`、`t_portal_sequence.c`）。
 - 技能绑定的解析与读取（`t_native_binding.c`、`t_game_bridge.c`、`t_binding_*.c`、`t_native_hud_*.c`），用到 [tests/fixtures/native_binding/](tests/fixtures/native_binding/README.zh-CN.md) 里的两份夹具。公开仓库不带这两份夹具：缺了的话，读它们的三个测试自动跳过，其余照常。
-- 技能图集索引（`t_native_art.c`、`test_native_art_capture.py`）。这一项需要本机有游戏文件：技能索引 `Sources/dm_touch_native_art.c` 不进仓库，缺了会从 `DM_ROMFS_SRC`（缺省 `$DM_ROOT/data/switch/3.3.94012/Update/RomFS`）现生成。
+- 技能图集索引（`t_native_art.c`、`test_native_art_capture.py`）。这一项需要本机有游戏文件：技能索引 `Sources/dm_touch_native_art.c` 不进仓库，缺了会从 `DM_ROMFS_SRC`（缺省 `$DM_ROOT/data/switch/3.4.95035/Update/RomFS`）现生成。
 - 几份 Python 脚本，核对 `front_ios.m` 里触摸通路的接线和诊断日志格式。
 
 `tools/` 下还有几个脚本自带的自测：`devlock_test.sh`、`devlock_max_test.sh`、`devlock_locale_test.sh`（设备锁）、`devbattery_test.sh`（电量检查）。

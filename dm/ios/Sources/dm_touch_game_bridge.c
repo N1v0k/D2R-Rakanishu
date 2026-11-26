@@ -1,7 +1,8 @@
 #include "dm_touch_game_state.h"
+#include "../../host/game_addrs.h"
 #include "dm_touch_game_identity.h"
 #include "../../host/dm.h"
-enum { OBS_BINDING_GETTER=6, MAPPING_OFFSET=0x2d13cbc, BINDING_OFFSET=0x2d5f0c0 };
+enum { OBS_BINDING_GETTER=6, MAPPING_OFFSET=GA_PAD_BUTTON_SLOTS, BINDING_OFFSET=GA_SKILL_SLOT_BINDS };
 static pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 static dm_tg_snapshot latest;
 static dm_tg_group group;
@@ -38,7 +39,7 @@ int dm_touch_game_hide_own_glyph(uint64_t widget) {
             static unsigned char object[0xc91];uint64_t vt=0;uint32_t slot=UINT32_MAX;
             if(widget<=UINT64_MAX-0xc90 && dm_tg_vm_read(widget,object,sizeof object)) {
                 memcpy(&vt,object,8);memcpy(&slot,object+0xb18,4);
-                if(vt==(uint64_t)m->base+0x208a5f8 && slot==i && !object[0xc90])match=1;
+                if(vt==(uint64_t)m->base+GA_VT_SKILL_SELECT_BUTTON && slot==i && !object[0xc90])match=1;
             }
             break;
         }
@@ -69,13 +70,13 @@ static int skill_live(const unsigned char *b,uint32_t id,int32_t item) {
     default: break;
     }
     if(id==UINT32_MAX || id==359 || id==219 || id==220)return 1;
-    uint64_t pl=((uint64_t(*)(uint32_t))(b+0x45f9d0))(*(const uint32_t*)(b+0x2d20e4c)); if(!pl)return 1;
+    uint64_t pl=((uint64_t(*)(uint32_t))(b+GA_CLIENT_PLAYER_GET))(*(const uint32_t*)(b+GA_LOCAL_PLAYER_SLOT)); if(!pl)return 1;
     uint8_t ver=*(uint8_t*)(pl+0x1bd); if(ver<1 || ver>3)return 1;
     uint64_t l=*(uint64_t*)(pl+0x100),n=l?*(uint64_t*)l:0;
     for(int k=0;n && k<1024;k++,n=*(uint64_t*)(n+8)) { uint64_t r=*(uint64_t*)n;
         if(!r || *(int16_t*)r!=(int16_t)id || *(int32_t*)(n+0x44)!=item)continue;
-        int lv=*(int32_t*)(n+0x38); if(item==-1)lv+=((int(*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,n,0);
-        int cap=**(int32_t**)(*(uint64_t*)(b+0x2d64a18+(uint64_t)ver*16)+0x1500); if(lv<0)lv=0; if(lv>cap)lv=cap;
+        int lv=*(int32_t*)(n+0x38); if(item==-1)lv+=((int(*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,n,0);
+        int cap=**(int32_t**)(*(uint64_t*)(b+GA_DATA_TABLES+(uint64_t)ver*16)+0x1500); if(lv<0)lv=0; if(lv>cap)lv=cap;
         if(lv>0 || item!=-1)return lv>0;
         break; }
 

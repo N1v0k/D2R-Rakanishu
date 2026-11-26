@@ -1,4 +1,5 @@
 import struct,collections
+from game_addrs import GL
 img=open('main.bin','rb').read()
 m=struct.unpack_from('<I',img,4)[0]
 assert img[m:m+4]==b'MOD0',img[m:m+4]
@@ -21,6 +22,6 @@ for i in range(n):
     b,s=rd(o,tblenc,ehs);o+=s
     starts.append(a)
 starts=sorted(set(starts))
-print('FDE functions',len(starts),'text end',hex(0x1b786a0))
+print('FDE functions',len(starts),'text end',hex(GL.TEXT_END))
 import pickle;pickle.dump(starts,open('starts.pkl','wb'))
 

@@ -24,7 +24,7 @@ for line in open(os.path.join(romfs, 'data', 'build_manifest.psv'), encoding='ut
     if len(f) >= 11: IDX.setdefault(f[9].lower().split(':', 1)[-1], f)
 def rd(path):
     f = IDX.get(path.lower())
-    if f is None: raise SystemExit('gen_bright_levels：游戏文件里没有 %s（RomFS 版本不对？要 3.3.94012）' % path)
+    if f is None: raise SystemExit('gen_bright_levels：游戏文件里没有 %s（RomFS 版本不对？要 3.4.95035）' % path)
     return touch_layout._read_entry(romfs, f)
 ENV = 'data/hd/env/'
 def ls(prefix):

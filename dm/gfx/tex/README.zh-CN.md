@@ -51,7 +51,7 @@ make -C dm/gfx/tex/tests run       # 跑 t_fmt_mtl 与 t_tex
 
   A 往返只能证明「一一对应、不越界」，证明不了排布公式是对的；真正兜底的是 B 组的手算地址与 C 组同分辨率样本的逐字节相等。
 
-**关于真数据样本**：C、D 两组需要同一张贴图的 Switch 版与 PC 版各一份。`tests/fetch_samples.py` 从你工作区里的游戏文件取样，Switch 版读 `$DM_ROOT/data/switch/3.3.94012/Update/RomFS/data`，PC 版读 `$DM_ROOT/data/assets-src/raw`，输出到 `$DM_ROOT/build/cache/dm/tex_samples`。没有样本时 `t_tex` 的真数据项算失败，不会跳过；A、B、E 三组不需要游戏文件。样本不进仓库。
+**关于真数据样本**：C、D 两组需要同一张贴图的 Switch 版与 PC 版各一份。`tests/fetch_samples.py` 从你工作区里的游戏文件取样，Switch 版读 `$DM_ROOT/data/switch/3.4.95035/Update/RomFS/data`，PC 版读 `$DM_ROOT/data/assets-src/raw`，输出到 `$DM_ROOT/build/cache/dm/tex_samples`。没有样本时 `t_tex` 的真数据项算失败，不会跳过；A、B、E 三组不需要游戏文件。样本不进仓库。
 
 ## 贴图文件头里与排布有关的字段
 

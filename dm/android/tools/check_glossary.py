@@ -23,7 +23,7 @@ from urllib.parse import urlparse
 
 DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 DEFAULT = os.path.join(DM, 'android', 'glossary', 'terms.json')
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 CLASSES = ('ama', 'sor', 'nec', 'pal', 'bar', 'dru', 'ass', 'war')
 SECTIONS = ('what', 'how', 'helps', 'not', 'rule')
 CATEGORIES = ('def', 'off', 'speed')
@@ -196,7 +196,7 @@ def check_tables(data, tables, errors=None):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description='check the glossary data (#59)')
-    ap.add_argument('--tables', help='directory of the extracted 3.3.94012 .txt tables')
+    ap.add_argument('--tables', help='directory of the extracted 3.4.95035 .txt tables')
     ap.add_argument('file', nargs='?', default=DEFAULT)
     a = ap.parse_args(argv)
     with open(a.file, encoding='utf-8') as fh: data = json.load(fh)

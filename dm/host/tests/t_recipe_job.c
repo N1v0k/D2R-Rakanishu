@@ -14,6 +14,7 @@
 
 
 #include <stdarg.h>
+#include "../game_addrs.h"
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -335,7 +336,7 @@ static void t_shared(void) {
 }
 
 int main(void) {
-    B = (uint8_t *)((uintptr_t)&t_item_code - 0x570260u);
+    B = (uint8_t *)((uintptr_t)&t_item_code - (uint32_t)GA_ITEM_CODE);
     const char *td = getenv("TMPDIR"); snprintf(g_failfile, sizeof g_failfile, "%s/t_recipe_job_fail_%d.txt", td && *td ? td : "/tmp", (int)getpid());
     t_normal();
     t_check_only();

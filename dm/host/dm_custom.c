@@ -15,6 +15,7 @@
 
 
 #include "dm_custom.h"
+#include "game_addrs.h"
 #include "dm_widget.h"
 #include "dm_tab_text.h"
 #include "dm_res_scale.h"
@@ -569,7 +570,7 @@ static void txt_set(uint64_t w, const char *s) {
     uint8_t *b = main_base(); const char *nm = w ? (const char *)*(uint64_t *)(w + 8) : NULL;
     if (!w || !nm || strncmp(nm, "Touch", 5) || !DM_WIDGET_OK(b, w, DM_VT_TEXT, "自定义页文字")) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && (!n || !memcmp(*(const char **)(w + 0x88), s, n))) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 #else
 #define txt_set DM_CUSTOM_SET_TEXT
@@ -674,9 +675,9 @@ static void row_pump(uint64_t sp, int i, dm_wref *seen) {
 #define CAR_CNT(w) (*(int32_t *)(uintptr_t)((w) + 0x7e8))
 #define CAR_ON(w, k) (*(uint8_t *)(uintptr_t)((w) + 0x7d8 + (k)))
 #ifndef DM_CUSTOM_CAROUSEL_SET
-static void car_set(uint64_t w, int k) { ((void (*)(uint64_t, int))(main_base() + 0xab0c84))(w, k); }
-static void car_step(uint64_t w, int fwd) { ((void (*)(uint64_t, int))(main_base() + 0xab1518))(w, fwd); }
-static void car_refresh(uint64_t t) { ((void (*)(uint64_t))(main_base() + 0xadc434))(t); }
+static void car_set(uint64_t w, int k) { ((void (*)(uint64_t, int))(main_base() + GA_CAROUSEL_SET))(w, k); }
+static void car_step(uint64_t w, int fwd) { ((void (*)(uint64_t, int))(main_base() + GA_CAROUSEL_STEP))(w, fwd); }
+static void car_refresh(uint64_t t) { ((void (*)(uint64_t))(main_base() + GA_TEXT_LAYOUT))(t); }
 #else
 #define car_set DM_CUSTOM_CAROUSEL_SET
 #define car_step DM_CUSTOM_CAROUSEL_STEP
@@ -763,7 +764,7 @@ static void car_pump(uint64_t sp, int i, dm_wref *seen) {
 #define SL_ON 0x5b4
 #define SL_IND 0x580
 #ifndef DM_CUSTOM_SLIDER_SET
-static void slider_set(uint64_t w, int v) { ((void (*)(uint64_t, int, int, int))(main_base() + 0xad7028))(w, v, 0, 0); }
+static void slider_set(uint64_t w, int v) { ((void (*)(uint64_t, int, int, int))(main_base() + GA_SLIDER_SET_VALUE))(w, v, 0, 0); }
 static void slider_enable(uint64_t w, int on) { ((void (*)(uint64_t))*(uint64_t *)(*(uint64_t *)w + (on ? 0xc8 : 0xc0)))(w); }
 #else
 #define slider_set DM_CUSTOM_SLIDER_SET
@@ -921,7 +922,7 @@ static int tabs_read(uint64_t st, opt_tabs *t) {
         if (a && !strcmp(a, "TouchTabExtras")) t->ext = k; else if (a && !strcmp(a, "TouchTabVideo")) t->vid = k; }
     return t->ext >= 0 && t->vid >= 0;
 }
-static void tab_select(opt_tabs *t, int k) { ((void (*)(uint64_t, int, int))(main_base() + 0xad9b80))(t->tb, k, 0); }
+static void tab_select(opt_tabs *t, int k) { ((void (*)(uint64_t, int, int))(main_base() + GA_TAB_SELECT))(t->tb, k, 0); }
 static int video_route(uint64_t root, uint64_t sp, int spv, int *drop, int relay) {
     static int last_sel = -2, last_spv, last_modal, last_st, routed = -1, resync; static uint64_t restore_at, route_at;
     uint64_t st = dm_ui_top(root, "SettingsPanel"); int stv = vis(st), modal = stv && vis(find_w(root, "ConfirmationModal", 1)); opt_tabs t; int ok = stv && tabs_read(st, &t);
@@ -1208,8 +1209,8 @@ void dm_custom_ui_pump(unsigned long long root) {
 
 
     static uint64_t vt_ok_for; static int vt_ok; if (vt_ok_for != *(uint64_t *)sp) { vt_ok_for = *(uint64_t *)sp; vt_ok = 0;
-        for (int k = 0; k < 96 && !vt_ok; k++) vt_ok = *(uint64_t *)(vt_ok_for + 8 * k) == (uint64_t)main_base() + 0xae5f28;
-        if (!vt_ok) LOG("【红】自定义设置：借来的视频页虚表里没有 main+0xae5f28，不写「有改动」位（原版版本变了？）"); }
+        for (int k = 0; k < 96 && !vt_ok; k++) vt_ok = *(uint64_t *)(vt_ok_for + 8 * k) == (uint64_t)main_base() + GA_OPTIONS_PAGE_UPDATE;
+        if (!vt_ok) LOG("【红】自定义设置：借来的视频页虚表里没有 main+GA_OPTIONS_PAGE_UPDATE，不写「有改动」位（原版版本变了？）"); }
     if (vt_ok) { int dirty = 0; for (int i = 0; i < NK; i++) dirty |= changed(i, atomic_load(&g_pend[i]));
         if (*(uint8_t *)(sp + 0x1a0) != dirty) { *(uint8_t *)(sp + 0x1a0) = (uint8_t)dirty; LOG("自定义设置：有未应用的改动 → %d（「应用 / 放弃」%s）", dirty, dirty ? "点亮" : "变灰"); } }
     mu_unlock();

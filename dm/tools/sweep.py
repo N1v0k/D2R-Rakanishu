@@ -1,7 +1,8 @@
 import struct,re
 from capstone import *
 md=Cs(CS_ARCH_ARM64,CS_MODE_ARM)
-TEXT_END=0x1b786a0
+from game_addrs import GL
+TEXT_END=GL.TEXT_END
 def scan(img,lo,hi):
     out=set()
     for o in range(lo,hi,4):

@@ -41,6 +41,7 @@
 
 
 #include "dm_widget.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_i18n.h"
 #include <stdatomic.h>
@@ -64,20 +65,20 @@ int dm_request_save(void); void dm_vault_request_deposit(uint32_t item_id); int 
 #define T_CHARM 13
 
 static uint8_t *B;
-static uint64_t cli_player(void) { return ((uint64_t (*)(uint32_t))(B + 0x45f9d0))(*(uint32_t *)(B + 0x2d20e4c)); }
-static int is_rune_gem(uint64_t it) { int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(B + 0x574bc0); return is(it, T_RUNE) || is(it, T_GEM); }
+static uint64_t cli_player(void) { return ((uint64_t (*)(uint32_t))(B + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(B + GA_LOCAL_PLAYER_SLOT)); }
+static int is_rune_gem(uint64_t it) { int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE); return is(it, T_RUNE) || is(it, T_GEM); }
 
 
 
 
 static int is_mat(uint64_t it) { static const char k[][4] = { "pk1", "pk2", "pk3", "dhn", "bey", "mbr", "tes", "ceh", "bet", "fed", "toa", "xa1", "xa2", "xa3", "xa4", "xa5", "ua1", "ua2", "ua3", "ua4", "ua5" };
-    uint32_t c = ((uint32_t (*)(uint64_t))(B + 0x570260))(it) & 0xffffff; for (unsigned i = 0; i < sizeof k / sizeof *k; i++) if (!memcmp(&c, k[i], 3)) return 1; return 0; }
-static int is_charm(uint64_t it) { return ((int (*)(uint64_t, int))(B + 0x574bc0))(it, T_CHARM); }
-static uint32_t item_code(uint64_t it) { return ((uint32_t (*)(uint64_t))(B + 0x570260))(it); }
+    uint32_t c = ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(it) & 0xffffff; for (unsigned i = 0; i < sizeof k / sizeof *k; i++) if (!memcmp(&c, k[i], 3)) return 1; return 0; }
+static int is_charm(uint64_t it) { return ((int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE))(it, T_CHARM); }
+static uint32_t item_code(uint64_t it) { return ((uint32_t (*)(uint64_t))(B + GA_ITEM_CODE))(it); }
 #define AUTO_RUNE_MAX 18
 static int auto_ok(uint64_t it) {
     if (!is_rune_gem(it)) return 0;
-    if (!((int (*)(uint64_t, int))(B + 0x574bc0))(it, T_RUNE)) return 1;
+    if (!((int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE))(it, T_RUNE)) return 1;
     uint32_t c = item_code(it); const char *k = (const char *)&c;
     return k[0] == 'r' && k[1] >= '0' && k[1] <= '9' && k[2] >= '0' && k[2] <= '9' && (k[1] - '0') * 10 + (k[2] - '0') <= AUTO_RUNE_MAX;
 }
@@ -162,9 +163,9 @@ static int pouch_put(uint8_t *b, uint64_t G, uint64_t player, uint32_t id) {
     if (g_nu >= UMAX || g_nup >= 256) { LOG("【红】百宝囊：囊里 %d 件 / 待证明 %d 条已满，这件留在背包", g_nu, g_nup); return -2; }
     uint8_t buf[1024]; int len = dm_item_write(b, it, buf); if (!len || len > UBYTES) { LOG("【红】百宝囊：物品 id %u 位流 %d 字节，不收", id, len); return -3; }
     uitem u = { item_code(it), (uint16_t)len, { 0 } }; memcpy(u.bits, buf, (size_t)len); int x = *(int32_t *)(pp + 0x10), y = *(int32_t *)(pp + 0x14);
-    ((void (*)(uint64_t))(b + 0x55e430))(it);
-    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, it, 0x20, 4, 0, 0, y, x);
-    ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, it);
+    ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(it);
+    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, it, 0x20, 4, 0, 0, y, x);
+    ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, it);
     g_u[g_nu++] = u; upend *p = &g_up[g_nup++]; memset(p, 0, sizeof *p); p->put = 1; p->it = u; p->plen = (uint16_t)len; memcpy(p->pb, buf, (size_t)len);
     pouch_pub(); LOG("百宝囊：收进 %.3s（物品 id %u，背包格 %d,%d，位流 %d 字节）→ 囊里 %d 件", (const char *)&u.code, id, x, y, len, g_nu);
     return 1;
@@ -176,13 +177,13 @@ static int pouch_take(uint8_t *b, uint64_t G, uint64_t player) {
     uitem u = g_u[g_nu - 1]; uint64_t pp = *(uint64_t *)(player + 0x38), room = pp ? *(uint64_t *)(pp + 0x20) : 0; if (!room) return 0;
     uint64_t nu = dm_item_make(b, G, room, u.bits, u.len, NULL); if (!nu) { LOG("【红】百宝囊：%.3s 位流建不出物品，留在囊里", (const char *)&u.code); return 0; }
     uint64_t inv = *(uint64_t *)(player + 0x90); uint32_t cls = *(uint32_t *)(player + 4), fx = 0, fy = 0;
-    if (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(b + 0x55f620))(inv, nu, *(int32_t *)(b + 0x1dae684 + cls * 8 + 4), &fx, &fy, 0)) {
-        ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); return 0; }
-    uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); return 0; }
+    if (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(b + GA_INV_FIND_FREE))(inv, nu, *(int32_t *)(b + GA_CLASS_INV_GRID + cls * 8 + 4), &fx, &fy, 0)) {
+        ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); return 0; }
+    uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); return 0; }
     *(uint8_t *)(nd + 0x55) = 0; *(int32_t *)(ip + 0x10) = (int32_t)fx; *(int32_t *)(ip + 0x14) = (int32_t)fy;
-    uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, player, &one, &ox);
-    if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); LOG("【红】百宝囊：%.3s 放进背包没成（格 %u,%u），留在囊里", (const char *)&u.code, fx, fy); return 0; }
-    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + 0x642f70))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
+    uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox);
+    if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); LOG("ERROR pouch.to_inventory: %.3s could not be placed in the inventory (cell %u,%u), it stays in the pouch", (const char *)&u.code, fx, fy); return 0; }
+    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
     uint8_t buf[1024]; int len = dm_item_write(b, nu, buf);
     upend *p = &g_up[g_nup++]; memset(p, 0, sizeof *p); p->put = 0; p->it = u; p->nid = *(uint32_t *)(nu + 8);
     if (len > 0 && len <= UBYTES) { p->plen = (uint16_t)len; memcpy(p->pb, buf, (size_t)len); } else { p->plen = u.len; memcpy(p->pb, u.bits, u.len); LOG("【红】百宝囊：放好后的位流 %d 字节，用囊里那串作证据", len); }
@@ -196,7 +197,7 @@ static uint32_t adv_stash_unit(uint64_t pl) {
 }
 static void move_to_stash(uint8_t *b, uint64_t G, uint64_t player, uint32_t id, uint32_t unit) {
     uint8_t pk[25] = { 0x63 }; memcpy(pk + 5, &id, 4); memcpy(pk + 9, &unit, 4);
-    *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + 0x6e5b40))(G, player, pk, 25); *(uint32_t *)(G + 0x19050) = 0;
+    *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + GA_C2S_DISPATCH))(G, player, pk, 25); *(uint32_t *)(G + 0x19050) = 0;
 }
 
 
@@ -261,7 +262,7 @@ void dm_pouch_c2s(uint64_t *regs) {
 
     if ((len == 21 && pk[0] == 0x54) || (len == 29 && pk[0] == 0x55)) { uint32_t id; memcpy(&id, pk + 1, 4);
         uint64_t dm_diag_srv_item(uint32_t); uint64_t it = dm_diag_srv_item(id); if (!it || !bag_item(player, id) || !(is_rune_gem(it) || is_mat(it))) return;
-        uint32_t unit = adv_stash_unit(player); int near = ((int (*)(uint64_t, uint64_t, int, int))(B + 0x650d10))(G, player, 0x10b, 0x32) & 1; if (!unit || !near) return;
+        uint32_t unit = adv_stash_unit(player); int near = ((int (*)(uint64_t, uint64_t, int, int))(B + GA_OBJECT_NEAR))(G, player, 0x10b, 0x32) & 1; if (!unit || !near) return;
         uint32_t code = item_code(it);
         if (adv_stack_full(G, player, code)) { if (pk[0] == 0x55) g_c2s_full = 1; LOG("珍宝匣：%.3s（id %u）按住确认键移到%s页，高级仓库那一格已叠满 → 照原样移过去", (const char *)&code, id, pk[0] == 0x55 ? "共享" : "个人"); return; }
         static uint8_t st[25]; memset(st, 0, sizeof st); st[0] = 0x63; memcpy(st + 5, &id, 4); memcpy(st + 9, &unit, 4); regs[2] = (uint64_t)(uintptr_t)st; regs[3] = 25;
@@ -269,7 +270,7 @@ void dm_pouch_c2s(uint64_t *regs) {
     if (len != 13 || pk[0] != 0x45) return;
     uint32_t id; memcpy(&id, pk + 1, 4); if (!id || id != g_pick_id) return;
     uint64_t dm_diag_srv_item(uint32_t); uint64_t it = dm_diag_srv_item(id); if (!it || !(is_rune_gem(it) || is_mat(it))) return;
-    uint32_t unit = adv_stash_unit(player); int near = ((int (*)(uint64_t, uint64_t, int, int))(B + 0x650d10))(G, player, 0x10b, 0x32) & 1; if (!unit || !near || g_c2s_nq >= 8) return;
+    uint32_t unit = adv_stash_unit(player); int near = ((int (*)(uint64_t, uint64_t, int, int))(B + GA_OBJECT_NEAR))(G, player, 0x10b, 0x32) & 1; if (!unit || !near || g_c2s_nq >= 8) return;
     uint32_t code = item_code(it);
     if (adv_stack_full(G, player, code)) { g_c2s_full = 1; LOG("珍宝匣：%.3s（id %u）拖进共享页，高级仓库那一格已叠满 → 照原样落在共享页那格，提示一次", (const char *)&code, id); return; }
     static uint8_t alt[17]; uint32_t zero = 0; alt[0] = 0x18; memcpy(alt + 1, &id, 4); memcpy(alt + 5, &g_pick_x, 4); memcpy(alt + 9, &g_pick_y, 4); memcpy(alt + 13, &zero, 4);
@@ -296,9 +297,9 @@ static pick g_pk[16];
 
 
 static int rune_stack_full(uint64_t pl, uint64_t it) {
-    if (!((int (*)(uint64_t, int))(B + 0x574bc0))(it, T_RUNE)) return 0;
+    if (!((int (*)(uint64_t, int))(B + GA_ITEM_IS_TYPE))(it, T_RUNE)) return 0;
     uint32_t sid = adv_stash_unit(pl), code = item_code(it); if (!sid) return 0;
-    for (uint64_t u = *(uint64_t *)(B + 0x2d603a0 + 8 * (sid & 0x7f)); u; u = *(uint64_t *)(u + 0x158)) {
+    for (uint64_t u = *(uint64_t *)(B + GA_CLIENT_UNIT_TABLE + 8 * (sid & 0x7f)); u; u = *(uint64_t *)(u + 0x158)) {
         if (*(uint32_t *)(u + 8) != sid || *(uint32_t *)u != 0) continue;
         uint64_t iv = *(uint64_t *)(u + 0x90); if (!iv || *(uint32_t *)iv != 0x01020304) return 0;
         for (uint64_t x = *(uint64_t *)(iv + 0x10), k = 0; x && k < 2048; k++) { uint64_t d = *(uint64_t *)(x + 0x10); if (!d) break;
@@ -330,12 +331,12 @@ static void auto_pick(uint64_t pl, uint64_t fr) {
 
 
     { static int at = -1; static char code[5]; if (at < 0) { const char *e = getenv("DM_TEST_PICK"); at = e && sscanf(e, "%d:%4s", &at, code) == 2 ? at : 0; }
-      if (at > 0 && fr >= (uint64_t)at) for (int k = 0; k < 128 && at > 0; k++) for (uint64_t it = *(uint64_t *)(B + 0x2d603a0 + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
+      if (at > 0 && fr >= (uint64_t)at) for (int k = 0; k < 128 && at > 0; k++) for (uint64_t it = *(uint64_t *)(B + GA_CLIENT_UNIT_TABLE + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
           uint32_t c = item_code(it); uint64_t ip = *(uint64_t *)(it + 0x38); if (*(uint32_t *)(it + 0xc) != 3 || !ip || memcmp(&c, code, strlen(code))) continue;
           uint32_t id = *(uint32_t *)(it + 8), one = 1; int x = *(int32_t *)(ip + 0x10), y = *(int32_t *)(ip + 0x14); uint8_t pk[17] = { 0x16 }; memcpy(pk + 1, &id, 4); memcpy(pk + 5, &x, 4); memcpy(pk + 9, &y, 4); memcpy(pk + 13, &one, 4);
-          ((void (*)(const uint8_t *, int))(B + 0x2ceab0))(pk, 17); LOG("测试 DM_TEST_PICK：帧 %llu 替玩家捡地上 %s（id %u）", (unsigned long long)fr, code, id); at = 0; break; } }
+          ((void (*)(const uint8_t *, int))(B + GA_CLIENT_SEND))(pk, 17); LOG("DM_TEST_PICK: frame %llu picks up %s from the ground for the player (id %u)", (unsigned long long)fr, code, id); at = 0; break; } }
     uint32_t want = 0, wcode = 0; int wx = 0, wy = 0;
-    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(B + 0x2d603a0 + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
+    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(B + GA_CLIENT_UNIT_TABLE + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
         if (*(uint32_t *)(it + 0xc) != 3 || !is_rune_gem(it)) continue;
         uint32_t id = *(uint32_t *)(it + 8); gnd_add(id);
         uint64_t ip = *(uint64_t *)(it + 0x38); if (want || !ip) continue; int x = *(int32_t *)(ip + 0x10), y = *(int32_t *)(ip + 0x14);
@@ -354,7 +355,7 @@ static void auto_pick(uint64_t pl, uint64_t fr) {
     int slot = -1; for (int i = 0; i < 16 && slot < 0; i++) if (!g_pk[i].st) slot = i; if (slot < 0) return;
     g_pk[slot] = (pick){ want, wcode, fr, 1 };
     uint8_t pk[17] = { 0x16 }; uint32_t one = 1; memcpy(pk + 1, &want, 4); memcpy(pk + 5, &wx, 4); memcpy(pk + 9, &wy, 4); memcpy(pk + 13, &one, 4);
-    ((void (*)(const uint8_t *, int))(B + 0x2ceab0))(pk, 17);
+    ((void (*)(const uint8_t *, int))(B + GA_CLIENT_SEND))(pk, 17);
     LOG("百宝囊：地上 %.3s（id %u）在 %d,%d（玩家 %d,%d）→ 发捡起包", (const char *)&wcode, want, wx, wy, px, py);
 }
 
@@ -424,11 +425,11 @@ static uint64_t find_w(uint64_t w, const char *name, int dep) {
 static int ours(uint64_t w) { const char *nm = w ? (const char *)*(uint64_t *)(w + 8) : NULL; return nm && (!strncmp(nm, "TouchPouch", 10) || !strcmp(nm, "TouchStore")); }
 static void w_move(uint64_t w, int x, int y) { if (!ours(w)) return; int32_t *r = (int32_t *)(w + 0x70); if (r[0] == x && r[1] == y) return; r[0] = x; r[1] = y; ((void (*)(uint64_t))*(uint64_t *)(*(uint64_t *)w + 0x10))(w); }
 static void w_text(uint64_t w, const char *s) {
-    if (!ours(w) || *(uint64_t *)w - (uint64_t)(uintptr_t)B != 0x20ba4c8) return; size_t n = strlen(s);
+    if (!ours(w) || *(uint64_t *)w - (uint64_t)(uintptr_t)B != GA_VT_TEXTBOX) return; size_t n = strlen(s);
     if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void (*)(uint64_t, const char *, uint64_t))(B + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(B + 0xadc434))(w); }
+    ((void (*)(uint64_t, const char *, uint64_t))(B + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(B + GA_TEXT_LAYOUT))(w); }
 static const char *str_of(uint32_t code) { char k[5] = { 0 }; memcpy(k, &code, 4); for (int i = 3; i >= 0 && k[i] == ' '; i--) k[i] = 0;
-    struct { const char *k; uint64_t n; } s = { k, strlen(k) }; const char *r = dm_untag(((const char *(*)(void *))(B + 0x7f5630))(&s)); return r && *r ? r : "?"; }
+    struct { const char *k; uint64_t n; } s = { k, strlen(k) }; const char *r = dm_untag(((const char *(*)(void *))(B + GA_LOC_STRING_GET))(&s)); return r && *r ? r : "?"; }
 static int g_tip;
 static void tip_show(uint64_t root, int on) {
     uint64_t tb = find_w(root, "TouchPouchTip", 1), bg = find_w(root, "TouchPouchTipBg", 1), box = find_w(root, "TouchPouch", 1); if (!tb || !bg || !box) return;
@@ -446,7 +447,7 @@ static void tip_show(uint64_t root, int on) {
 
 
 int dm_pouch_tip_gate(int x, int y) {
-    if (!g_tip || !B) return 0; uint64_t root = *(uint64_t *)(B + 0x2f05458), box = find_w(root, "TouchPouch", 1);
+    if (!g_tip || !B) return 0; uint64_t root = *(uint64_t *)(B + GA_UI_ROOT), box = find_w(root, "TouchPouch", 1);
     if (box && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)box + 0x48))(box, (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32)) & 1)) return 0;
     tip_show(root, 0); LOG("百宝囊：点了清单外 → 收起清单，这一下不做别的"); return 1;
 }
@@ -459,7 +460,7 @@ static void pouch_count_sync(uint64_t boxw) { char n[16]; snprintf(n, sizeof n, 
 static void ui_pump(void) {
 
 
-    uint64_t root = *(uint64_t *)(B + 0x2f05458), inv = root ? dm_ui_top(root, "PlayerInventoryExpansionLayout") : 0, boxw = inv ? find_w(inv, "TouchPouchBox", 3) : 0;
+    uint64_t root = *(uint64_t *)(B + GA_UI_ROOT), inv = root ? dm_ui_top(root, "PlayerInventoryExpansionLayout") : 0, boxw = inv ? find_w(inv, "TouchPouchBox", 3) : 0;
     if (dm_ui_top_chk_on()) { uint64_t old = root ? find_w(root, "TouchPouchBox", 2) : 0; if (old != boxw) { static int k; if (k++ < 20) LOG("【红】百宝囊对拍：TouchPouchBox 新找法 %#llx、旧找法 %#llx", (unsigned long long)boxw, (unsigned long long)old); } }
     if (!boxw) return;
     int gp = dm_custom_get("gem_pick"), sb = dm_custom_get("store_btn");
@@ -495,7 +496,7 @@ void dm_pouch_srv_tick(uint8_t *b, uint64_t G, uint64_t player) {
     B = b; uint32_t tq = *(uint32_t *)(G + 0x170);
     if (player != lp) { lp = player; uint64_t pd = *(uint64_t *)(player + 0x10); pthread_mutex_lock(&g_umu); strlcpy(g_uchar, pd ? (const char *)pd : "", sizeof g_uchar); pouch_load(); g_uload = 1; pthread_mutex_unlock(&g_umu); }
     { int dm_itemjob_owner(void); if (dm_itemjob_owner()) return; }
-    int near = ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, player, 0x10b, 0x32) & 1; atomic_store(&g_near_pub, near);
+    int near = ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, player, 0x10b, 0x32) & 1; atomic_store(&g_near_pub, near);
     uint32_t unit = adv_stash_unit(player); int go63 = near && unit;
     typedef struct { uint32_t id, t; } watch; static watch wl[64]; static int nw;
     int full_notice = 0;
@@ -532,9 +533,9 @@ void dm_pouch_srv_tick(uint8_t *b, uint64_t G, uint64_t player) {
 
 
                   uint16_t cell[4] = { 0 }; uint32_t cy = 0; int grid = *(uint8_t *)(G + 0x106) == 1 ? 8 : 10;
-                  int found = ((int (*)(uint64_t, uint64_t, int, void *, uint32_t *, int))(b + 0x55f620))(inv, f, grid, cell, &cy, 4);
+                  int found = ((int (*)(uint64_t, uint64_t, int, void *, uint32_t *, int))(b + GA_INV_FIND_FREE))(inv, f, grid, cell, &cy, 4);
                   if (found) { memcpy(pk + 17, &cell[0], 2); uint16_t y16 = (uint16_t)cy; memcpy(pk + 19, &y16, 2); } }
-              *(uint32_t *)(G + 0x19050) = 1; int took = ((int (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + 0x6e5b40))(G, player, pk, (uint32_t)ln); *(uint32_t *)(G + 0x19050) = 0;
+              *(uint32_t *)(G + 0x19050) = 1; int took = ((int (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + GA_C2S_DISPATCH))(G, player, pk, (uint32_t)ln); *(uint32_t *)(G + 0x19050) = 0;
               uint64_t fd = *(uint64_t *)(f + 0x10);
               LOG("DM_TEST_HOLDY: tick %u, %s id %u from cell %u,%u, packet 0x%02x, dispatch %d, now mode %u page %u", tq, code, id, x, y, kind, took, *(uint32_t *)(f + 0xc), fd ? *(uint8_t *)(fd + 0x55) : 255); }
           else { LOG("DM_TEST_HOLDY: tick %u, no %s left in the backpack", tq, code); h->left = 0; } } }

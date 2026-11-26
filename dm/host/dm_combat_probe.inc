@@ -42,7 +42,7 @@ static void probe_owner(uint64_t unit,int out[4]) {
 
 static void probe_error(void) { pthread_mutex_lock(&probe_lock);probe_errors++;pthread_mutex_unlock(&probe_lock); }
 static int probe_stat(uint64_t unit,int stat) {
-    return unit?((int (*)(uint64_t,int,int))(uintptr_t)(base()+0x5b9290))(unit,stat,0):0;
+    return unit?((int (*)(uint64_t,int,int))(uintptr_t)(base()+GA_STAT_GET))(unit,stat,0):0;
 }
 static void probe_unit(uint64_t unit,unsigned out[3]) {
     if(unit){out[0]=rd32(unit);out[1]=rd32(unit+4);out[2]=rd32(unit+8);}
@@ -62,7 +62,7 @@ static int probe_source(uint64_t unit) {
     if(!owned(unit))return 3;
     unsigned ver=*(uint8_t *)(uintptr_t)(unit+0x1bd);
     if(ver<1 || ver>3)return -1;
-    uint64_t table=rd((uint64_t)(uintptr_t)(base()+0x2d64a18+ver*16)),rows=table?rd(table+0x558):0,count=table?rd(table+0x560):0;
+    uint64_t table=rd((uint64_t)(uintptr_t)(base()+GA_DATA_TABLES+ver*16)),rows=table?rd(table+0x558):0,count=table?rd(table+0x560):0;
     if(!rows || count>4096)return -1;
     for(uint64_t k=0;k<count;k++)if(rd32(rows+k*0x150+8)==rd32(unit+4))return 1;
     return 2;
@@ -137,13 +137,13 @@ static void probe_emit(const probe_context *c,int phase,const int value[4],int l
             unsigned ver=*(uint8_t *)(uintptr_t)(c->target+0x1bd);
             for(;node && walked<256;node=rd(node+0x68),walked++) {
                 if(ver<1 || ver>3){probe_error();break;}
-                int rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+0x5bc690))(ver,node,74,0);
+                int rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+GA_STATLIST_GET_OWN))(ver,node,74,0);
                 if(!rate)continue;
                 if(e.nlist==PROBE_LISTS){probe_error();break;}
                 probe_list *l=&e.lists[e.nlist++];
                 *l=(probe_list){.state=rd32(node+0x20),.type=rd32(node+8),.id=rd32(node+0xc),.flags=rd32(node+0x1c),.rate=rate,.skill=-1,.level=-1,.source=-1};
                 l->contributes=-1;
-                uint64_t table=rd((uint64_t)(uintptr_t)(base()+0x2d64a18+ver*16));
+                uint64_t table=rd((uint64_t)(uintptr_t)(base()+GA_DATA_TABLES+ver*16));
                 uint64_t stats=table?rd(table+0x1290):0;int count=table?(int32_t)rd32(table+0x1298):0;
                 if(rd(node)==c->target && rd(node+0x78)==root && stats && count>74 && count<=4096) {
                     unsigned statflags=*(uint8_t *)(uintptr_t)(stats+74*0x144+4);
@@ -189,7 +189,7 @@ static void probe_track_effect(const probe_context *c,uint64_t list) {
     unsigned ver=*(uint8_t *)(uintptr_t)(c->target+0x1bd);if(ver<1 || ver>3){probe_error();return;}
     probe_effect effect={.game=c->game,.list=list,.target=rd32(c->target+8),.state=rd32(list+0x20),
         .type=rd32(list+8),.id=rd32(list+0xc),.expiry=rd32(list+0x24),
-        .rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+0x5bc690))(ver,list,74,0),
+        .rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+GA_STATLIST_GET_OWN))(ver,list,74,0),
         .skill=c->skill,.level=c->skill_level,.source=probe_source(c->attacker)};
     pthread_mutex_lock(&probe_lock);unsigned k=0;
     for(;k<probe_neffect;k++)if(probe_effects[k].game==c->game && probe_effects[k].list==list)break;
@@ -231,8 +231,8 @@ static void probe_chance_in(const uint64_t *r) {
         else {
             c.chance_inputs[0]=probe_stat(r[0],12);c.chance_inputs[1]=probe_stat(r[1],12);
             c.chance_inputs[2]=probe_stat(r[0],19);c.chance_inputs[3]=probe_stat(r[0],2);
-            c.chance_inputs[4]=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+0x5bc810))(ver,root,119,0);
-            c.chance_inputs[5]=((int (*)(uint64_t))(uintptr_t)(base()+0x5cd320))(r[1]);
+            c.chance_inputs[4]=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+GA_STATLIST_GET))(ver,root,119,0);
+            c.chance_inputs[5]=((int (*)(uint64_t))(uintptr_t)(base()+GA_CHAR_DEFENSE))(r[1]);
             c.chance_inputs[6]=probe_stat(r[1],(uint32_t)r[3]?32:33);
         }
     }
@@ -245,7 +245,7 @@ static void probe_melee_out(const uint64_t *r){probe_leave(PC_MELEE,r);}
 static void probe_block_roll(const uint64_t *r){probe_context *c=probe_top(PC_MELEE);if(c)probe_emit(c,PP_ROLL,(int[4]){(int)r[8],(int)r[22],1,0},INT32_MIN,0);}
 static void probe_missile_in(const uint64_t *r) {
     uint64_t missile=r[1],owner=0;
-    if(missile && rd32(missile)==3)owner=((uint64_t (*)(uint64_t,uint64_t))(uintptr_t)(base()+0x7cd7b0))(r[0],missile);
+    if(missile && rd32(missile)==3)owner=((uint64_t (*)(uint64_t,uint64_t))(uintptr_t)(base()+GA_UNIT_OWNER_GET))(r[0],missile);
     probe_context c=probe_context_make(PC_MISSILE,r[0],owner,r[2],r[3]);c.missile=missile;
     uint64_t data=missile && rd32(missile)==3?rd(missile+0x10):0;
     if(data){c.skill=*(int16_t *)(uintptr_t)(data+0xc);c.skill_level=*(int16_t *)(uintptr_t)(data+0xe);}
@@ -387,7 +387,7 @@ static void probe_proc_stack_in(const uint64_t *r) {
     uint64_t args[7]={r[0],r[1],r[113],r[3],r[4],r[5],r[6]};probe_skill_in(args);
 }
 static void probe_missile_skill(const uint64_t *r,uint64_t missile,uint64_t target,const int *value) {
-    uint64_t owner=missile && rd32(missile)==3?((uint64_t (*)(uint64_t,uint64_t))(uintptr_t)(base()+0x7cd7b0))(r[0],missile):0;
+    uint64_t owner=missile && rd32(missile)==3?((uint64_t (*)(uint64_t,uint64_t))(uintptr_t)(base()+GA_UNIT_OWNER_GET))(r[0],missile):0;
     probe_context c=probe_context_make(PC_SKILL,r[0],owner,target,0);
     c.missile=missile;c.skill=(int)r[2];c.skill_level=(int)r[3];
     probe_enter(c,value);
@@ -445,7 +445,8 @@ static void probe_summon(const uint64_t *r) {
 }
 static void probe_poison_in(const uint64_t *r) {
 
-    probe_enter(probe_context_make(PC_POISON,r[22],r[0],r[1],r[19]),(int[4]){(int)r[2],(int)r[3],(int)r[4],(int)r[5]});
+
+    probe_enter(probe_context_make(PC_POISON,r[22],r[21],r[3],r[19]),(int[4]){(int)r[4],(int)r[5],(int)r[6],(int)r[7]});
 }
 static void probe_candidate(int kind,const uint64_t *r,int refresh) {
     probe_context *c=probe_top(kind);if(c){c->pending_list=r[1];c->refresh=refresh;}
@@ -459,7 +460,7 @@ static void probe_application_done(int kind) {
     int accepted=0,rate=0;
     if(c.pending_list && c.target && rd(c.pending_list)==c.target && rd(c.pending_list+0x78)==rd(c.target+0x88)) {
         unsigned ver=*(uint8_t *)(uintptr_t)(c.target+0x1bd);
-        if(ver>=1 && ver<=3){accepted=1;rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+0x5bc690))(ver,c.pending_list,74,0);}
+        if(ver>=1 && ver<=3){accepted=1;rate=((int (*)(int,uint64_t,int,int))(uintptr_t)(base()+GA_STATLIST_GET_OWN))(ver,c.pending_list,74,0);}
         else probe_error();
     }
     if(accepted)probe_track_effect(&c,c.pending_list);

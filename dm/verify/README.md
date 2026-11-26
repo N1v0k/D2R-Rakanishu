@@ -48,7 +48,7 @@ By default it verifies `main sdk subsdk0` of the `keypage` build output. It runs
 
 - `--struct-only`: runs only the structural check and the gate function check, not `equiv.py`.
 - `--fresh`: first regenerates a copy with this worktree's rewriter into `$DM_ROOT/run/verify/dm/fresh/` and verifies that, and also compares it file by file with the given directory; used to detect whether the shared build output is stale.
-- Environment variables: `DM_PY`, `DM_NSO_DIR` (directory holding the original modules, default `$DM_ROOT/data/switch/3.3.94012/Update/ExeFS`), `SEED`, `JOBS`, `LLVM_BIN`.
+- Environment variables: `DM_PY`, `DM_NSO_DIR` (directory holding the original modules, default `$DM_ROOT/data/switch/3.4.95035/Update/ExeFS`), `SEED`, `JOBS`, `LLVM_BIN`.
 - Output: a summary table at the end, with one row each for 「结构」 (structure) and 「等价」 (equivalence) per module, including the denominator and the coverage (how much was actually covered); the last line is `REGRESS OK|FAIL <build output name>`, and any failure gives exit code 1. The log is at `$DM_ROOT/run/verify/dm/regress_<timestamp>.log`.
 
 Related standalone tools:

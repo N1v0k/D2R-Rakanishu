@@ -50,7 +50,7 @@ def guide():
     return {
         'schema': 1, 'id': 'test-guide', 'version': 1, 'class': 'war', 'classIndex': 7, 'title': t('Test'), 'summary': t('Summary'),
         'overview': {'strengths': {'de': ['a'], 'en': ['a']}, 'weaknesses': {'de': ['b'], 'en': ['b']}}, 'tags': ['leveling'], 'difficulty': 1,
-        'mode': {'core': 'softcore', 'ladder': 'nonladder'}, 'gameVersion': '3.3.94012', 'patch': '3.3',
+        'mode': {'core': 'softcore', 'ladder': 'nonladder'}, 'gameVersion': '3.4.95035', 'patch': '3.4',
         'keySkills': [10], 'trees': [3], 'profile': {'damage': ['fire']},
         'phases': [
             {'id': 'lvl', 'name': t('Leveln'), 'levels': [1, 9], 'plan': 'cumulative',
@@ -62,8 +62,8 @@ def guide():
              'stats': [{'stat': 'vit', 'rest': True}]}],
         'gear': [{'phase': 'lvl', 'slot': 'helm', 'tier': 'budget', 'ref': {'type': 'helm', 'quality': 'magic'}}],
         'merc': {'act': 2, 'difficulty': 2, 'aura': 'Aura', 'why': t('x'), 'gear': []},
-        'sources': [{'site': 'A', 'title': 'a', 'url': 'https://a.example.com/x', 'seen': '2026-11-01', 'patch': '3.3', 'kind': 'guide'},
-                    {'site': 'B', 'title': 'b', 'url': 'https://b.example.org/y', 'seen': '2026-11-01', 'patch': '3.3', 'kind': 'guide'}],
+        'sources': [{'site': 'A', 'title': 'a', 'url': 'https://a.example.com/x', 'seen': '2026-11-01', 'patch': '3.4', 'kind': 'guide'},
+                    {'site': 'B', 'title': 'b', 'url': 'https://b.example.org/y', 'seen': '2026-11-01', 'patch': '3.4', 'kind': 'guide'}],
         'review': {'checks': [], 'played': False}}
 
 

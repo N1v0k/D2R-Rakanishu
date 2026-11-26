@@ -242,10 +242,9 @@ static int can_start(const dm_fl_state *s) { return s->have_player && !s->p.dead
 static int can_start_hit(const dm_fl_state *s) { return s->have_player && !s->p.town && (!s->p.dead || !s->was_dead); }
 
 
-enum { REACH = 10 * DM_FL_TPS };
 static void start(dm_fl_state *s) {
     uint32_t t = s->tick, lead = t - s->game_tick0 < DM_FL_LEAD ? t - s->game_tick0 : DM_FL_LEAD, from = t - lead, floor = s->last_end > s->game_tick0 ? s->last_end : s->game_tick0;
-    if (t - floor > REACH) floor = t - REACH;
+    if (t - floor > DM_FL_REACH) floor = t - DM_FL_REACH;
     for (unsigned i = 0; i < DM_FL_PREROLL && i < s->npre; i++) { uint32_t a = s->pre[i].t; if (a >= floor && a < from) from = a; }
     for (unsigned k = 0; k < s->neng && k < 32; k++) if (s->eng[k].at >= (int64_t)floor && s->eng[k].at < (int64_t)from) from = (uint32_t)s->eng[k].at;
     lead = t - from;
@@ -598,7 +597,7 @@ static size_t put_fight(uint8_t *p, const dm_fl_fight *f) {
 
 static int fight_ok(const dm_fl_fight *f) {
     const dm_fl_head *h = &f->h;
-    if (h->end < DM_FL_END_KILL || h->end > DM_FL_END_LEFT || h->width < 1 || h->lead > DM_FL_LEAD || h->kills > h->enemies || h->enemies > DM_FL_MEMBERS) return 0;
+    if (h->end < DM_FL_END_KILL || h->end > DM_FL_END_LEFT || h->width < 1 || h->lead > DM_FL_REACH || h->kills > h->enemies || h->enemies > DM_FL_MEMBERS) return 0;
     if ((uint64_t)h->duration + h->lead >= (uint64_t)h->nbuckets * h->width) return 0;
     for (int k = 0; k < DM_FL_SKILLS; k++) if (!h->skill[k] && k + 1 < DM_FL_SKILLS && h->skill[k + 1]) return 0;
     for (int g = 0; g < h->ngroups; g++) { const dm_fl_group *x = &f->g[g]; if (x->rank > DM_FL_RANK_SUPER || x->flags > DM_FL_G_OTHERS || x->kills > x->joined || x->tracked > x->joined) return 0; }
@@ -616,8 +615,9 @@ static int fight_ok(const dm_fl_fight *f) {
     return 1;
 }
 
-static size_t get_fight(const uint8_t *p, size_t left, dm_fl_fight *f, int version) {
-    memset(f, 0, sizeof *f);
+
+static size_t get_fight(const uint8_t *p, size_t left, dm_fl_fight *f, int version, int *ok) {
+    memset(f, 0, sizeof *f); *ok = 0;
     if (left < sizeof f->h) return 0;
     memcpy(&f->h, p, sizeof f->h);
     const dm_fl_head *h = &f->h;
@@ -630,34 +630,74 @@ static size_t get_fight(const uint8_t *p, size_t left, dm_fl_fight *f, int versi
     memcpy(f->b, o, h->nbuckets * sizeof f->b[0]); o += h->nbuckets * sizeof f->b[0];
     if (h->ngroups >= 2) for (int k = 0; k < h->nbuckets; k++) { memcpy(f->glife[k], o, h->ngroups); o += h->ngroups; }
     memcpy(f->m, o, h->nmarks * sizeof f->m[0]);
-    return fight_ok(f) ? n : 0;
+    *ok = fight_ok(f);
+    return n;
 }
-int dm_fl_owner(dm_fl_state *s, const char *who, const uint8_t *image, size_t n) {
-    static dm_fl_fight in[DM_FL_RING];
-    int bad = 0, count = 0;
-    if (n) {
-        if (n < DM_FL_IMAGE_HEAD || n > DM_FL_IMAGE_MAX) bad = DM_FL_BAD_SIZE;
-        else if (get32(image) != DM_FL_MAGIC) bad = DM_FL_BAD_MAGIC;
-        else if ((get32(image + 4) & 0xffff) != DM_FL_VERSION && (get32(image + 4) & 0xffff) != DM_FL_VERSION_1) bad = DM_FL_BAD_VERSION;
-        else if (get32(image + 12) != crc32(image + DM_FL_IMAGE_HEAD, n - DM_FL_IMAGE_HEAD)) bad = DM_FL_BAD_CRC;
-        else if (get32(image + 8) > DM_FL_RING) bad = DM_FL_BAD_COUNT;
-        else {
-            count = (int)get32(image + 8);
-            size_t at = DM_FL_IMAGE_HEAD;
-            int version = (int)(get32(image + 4) & 0xffff);
-            for (int i = 0; i < count && !bad; i++) { size_t used = get_fight(image + at, n - at, &in[i], version); if (!used) bad = DM_FL_BAD_FIGHT; at += used; }
-            if (!bad && at != n) bad = DM_FL_BAD_SIZE;
-        }
+
+
+static int parse(const uint8_t *image, size_t n, dm_fl_fight *out, int *count, int *skipped) {
+    *count = *skipped = 0;
+    if (n < DM_FL_IMAGE_HEAD || n > DM_FL_IMAGE_MAX) return DM_FL_BAD_SIZE;
+    if (get32(image) != DM_FL_MAGIC) return DM_FL_BAD_MAGIC;
+    int version = (int)(get32(image + 4) & 0xffff);
+    if (version != DM_FL_VERSION && version != DM_FL_VERSION_1) return DM_FL_BAD_VERSION;
+    if (get32(image + 12) != crc32(image + DM_FL_IMAGE_HEAD, n - DM_FL_IMAGE_HEAD)) return DM_FL_BAD_CRC;
+    uint32_t records = get32(image + 8);
+    if (records > DM_FL_RING) return DM_FL_BAD_COUNT;
+    size_t at = DM_FL_IMAGE_HEAD;
+    for (uint32_t i = 0; i < records; i++) {
+        int ok; size_t used = get_fight(image + at, n - at, &out[*count], version, &ok);
+        if (!used) return DM_FL_BAD_FIGHT;
+        at += used;
+        if (ok) (*count)++; else (*skipped)++;
     }
-    if (bad) count = 0;
+    return at == n ? 0 : DM_FL_BAD_SIZE;
+}
+static dm_fl_fight g_read[DM_FL_RING];
+int dm_fl_owner(dm_fl_state *s, const char *who, const uint8_t *image, size_t n, int *skipped) {
+    int count = 0, skip = 0, bad = n ? parse(image, n, g_read, &count, &skip) : 0;
+    if (skipped) *skipped = skip;
     pthread_mutex_lock(&s->mu);
-    for (int i = 0; i < count; i++) s->ring[i] = in[i];
+    for (int i = 0; i < count; i++) s->ring[i] = g_read[i];
     s->count = count; s->head = count % DM_FL_RING;
     snprintf(s->who, sizeof s->who, "%s", who ? who : "");
     s->has_pend = 0;
     s->gen++; s->saved = s->gen;
     pthread_mutex_unlock(&s->mu);
     s->open = 0; s->npre = 0; s->ncool = 0;
+    return bad;
+}
+static int same_fight(const dm_fl_fight *a, const dm_fl_fight *b) {
+    static uint8_t x[sizeof(dm_fl_fight)], y[sizeof(dm_fl_fight)];
+    if (memcmp(&a->h, &b->h, sizeof a->h)) return 0;
+    size_t n = put_fight(x, a);
+    return n == put_fight(y, b) && !memcmp(x, y, n);
+}
+int dm_fl_merge(dm_fl_state *s, const uint8_t *image, size_t n, int newer, int *added, int *skipped) {
+    static dm_fl_fight add[DM_FL_RING], all[2 * DM_FL_RING];
+    int count = 0, skip = 0, bad = parse(image, n, g_read, &count, &skip), fresh = 0, k = 0;
+    if (skipped) *skipped = skip;
+    *added = 0;
+    pthread_mutex_lock(&s->mu);
+    int have = s->count;
+    for (int i = 0; i < count; i++) {
+        int dup = 0;
+        for (int j = 0; j < fresh && !dup; j++) dup = same_fight(&add[j], &g_read[i]);
+        for (int j = 0; j < have && !dup; j++) dup = same_fight(&s->ring[(s->head - have + j + DM_FL_RING) % DM_FL_RING], &g_read[i]);
+        if (!dup) add[fresh++] = g_read[i];
+    }
+    if (!newer) for (int i = 0; i < fresh; i++) all[k++] = add[i];
+    for (int j = 0; j < have; j++) all[k++] = s->ring[(s->head - have + j + DM_FL_RING) % DM_FL_RING];
+    if (newer) for (int i = 0; i < fresh; i++) all[k++] = add[i];
+
+    int keep = k > DM_FL_RING ? DM_FL_RING : k, drop = k - keep;
+    int lost = newer ? (drop > have ? drop - have : 0) : (drop < fresh ? drop : fresh);
+    if (fresh > lost) {
+        for (int i = 0; i < keep; i++) s->ring[i] = all[drop + i];
+        s->count = keep; s->head = keep % DM_FL_RING; s->gen++;
+        *added = fresh - lost;
+    }
+    pthread_mutex_unlock(&s->mu);
     return bad;
 }
 int dm_fl_owned_by(dm_fl_state *s, const char *who) {

@@ -4,6 +4,9 @@
 
 import struct, sys
 from capstone import *
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools'))
+from game_addrs import GA
 main, sub = open(sys.argv[1], 'rb').read(), open(sys.argv[2], 'rb').read()
 md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 def ins(a): i = next(md.disasm(main[a:a + 4], a)); return f'{i.mnemonic} {i.op_str}'
@@ -11,40 +14,40 @@ def ins(a): i = next(md.disasm(main[a:a + 4], a)); return f'{i.mnemonic} {i.op_s
 
 
 CHAIN = [
-    (0x898ed0, 'mov w1, #0x10', 'Extractor 对象 0x10 字节：剪口把状态指针存在第二个字'),
-    (0x899960, 'mov w1, #0x10', 'Decoder 对象 0x10 字节：同上'),
-    (0x899780, 'ldr x8, [x8, #0x20]', 'Setup 调 Extractor 槽4 GetTrackCount'),
-    (0x89979c, 'b.lt #0x899928', '轨数 < 1 跳过选轨（剪口给 0 轨）'),
-    (0x898f70, 'stp x24, x23, [x19, #0x1b8]', 'DecoderEvents[0..1] = {P+0x18, P+0x40}'),
-    (0x899044, 'mov w8, #1', 'P+0x18 的等待项种类 1 = 输入可用'),
-    (0x8990b8, 'mov w8, #2', 'P+0x40 的等待项种类 2 = 输出可用'),
-    (0x8999e4, 'ldr x8, [x8, #0x28]', 'Setup 调 Decoder 槽5 Start'),
-    (0x899f54, 'cmp w21, #0', 'Open 返回 (Start 状态 == 0)：剪口 Start 成功 ⇒ 在播'),
-    (0x899f5c, 'cset w0, eq', ''),
-    (0xbbfe40, 'bl #0x898230', '每帧更新调播放器更新'),
-    (0x89832c, 'ldrb w8, [x8, #0x489]', '帧队列空时返回 !P[+0x489]（播完标志）…'),
-    (0x898334, 'cset w0, eq', '… 未播完即视为在播'),
-    (0x8992e0, 'cmp w21, #1', '解码线程：种类 1 走输入路径'),
-    (0x8992e8, 'cmp w21, #2', '解码线程：种类 2 走输出路径'),
-    (0x899508, 'ldr x8, [x8, #0x48]', '输入：Decoder 槽9 AcquireInputBufferIndex'),
-    (0x899534, 'ldr x8, [x8, #0x50]', '输入：Decoder 槽10 GetInputBuffer'),
-    (0x8995a8, 'ldr x8, [x8, #0x50]', '输入：Extractor 槽10 Read'),
-    (0x8995b8, 'cmp w23, #2, lsl #12', 'Read 返回 0x2000 = 流尾 …'),
-    (0x8995c0, 'ldrb w8, [x19, #0x12]', '… 循环标志 …'),
-    (0x8995d4, 'ldr x8, [x8, #0x40]', '… 循环则 Extractor 槽8 SeekTo（剪口重挂定时）'),
-    (0x899620, 'mov w26, #4', '… 否则送入标志 4（流尾）'),
-    (0x899634, 'ldr x8, [x8, #0x60]', '输入：Extractor 槽12 GetSampleTime'),
-    (0x899670, 'ldr x8, [x8, #0x58]', '输入：Decoder 槽11 SendInputBufferForDecode'),
-    (0x89968c, 'ldr x8, [x8, #0x58]', '输入：Extractor 槽11 Advance'),
-    (0x89932c, 'ldr x8, [x8, #0x60]', '输出：Decoder 槽12 AcquireOutputBufferIndex'),
-    (0x899338, 'tst w0, #0xffffdfff', '状态 0 / 0x2000 才入帧队列（剪口无输出回 0x1008）'),
-    (0x899cb4, 'cmp x9, #2', '丢帧只在队列 ≥2 时（单个流尾项不会被丢）'),
-    (0x89a650, 'ldr x8, [x8, #0x90]', '取帧：Decoder 槽18 GetOutputBufferFormat（剪口回非 0）'),
-    (0x89a65c, 'cmp w27, #4', '标志 4 …'),
-    (0x89a670, 'strb w8, [x25, #0x489]', '… 置播完 ⇒ 游戏走正常播完路径'),
-    (0x899fdc, 'ldr x8, [x8, #0x30]', '收尾调 Decoder 槽6 Stop（剪口撤销定时）'),
-    (0x899ff0, 'ldr x8, [x8, #8]', '收尾调 Decoder 槽1 删除析构'),
-    (0x89a004, 'ldr x8, [x8, #8]', '收尾调 Extractor 槽1 删除析构'),
+    (GA.AT_MOVIE_EXT_ALLOC_SIZE, 'mov w1, #0x10', 'Extractor 对象 0x10 字节：剪口把状态指针存在第二个字'),
+    (GA.AT_MOVIE_DEC_ALLOC_SIZE, 'mov w1, #0x10', 'Decoder 对象 0x10 字节：同上'),
+    (GA.AT_MOVIE_EXT_TRACK_COUNT, 'ldr x8, [x8, #0x20]', 'Setup 调 Extractor 槽4 GetTrackCount'),
+    (GA.AT_MOVIE_NO_TRACK_BRANCH, f'b.lt #{GA.AT_MOVIE_TRACK_SKIP_TARGET:#x}', '轨数 < 1 跳过选轨（剪口给 0 轨）'),
+    (GA.AT_MOVIE_DEC_EVENTS_STORE, 'stp x24, x23, [x19, #0x1b8]', 'DecoderEvents[0..1] = {P+0x18, P+0x40}'),
+    (GA.AT_MOVIE_EVENT_INPUT_KIND, 'mov w8, #1', 'P+0x18 的等待项种类 1 = 输入可用'),
+    (GA.AT_MOVIE_EVENT_OUTPUT_KIND, 'mov w8, #2', 'P+0x40 的等待项种类 2 = 输出可用'),
+    (GA.AT_MOVIE_DEC_START, 'ldr x8, [x8, #0x28]', 'Setup 调 Decoder 槽5 Start'),
+    (GA.AT_MOVIE_OPEN_STATUS_CMP, 'cmp w21, #0', 'Open 返回 (Start 状态 == 0)：剪口 Start 成功 ⇒ 在播'),
+    (GA.AT_MOVIE_OPEN_RESULT_SET, 'cset w0, eq', ''),
+    (GA.AT_MOVIE_FRAME_UPDATE_CALL, f'bl #{GA.MOVIE_PLAYER_UPDATE:#x}', '每帧更新调播放器更新'),
+    (GA.AT_MOVIE_UPD_DONE_LOAD, 'ldrb w8, [x8, #0x489]', '帧队列空时返回 !P[+0x489]（播完标志）…'),
+    (GA.AT_MOVIE_UPD_PLAYING_SET, 'cset w0, eq', '… 未播完即视为在播'),
+    (GA.AT_MOVIE_THREAD_INPUT_CMP, 'cmp w21, #1', '解码线程：种类 1 走输入路径'),
+    (GA.AT_MOVIE_THREAD_OUTPUT_CMP, 'cmp w21, #2', '解码线程：种类 2 走输出路径'),
+    (GA.AT_MOVIE_DEC_ACQUIRE_IN, 'ldr x8, [x8, #0x48]', '输入：Decoder 槽9 AcquireInputBufferIndex'),
+    (GA.AT_MOVIE_DEC_GET_IN_BUF, 'ldr x8, [x8, #0x50]', '输入：Decoder 槽10 GetInputBuffer'),
+    (GA.AT_MOVIE_EXT_READ, 'ldr x8, [x8, #0x50]', '输入：Extractor 槽10 Read'),
+    (GA.AT_MOVIE_READ_EOS_CMP, 'cmp w23, #2, lsl #12', 'Read 返回 0x2000 = 流尾 …'),
+    (GA.AT_MOVIE_LOOP_FLAG_LOAD, 'ldrb w8, [x19, #0x12]', '… 循环标志 …'),
+    (GA.AT_MOVIE_EXT_SEEK, 'ldr x8, [x8, #0x40]', '… 循环则 Extractor 槽8 SeekTo（剪口重挂定时）'),
+    (GA.AT_MOVIE_EOS_FLAG_SET, 'mov w26, #4', '… 否则送入标志 4（流尾）'),
+    (GA.AT_MOVIE_EXT_SAMPLE_TIME, 'ldr x8, [x8, #0x60]', '输入：Extractor 槽12 GetSampleTime'),
+    (GA.AT_MOVIE_DEC_SEND_INPUT, 'ldr x8, [x8, #0x58]', '输入：Decoder 槽11 SendInputBufferForDecode'),
+    (GA.AT_MOVIE_EXT_ADVANCE, 'ldr x8, [x8, #0x58]', '输入：Extractor 槽11 Advance'),
+    (GA.AT_MOVIE_DEC_ACQUIRE_OUT, 'ldr x8, [x8, #0x60]', '输出：Decoder 槽12 AcquireOutputBufferIndex'),
+    (GA.AT_MOVIE_OUT_STATUS_TEST, 'tst w0, #0xffffdfff', '状态 0 / 0x2000 才入帧队列（剪口无输出回 0x1008）'),
+    (GA.AT_MOVIE_DROP_QUEUE_CMP, 'cmp x9, #2', '丢帧只在队列 ≥2 时（单个流尾项不会被丢）'),
+    (GA.AT_MOVIE_DEC_OUT_FORMAT, 'ldr x8, [x8, #0x90]', '取帧：Decoder 槽18 GetOutputBufferFormat（剪口回非 0）'),
+    (GA.AT_MOVIE_FETCH_EOS_CMP, 'cmp w27, #4', '标志 4 …'),
+    (GA.AT_MOVIE_DONE_FLAG_SET, 'strb w8, [x25, #0x489]', '… 置播完 ⇒ 游戏走正常播完路径'),
+    (GA.AT_MOVIE_DEC_STOP, 'ldr x8, [x8, #0x30]', '收尾调 Decoder 槽6 Stop（剪口撤销定时）'),
+    (GA.AT_MOVIE_DEC_DELETE, 'ldr x8, [x8, #8]', '收尾调 Decoder 槽1 删除析构'),
+    (GA.AT_MOVIE_EXT_DELETE, 'ldr x8, [x8, #8]', '收尾调 Extractor 槽1 删除析构'),
 ]
 bad = 0
 for a, want, why in CHAIN:

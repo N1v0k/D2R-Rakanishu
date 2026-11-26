@@ -44,6 +44,8 @@ DM = os.path.normpath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, os.path.join(DM, 'ios', 'tools'))
 sys.path.insert(0, os.path.join(DM, 'verify'))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(DM, 'tools'))
+from game_addrs import GA
 
 STANDARD_TURN = math.radians(45)
 MAX_BYTES = 14 * 1024 * 1024
@@ -76,8 +78,8 @@ IDENTITY = {'colorAdjustment': {'x': 0, 'y': 0, 'z': 0, 'w': 1}, 'colorTint': {'
             **{f: {'x': 0, 'y': 0, 'z': 0, 'w': 0} for f in ('hueAdjustment0', 'hueAdjustment1', 'satAdjustment0', 'satAdjustment1')}}
 
 
-MAIN_SHA256 = '55fd909bb7230b002357e5b0d8499c11f06888f345c49e69eb4734df44a27d0e'
-QUATERNION_RANGES = 0x1ddca70
+MAIN_SHA256 = 'bfe6f4d733ca56b9ca52fdda108f33284337b63d8490d166acc06d63aa2b4b5a'
+QUATERNION_RANGES = GA.GRANNY_QUAT_RANGES
 
 
 class PictureError(Exception):
@@ -485,7 +487,7 @@ def quaternion_ranges(main):
     with open(main, 'rb') as f:
         digest = hashlib.sha256(f.read()).hexdigest()
     if digest != MAIN_SHA256:
-        raise PictureError('the game executable %s has SHA-256 %s, not the verified 3.3.94012 build' % (main, digest))
+        raise PictureError('the game executable %s has SHA-256 %s, not the verified 3.4.95035 build' % (main, digest))
     values = struct.unpack_from('<32f', nsoimg.load(main), QUATERNION_RANGES)
     if not all(math.isfinite(v) for v in values):
         raise PictureError('the quaternion ranges of %s are not finite numbers' % main)

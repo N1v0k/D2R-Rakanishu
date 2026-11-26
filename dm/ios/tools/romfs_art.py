@@ -51,7 +51,7 @@ def read(romfs, path):
     for line in open(os.path.join(romfs, 'data', 'build_manifest.psv'), encoding='utf-8'):
         f = line.rstrip('\n').split('|')
         if len(f) >= 11 and f[9].lower().split(':', 1)[-1] == want: return touch_layout._read_entry(romfs, f)
-    raise SystemExit('romfs_art：游戏文件里没有 %s（RomFS 版本不对？要 3.3.94012）' % path)
+    raise SystemExit('romfs_art：游戏文件里没有 %s（RomFS 版本不对？要 3.4.95035）' % path)
 
 
 def dxt5(b, w, h):

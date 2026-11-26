@@ -17,6 +17,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_custom.h"
 #include "dm_splash.h"
@@ -60,12 +61,12 @@ static uint8_t *base(void) {
 }
 
 #ifndef DM_SPLASH_GAME_RESIST
-static void call_resist(const uint64_t *r) { ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + 0x7d3c50))(r[0], r[1], r[2], r[3]); }
+static void call_resist(const uint64_t *r) { ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + GA_COMBAT_REDUCE))(r[0], r[1], r[2], r[3]); }
 #else
 #define call_resist DM_SPLASH_GAME_RESIST
 #endif
 #ifndef DM_SPLASH_GAME_RESULT
-static void call_result(const uint64_t *r) { ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + 0x7d8880))(r[0], r[1], r[2], r[3]); }
+static void call_result(const uint64_t *r) { ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + GA_HIT_RESULT_APPLY))(r[0], r[1], r[2], r[3]); }
 #else
 #define call_result DM_SPLASH_GAME_RESULT
 #endif
@@ -113,12 +114,12 @@ static int pair_take(const uint64_t *r, uint32_t *tick, unsigned *calls) {
 }
 
 #ifndef DM_SPLASH_GAME_XP
-static int player_xp(uint64_t u) { return ((int (*)(uint64_t, int, int))(uintptr_t)(base() + 0x5b9290))(u, 13, 0); }
+static int player_xp(uint64_t u) { return ((int (*)(uint64_t, int, int))(uintptr_t)(base() + GA_STAT_GET))(u, 13, 0); }
 #else
 #define player_xp DM_SPLASH_GAME_XP
 #endif
 #ifndef DM_SPLASH_GAME_LIFE
-static int mon_life(uint64_t u) { return ((int (*)(uint64_t, int, int))(uintptr_t)(base() + 0x5b9290))(u, 6, 0); }
+static int mon_life(uint64_t u) { return ((int (*)(uint64_t, int, int))(uintptr_t)(base() + GA_STAT_GET))(u, 6, 0); }
 #else
 #define mon_life DM_SPLASH_GAME_LIFE
 #endif
@@ -233,28 +234,28 @@ static int cone_share(int ax, int ay, int px, int py, int nx, int ny, const dm_s
 
 #ifndef DM_SPLASH_GAME_GATE
 static int may_damage(uint64_t game, uint64_t att, uint64_t u) {
-    return ((int (*)(uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + 0x7cff80))(game, att, u) != 0;
+    return ((int (*)(uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + GA_COMBAT_CAN_DAMAGE))(game, att, u) != 0;
 }
 #else
 #define may_damage DM_SPLASH_GAME_GATE
 #endif
 #ifndef DM_SPLASH_GAME_RESIST_ONE
 static void resist_one(uint64_t game, uint64_t att, uint64_t u, uint64_t buf) {
-    ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + 0x7d3c50))(game, att, u, buf);
+    ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + GA_COMBAT_REDUCE))(game, att, u, buf);
 }
 #else
 #define resist_one DM_SPLASH_GAME_RESIST_ONE
 #endif
 #ifndef DM_SPLASH_GAME_DAMAGE
 static void damage_one(uint64_t game, uint64_t att, uint64_t u, uint64_t buf) {
-    ((void (*)(uint64_t, uint64_t, uint64_t, uint32_t, uint64_t))(uintptr_t)(base() + 0x7d5bb0))(game, att, u, 0, buf);
+    ((void (*)(uint64_t, uint64_t, uint64_t, uint32_t, uint64_t))(uintptr_t)(base() + GA_DAMAGE_APPLY))(game, att, u, 0, buf);
 }
 #else
 #define damage_one DM_SPLASH_GAME_DAMAGE
 #endif
 #ifndef DM_SPLASH_GAME_EXEC
 static void exec_one(uint64_t game, uint64_t att, uint64_t u, uint64_t buf) {
-    ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + 0x7d8880))(game, att, u, buf);
+    ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(uintptr_t)(base() + GA_HIT_RESULT_APPLY))(game, att, u, buf);
 }
 #else
 #define exec_one DM_SPLASH_GAME_EXEC
@@ -381,7 +382,7 @@ static void area_from_facts(const hit_facts *f, dm_splash_area *a) {
 
 static uint64_t data_table(uint64_t u) {
     uint8_t ver = *(volatile uint8_t *)(uintptr_t)(u + 0x1bd);
-    return ver >= 1 && ver <= 3 ? rd64((uint64_t)(uintptr_t)(base() + 0x2d64a18 + (uint64_t)ver * 16)) : 0;
+    return ver >= 1 && ver <= 3 ? rd64((uint64_t)(uintptr_t)(base() + GA_DATA_TABLES + (uint64_t)ver * 16)) : 0;
 }
 int dm_splash_weapon_type(uint64_t item, char type[5], int *range) {
     memset(type, 0, 5); *range = 0;
@@ -411,13 +412,13 @@ static int hit_facts_read(uint64_t att, hit_facts *f) {
     }
     for (int h = 0; h < 2; h++) {
         uint64_t it = hands[h];
-        if (!it || !((int (*)(uint64_t, int))(uintptr_t)(b + 0x574bc0))(it, 45)) continue;
+        if (!it || !((int (*)(uint64_t, int))(uintptr_t)(b + GA_ITEM_IS_TYPE))(it, 45)) continue;
         f->hand[h].weapon = 1;
         uint64_t l = rd64(it + 0x88); f->hand[h].idle = l && (rd32(l + 0x1c) & SIM_LIST_IDLE);
         if (dm_splash_weapon_type(it, f->hand[h].type, &f->hand[h].range)) f->hand[h].type[0] = 0;
     }
-    f->two_hands = inv && ((int (*)(uint64_t, uint64_t, int))(uintptr_t)(b + 0x560d20))(att, inv, 0) == 2;
-    int (*stat)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + 0x5b9290);
+    f->two_hands = inv && ((int (*)(uint64_t, uint64_t, int))(uintptr_t)(b + GA_INV_HAND_MODE))(att, inv, 0) == 2;
+    int (*stat)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + GA_STAT_GET);
     f->cls = (int)rd32(att + 4); f->str = stat(att, 0, 0); f->dex = stat(att, 2, 0);
     return 0;
 }

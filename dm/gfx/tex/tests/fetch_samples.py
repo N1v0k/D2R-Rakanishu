@@ -7,7 +7,7 @@
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../tools'))
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
-os.environ.setdefault('DMX_ROOT', os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/RomFS/data'))
+os.environ.setdefault('DMX_ROOT', os.path.join(DM_ROOT, 'data/switch', open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../PRODUCT'), encoding='utf-8').readline().split('-')[0], 'Update/RomFS/data'))
 import dmx
 PC = os.path.join(DM_ROOT, 'data/assets-src/raw')
 SAMPLES = [

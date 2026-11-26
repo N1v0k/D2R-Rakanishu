@@ -13,6 +13,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "dm_i18n.h"
 #include "dm_cursor.h"
@@ -75,15 +76,15 @@ void dm_update_pump(void) {
 
 
     { int dm_padmode_current(void), dm_padmode_busy(void); uint64_t dm_padmode_page_keys(uint64_t);
-      uint8_t *pb = tb(); uint64_t pr = pb ? *(uint64_t *)(pb + 0x2f05458) : 0; int have; pthread_mutex_lock(&g_mu); have = g_offer.build > 0; pthread_mutex_unlock(&g_mu);
+      uint8_t *pb = tb(); uint64_t pr = pb ? *(uint64_t *)(pb + GA_UI_ROOT) : 0; int have; pthread_mutex_lock(&g_mu); have = g_offer.build > 0; pthread_mutex_unlock(&g_mu);
       if (have && pr && dm_padmode_current() && !dm_padmode_busy()) { uint64_t mm = find(pr, "MainMenuPanel", 0), lg = mm ? find(mm, "MainMenuLegend", 0) : 0, cs = find(pr, "CharacterSelectPanel", 0), cc = find(pr, "CharacterCreatePanel", 0), st = find(pr, "SettingsPanel", 0);
           if (mm && *(uint8_t *)(mm + 0x50) && lg && find(mm, "TouchBuild", 0) && !(cs && *(uint8_t *)(cs + 0x50)) && !(cc && *(uint8_t *)(cc + 0x50)) && !(st && *(uint8_t *)(st + 0x50))) {
               if (dm_padmode_page_keys(0x8) & 0x8) { LOG("更新：手柄主菜单按了 Y（更新）"); if (g_on_click) g_on_click(); } } } }
     if (atomic_exchange(&g_fg, 0)) {
-        uint8_t *fb = tb(); uint64_t fr = fb ? *(uint64_t *)(fb + 0x2f05458) : 0, fm = fr ? find(fr, "MainMenuPanel", 0) : 0, fl = fr ? find(fr, "CharacterSelectPanel", 0) : 0;
+        uint8_t *fb = tb(); uint64_t fr = fb ? *(uint64_t *)(fb + GA_UI_ROOT) : 0, fm = fr ? find(fr, "MainMenuPanel", 0) : 0, fl = fr ? find(fr, "CharacterSelectPanel", 0) : 0;
         if (fm && find(fm, "TouchBuild", 0) && fl && *(uint8_t *)(fl + 0x50)) { atomic_store(&g_appear, 1); atomic_store(&g_dirty, 30); LOG("更新：回到前台时停在选角页，重查一次新版本"); } }
     int left = atomic_load(&g_dirty); if (left <= 0) return;
-    uint8_t *b = tb(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, mm = root ? find(root, "MainMenuPanel", 0) : 0, bw = mm ? find(mm, "TouchBuild", 0) : 0;
+    uint8_t *b = tb(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, mm = root ? find(root, "MainMenuPanel", 0) : 0, bw = mm ? find(mm, "TouchBuild", 0) : 0;
     if (!bw) return;
     if (atomic_exchange(&g_appear, 0) && g_on_select) g_on_select();
     if (atomic_load(&g_safe_l) < 0) return;
@@ -95,7 +96,7 @@ void dm_update_pump(void) {
 
 
 
-    int vw = *(int32_t *)(b + 0x211da38), vh = *(int32_t *)(b + 0x211da3c), xr = vh > 0 ? (int)((long)vw * 2160 / vh) : 3840;
+    int vw = *(int32_t *)(b + GA_UI_WIDTH), vh = *(int32_t *)(b + GA_UI_HEIGHT), xr = vh > 0 ? (int)((long)vw * 2160 / vh) : 3840;
     if (pad) place(bw, xr - 420 - bx, 60); else place(bw, bx, 2046);
 
 
@@ -126,10 +127,10 @@ void dm_update_pump(void) {
 
 int dm_update_click_at(float nx, float ny) {
     if (g_own < 0) return 0; int have, dm_padmode_busy(void); pthread_mutex_lock(&g_mu); have = g_offer.build > 0 && !g_offer.urgent; pthread_mutex_unlock(&g_mu);
-    uint8_t *b = tb(); uint64_t pr = b ? *(uint64_t *)(b + 0x2f05458) : 0; if (!have || !pr || dm_padmode_busy()) return 0;
+    uint8_t *b = tb(); uint64_t pr = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0; if (!have || !pr || dm_padmode_busy()) return 0;
     uint64_t mm = find(pr, "MainMenuPanel", 0), cs = find(pr, "CharacterSelectPanel", 0), cc = find(pr, "CharacterCreatePanel", 0), st = find(pr, "SettingsPanel", 0);
     if (!mm || !*(uint8_t *)(mm + 0x50) || !find(mm, "TouchBuild", 0) || (cs && *(uint8_t *)(cs + 0x50)) || (cc && *(uint8_t *)(cc + 0x50)) || (st && *(uint8_t *)(st + 0x50))) return 0;
-    int vw = *(int32_t *)(b + 0x211da38), vh = *(int32_t *)(b + 0x211da3c), xr = vh > 0 ? (int)((long)vw * 2160 / vh) : 3840, sl = atomic_load(&g_safe_l), bx = sl + 6 > 79 ? sl + 6 : 79;
+    int vw = *(int32_t *)(b + GA_UI_WIDTH), vh = *(int32_t *)(b + GA_UI_HEIGHT), xr = vh > 0 ? (int)((long)vw * 2160 / vh) : 3840, sl = atomic_load(&g_safe_l), bx = sl + 6 > 79 ? sl + 6 : 79;
     float x = nx * xr, y = ny * 2160; if (x < xr - 1400 - bx || x > xr - bx + 20 || y < 100 || y > 230) return 0;
     LOG("更新：鼠标点了主菜单的新版本提示"); if (g_on_click) g_on_click(); return 1;
 }
@@ -139,7 +140,7 @@ int dm_update_click_at(float nx, float ny) {
 
 
 static void set_text(uint8_t *b, uint64_t w, const char *s) {
-    if (*(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    if (*(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }

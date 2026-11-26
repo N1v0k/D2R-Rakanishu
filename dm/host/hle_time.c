@@ -5,6 +5,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <stdatomic.h>
 #include <time.h>
 
@@ -24,7 +25,7 @@ typedef struct { uint32_t wday, yday; char tzname[8]; uint32_t dst; int32_t offs
 static int64_t fixed_time(void) {
     static int64_t v = -2;
     if (v == -2) { const char *e = getenv("DM_FIXED_TIME"); v = e ? strtoll(e, 0, 0) : -1;
-                   if (v >= 0) LOG("DM_FIXED_TIME=%lld：用户时钟与建局 time()（main 0x3509a4）返回定值", (long long)v); }
+                   if (v >= 0) LOG("DM_FIXED_TIME=%lld: the user clock and the game-creation time() (main GA_AT_SEED_TIME_RET) return a fixed value", (long long)v); }
     return v;
 }
 HLE_FORCE("time", "按返回点认出建局种子那一处（DM_FIXED_TIME）；其余原样转调 SDK 的 time()", int64_t, h_time_time, int64_t *t) {
@@ -34,9 +35,9 @@ HLE_FORCE("time", "按返回点认出建局种子那一处（DM_FIXED_TIME）；
         module_t *ms = NULL, *mm = NULL;
         for (int i = 0; i < g_nmod; i++) { if (!strcmp(g_mod[i].name, "sdk")) ms = &g_mod[i]; if (!strcmp(g_mod[i].name, "main")) mm = &g_mod[i]; }
         void *f = ms ? module_sym(ms, "time") : NULL; if (!f) die("SDK 里找不到 time");
-        uint32_t w = mm ? *(uint32_t *)(mm->base + 0x3509a0) : 0;
-        if ((w & 0xfc000000) == 0x94000000) seed_ret = (uint64_t)mm->base + 0x3509a4;
-        else if (fixed_time() >= 0) LOG("【红】DM_FIXED_TIME：main 0x3509a0 不是预期的 bl time（%#x），建局 time() 未固定", w);
+        uint32_t w = mm ? *(uint32_t *)(mm->base + GA_AT_SEED_TIME_CALL) : 0;
+        if ((w & 0xfc000000) == 0x94000000) seed_ret = (uint64_t)mm->base + GA_AT_SEED_TIME_RET;
+        else if (fixed_time() >= 0) LOG("ERROR time.fixed_patch: main GA_AT_SEED_TIME_CALL is not the expected bl time (%#x), game-creation time() is not fixed", w);
         sdk_time = (int64_t (*)(int64_t *))f;
     }
     int64_t ft = fixed_time();
@@ -72,9 +73,9 @@ static int tz_site(uint64_t lr) {
     static _Atomic uint64_t base; uint64_t b = atomic_load(&base);
     if (!b) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint64_t)g_mod[i].base; atomic_store(&base, b); }
     if (!b || lr < b) return 0;
-    uint64_t off = lr - b; if (off > 0x58f1e0 && off < 0x591440) return 1;
+    uint64_t off = lr - b; if (off > GA_TZ_ZONE_GET && off < GA_AT_TZONE_CLUSTER_END) return 1;
     for (int k = 0; k < 8; k++) { uint32_t w = *(const uint32_t *)(uintptr_t)(lr + 4 * k);
-        if ((w & 0xfc000000) == 0x94000000) { int64_t imm = w & 0x3ffffff; if (imm & 0x2000000) imm -= 1 << 26; if (off + 4 * k + imm * 4 == 0x58f310) return 1; } }
+        if ((w & 0xfc000000) == 0x94000000) { int64_t imm = w & 0x3ffffff; if (imm & 0x2000000) imm -= 1 << 26; if (off + 4 * k + imm * 4 == GA_TZONE_SCHEDULE) return 1; } }
     return 0;
 }
 HLE_FORCE("_ZN2nn4time23StandardUserSystemClock3nowEv", "用户时钟 → 宿主 time()；首领连战强制地带时恐怖地带那几处另返回", int64_t, h_time_now, void) {

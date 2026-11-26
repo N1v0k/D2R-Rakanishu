@@ -15,5 +15,6 @@ void dm_uiscreen_set_ingame(int on);
 void dm_uiscreen_set_panel(int on);
 int dm_uiscreen_panel(void);
 #include <stdint.h>
+#include "game_addrs.h"
 uint64_t dm_game_res(int docked);
 void dm_uiscreen_res_reread(void);

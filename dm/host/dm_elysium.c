@@ -48,6 +48,7 @@
 
 
 #include "dm_elysium.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm.h"
 #include <stdatomic.h>
@@ -72,7 +73,7 @@ int dm_elysium_active(void) { return atomic_load(&g_active); }
 static void on_uimsg(const char *cat, const char *act, const char *arg) { (void)cat; (void)arg; if (!strcmp(act, "TryCreateCharacter")) atomic_store(&g_created, 1); }
 
 static uint8_t *main_base(void) { static uint8_t *b; if (!b) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base; return b; }
-static uint64_t table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0x16c8); return *(uint64_t *)(t + 0x16c0); }
+static uint64_t table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0x16c8); return *(uint64_t *)(t + 0x16c0); }
 static uint64_t fnv(uint64_t h, const uint8_t *p, size_t n) { for (size_t i = 0; i < n; i++) { h ^= p[i]; h *= 0x100000001b3ull; } return h; }
 static uint64_t tc_sum(uint8_t *b, uint64_t h);
 static uint64_t mon_sum(uint8_t *b, uint64_t h);
@@ -84,7 +85,7 @@ static uint64_t tables_sum(uint8_t *b) { uint64_t h = 0xcbf29ce484222325ull; for
 #define NODROP_DIV 10
 typedef struct { uint64_t arr, n; uint8_t *recs; uint8_t **ents; } tc_snap;
 static tc_snap g_tc[4];
-static uint64_t tc_table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0xdb8); return *(uint64_t *)(t + 0xdb0); }
+static uint64_t tc_table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0xdb8); return *(uint64_t *)(t + 0xdb0); }
 static uint64_t tc_sum(uint8_t *b, uint64_t h) { for (int v = 1; v <= 3; v++) { uint64_t n, a = tc_table(b, v, &n); for (uint64_t i = 0; a && i < n; i++) { uint8_t *r = (uint8_t *)(uintptr_t)(a + i * TC_REC); h = fnv(h, r + 0x10, 0x10); uint64_t e = *(uint64_t *)(r + 0x38), ne = *(uint64_t *)(r + 0x40); if (e && ne) h = fnv(h, (const uint8_t *)(uintptr_t)e, ne * TC_ENT); } } return h; }
 static int tc_snapshot(uint8_t *b) {
     for (int v = 1; v <= 3; v++) { uint64_t n, a = tc_table(b, v, &n); if (!a || !n) continue; tc_snap *s = &g_tc[v]; s->arr = a; s->n = n; s->recs = malloc(n * TC_REC); s->ents = calloc(n, sizeof *s->ents); if (!s->recs || !s->ents) return 0; memcpy(s->recs, (void *)(uintptr_t)a, n * TC_REC);
@@ -105,7 +106,7 @@ static void tc_write(uint8_t *r, const int64_t *wc, const int64_t *we) { uint8_t
     for (uint64_t k = 0; k < ne; k++) { *(int32_t *)(e + k * TC_ENT) = (int32_t)c; *(int32_t *)(e + k * TC_ENT + 4) = (int32_t)x; c += wc[k]; x += we[k]; } *(int32_t *)(r + 0x10) = (int32_t)c; *(int32_t *)(r + 0x14) = (int32_t)x; }
 #define MON_REC 0x1fc
 static uint8_t *g_mon[4]; static uint64_t g_mon_arr[4], g_mon_n[4];
-static uint64_t mon_table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0xf98); return *(uint64_t *)(t + 0xf90); }
+static uint64_t mon_table(uint8_t *b, int ver, uint64_t *n) { uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16); if (!t) { *n = 0; return 0; } *n = *(uint64_t *)(t + 0xf98); return *(uint64_t *)(t + 0xf90); }
 static int mon_snapshot(uint8_t *b) { for (int v = 1; v <= 3; v++) { uint64_t n, a = mon_table(b, v, &n); if (!a || !n) continue; g_mon[v] = malloc(n * 0x30); if (!g_mon[v]) return 0; g_mon_arr[v] = a; g_mon_n[v] = n;
         for (uint64_t i = 0; i < n; i++) memcpy(g_mon[v] + i * 0x30, (void *)(uintptr_t)(a + i * MON_REC + 0xc0), 0x30); } return 1; }
 static int mon_same(uint8_t *b, int v) { uint64_t n, a = mon_table(b, v, &n); return g_mon[v] && a == g_mon_arr[v] && n == g_mon_n[v]; }
@@ -121,7 +122,7 @@ static void mon_apply(uint8_t *b) {
 #define TC_MAXE 64
 static void tc_apply(uint8_t *b) {
     for (int v = 1; v <= 3; v++) { if (!tc_same(b, v)) continue; tc_snap *s = &g_tc[v]; uint64_t n = s->n; { int dup = 0; for (int u = 1; u < v; u++) if (g_tc[u].arr == s->arr) dup = 1; if (dup) continue; }
-        uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)v * 16), items = *(uint64_t *)(t + 0x15c0); uint32_t nitems = *(uint32_t *)(t + 0x15c8);
+        uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)v * 16), items = *(uint64_t *)(t + 0x15c0); uint32_t nitems = *(uint32_t *)(t + 0x15c8);
         uint8_t *rune = calloc(n, 1); int64_t *fa = calloc(n, sizeof *fa), *fd = calloc(n, sizeof *fd); if (!rune || !fa || !fd) { free(rune); free(fa); free(fd); continue; }
 
 
@@ -202,7 +203,7 @@ static int list_set(const char *file, const char *name, int on) { char p[1200], 
 
 static void tc_dump(uint8_t *b) {
     const char *path = getenv("DM_ELYSIUM_TCDUMP"); if (!path) return; FILE *f = fopen(path, "w"); if (!f) return;
-    for (int v = 1; v <= 3; v++) { uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)v * 16); if (!t) continue; uint64_t arr = *(uint64_t *)(t + 0xdb0), n = *(uint64_t *)(t + 0xdb8), items = *(uint64_t *)(t + 0x15c0); uint32_t nitems = *(uint32_t *)(t + 0x15c8);
+    for (int v = 1; v <= 3; v++) { uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)v * 16); if (!t) continue; uint64_t arr = *(uint64_t *)(t + 0xdb0), n = *(uint64_t *)(t + 0xdb8), items = *(uint64_t *)(t + 0x15c0); uint32_t nitems = *(uint32_t *)(t + 0x15c8);
         fprintf(f, "# 版本 %d：%llu 条\n", v, n);
         for (uint64_t i = 0; arr && i < n; i++) { uint8_t *r = (uint8_t *)(uintptr_t)(arr + i * 0x50); uint64_t ent = *(uint64_t *)(r + 0x38), ne = *(uint64_t *)(r + 0x40);
             fprintf(f, "v%d tc %llu 组 %u 级 %u +8=%d +c=%d 累计 %d/%d +18=%d +1c=%d +20=%d 标志 %02x %02x 品质 %u %u %u %u %u %u 项 %llu：", v, i, *(uint16_t *)r, *(uint16_t *)(r + 2), *(int32_t *)(r + 8), *(int32_t *)(r + 0xc), *(int32_t *)(r + 0x10), *(int32_t *)(r + 0x14),
@@ -217,7 +218,7 @@ static void tc_dump(uint8_t *b) {
 void dm_elysium_pump(void) {
     static int sub, in_game; if (!sub) { sub = 1; uimsg_subscribe(on_uimsg); if (getenv("DM_TEST_ELYSIUM_ARM")) dm_elysium_arm(1); }
     uint8_t *b = main_base(); if (!b || !snapshot(b)) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)), pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)), pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
     if (!pd) { if (in_game) { in_game = 0; restore(b); if (atomic_exchange(&g_active, 0)) LOG("极乐世界：退局，品质比例表与宝藏表已写回原值（校验和 %s）", tables_sum(b) == g_orig_sum ? "相符" : "【红】不符"); } return; }
     if (in_game) {
         static uint64_t c0, f0, cl, fl; static int w; uint64_t dm_fs_commit_count(void), dm_guest_frame(void); int dm_request_save(void); uint64_t c = dm_fs_commit_count(), f = dm_guest_frame();
@@ -331,7 +332,7 @@ static int stash_pages(uint64_t G, uint64_t player, uint64_t pg[8], uint32_t id[
 
 static void stash_gold_notify(uint8_t *b, uint64_t G, uint64_t player, uint32_t uid, int value) {
     uint64_t pd = *(uint64_t *)(player + 0x10), cn = pd ? *(uint64_t *)(pd + 0xf0) : 0; if (!cn) return;
-    uint64_t obj = (uint64_t)(uintptr_t)(b + 0x2d7f3d8); void (*send)(uint64_t, uint32_t, void *) = (void *)(uintptr_t)*(uint64_t *)(*(uint64_t *)obj + 0x28); struct { uint8_t *a, *z; } rg;
+    uint64_t obj = (uint64_t)(uintptr_t)(b + GA_SERVER_SENDER); void (*send)(uint64_t, uint32_t, void *) = (void *)(uintptr_t)*(uint64_t *)(*(uint64_t *)obj + 0x28); struct { uint8_t *a, *z; } rg;
     uint32_t seq = *(uint32_t *)(cn + 0x6c0); *(uint32_t *)(G + 0x19050) = 1;
     if (*(uint32_t *)(cn + 0x6c4) != seq) { uint64_t g2 = *(uint64_t *)(cn + 0x2e0); int busy = g2 && *(uint32_t *)(g2 + 0x19050) != 0;
         if (!(*(int32_t *)(cn + 0x99c) >= 1 && *(uint8_t *)(cn + 0x9a4) && !busy)) { uint8_t p2[5] = { 0x2d }; memcpy(p2 + 1, &seq, 4); *(uint32_t *)(cn + 0x6c4) = seq; rg.a = p2; rg.z = p2 + 5; send(obj, *(uint32_t *)cn, &rg); } }
@@ -345,7 +346,7 @@ void dm_stash_gold_notify(uint8_t *b, uint64_t G, uint64_t player, uint32_t uid,
 uint64_t dm_unit_inv(uint64_t u) { return unit_inv(u); }
 static int inv_toa(uint8_t *b, uint64_t unit) {
     uint64_t iv = unit_inv(unit); int c = 0, k = 0; if (!iv) return 0;
-    for (uint64_t it = *(uint64_t *)(iv + 0x10); it && c < 600; c++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; if ((((uint32_t (*)(uint64_t))(b + 0x570260))(it) & 0xffffff) == 0x616f74) k++; it = *(uint64_t *)(d + 0xb0); }
+    for (uint64_t it = *(uint64_t *)(iv + 0x10); it && c < 600; c++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; if ((((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) & 0xffffff) == 0x616f74) k++; it = *(uint64_t *)(d + 0xb0); }
     return k;
 }
 
@@ -358,13 +359,13 @@ static int adv_toa(uint8_t *b, uint64_t G, uint64_t player) {
         uint32_t i = *(uint32_t *)e; uint64_t u = *(uint64_t *)(G + 0x2230 + 8 * (i & 0x7f)); while (u && *(uint32_t *)(u + 8) != i) u = *(uint64_t *)(u + 0x158);
         uint64_t iv = u ? unit_inv(u) : 0; int c = 0;
         for (uint64_t it = iv ? *(uint64_t *)(iv + 0x10) : 0; it && c < 600; c++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
-            if ((((uint32_t (*)(uint64_t))(b + 0x570260))(it) & 0xffffff) == 0x616f74) { int st = *(uint8_t *)(d + 0x9c); k += st > 0 ? st : 1; }
+            if ((((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) & 0xffffff) == 0x616f74) { int st = *(uint8_t *)(d + 0x9c); k += st > 0 ? st : 1; }
             it = *(uint64_t *)(d + 0xb0); } }
     return k;
 }
 static void stash_read(uint8_t *b, uint64_t pg[8], int n, long long *gold, int *toa) {
     *gold = 0; *toa = 0;
-    for (int k = 0; k < n; k++) { *gold += ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pg[k], 15, 0); *toa += inv_toa(b, pg[k]); }
+    for (int k = 0; k < n; k++) { *gold += ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pg[k], 15, 0); *toa += inv_toa(b, pg[k]); }
 }
 void dm_elysium_stash_step(uint64_t G, uint64_t player, uint8_t *b) {
     { int dm_itemjob_owner(void); if (dm_itemjob_owner()) return; }
@@ -374,7 +375,7 @@ void dm_elysium_stash_step(uint64_t G, uint64_t player, uint8_t *b) {
     if (st == 0) { if (!atomic_exchange(&g_topup, 0)) return; st = 1; at = tq + 25; return; }
     if (tq < at) return;
     uint64_t pg[8]; uint32_t id[8]; int n = stash_pages(G, player, pg, id); long long gold; int toa;
-    void (*feed)(uint64_t, uint64_t, uint8_t *, uint32_t) = (void *)(b + 0x6e5b40);
+    void (*feed)(uint64_t, uint64_t, uint8_t *, uint32_t) = (void *)(b + GA_C2S_DISPATCH);
     if (st == 1) { st = 0; nmade = 0;
         if (!n) { uint64_t pi = unit_inv(player); char o[400]; int c = 0; o[0] = 0;
             for (uint64_t e = pi ? *(uint64_t *)(pi + 0x68) : 0; e && c < 340; e = *(uint64_t *)(e + 0x10)) { uint32_t i = *(uint32_t *)e; uint64_t u = *(uint64_t *)(G + 0x2230 + 8 * (i & 0x7f)); while (u && *(uint32_t *)(u + 8) != i) u = *(uint64_t *)(u + 0x158);
@@ -382,9 +383,9 @@ void dm_elysium_stash_step(uint64_t G, uint64_t player, uint8_t *b) {
             LOG("【红】极乐世界：共享仓库补齐——没找到玩家能用的共享页单位，不动（拍 %u，玩家物品栏%s，链表：%s）", tq, pi ? "有" : "无", o); return; }
         stash_backup(); stash_read(b, pg, n, &gold, &toa); int own = inv_toa(b, player), adv = adv_toa(b, G, player); long long need = STASH_GOLD - gold; int need_toa = STASH_TOA - toa - own - adv; nwant = need_toa > 0 ? need_toa : 0;
         LOG("极乐世界：共享仓库补齐——共享页 %d 个，现有金币合计 %lld、赦免之证 共享页 %d 枚 + 角色身上 %d 枚 + 材料页 %d 枚 → 要补金币 %lld、赦免之证 %d 枚（发到背包）", n, gold, toa, own, adv, need > 0 ? need : 0, nwant);
-        for (int k = 0; k < n && need > 0; k++) { int g = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pg[k], 15, 0), room = STASH_GOLD - g; if (room <= 0) continue; int add = need < room ? (int)need : room;
-            ((void (*)(uint64_t, int, int, int))(b + 0x5bc1f0))(pg[k], 15, g + add, 0); need -= add; stash_gold_notify(b, G, player, id[k], g + add); LOG("极乐世界：共享页 %d（单位 id %u）金币 %d → %d", k + 1, id[k], g, g + add); }
-        for (int i = 0; i < need_toa && i < STASH_TOA; i++) { uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(b + 0x7c0b20))(G, player, 0x20616f74, 2); if (!u) { LOG("【红】极乐世界：赦免之证生成失败"); continue; }
+        for (int k = 0; k < n && need > 0; k++) { int g = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pg[k], 15, 0), room = STASH_GOLD - g; if (room <= 0) continue; int add = need < room ? (int)need : room;
+            ((void (*)(uint64_t, int, int, int))(b + GA_STAT_SET))(pg[k], 15, g + add, 0); need -= add; stash_gold_notify(b, G, player, id[k], g + add); LOG("极乐世界：共享页 %d（单位 id %u）金币 %d → %d", k + 1, id[k], g, g + add); }
+        for (int i = 0; i < need_toa && i < STASH_TOA; i++) { uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(b + GA_ITEM_DROP_BY_CODE))(G, player, 0x20616f74, 2); if (!u) { LOG("【红】极乐世界：赦免之证生成失败"); continue; }
             uint64_t ip = *(uint64_t *)(u + 0x38); uint8_t pk[17] = { 0x16 }; uint32_t one = 1; memcpy(pk + 1, (void *)(uintptr_t)(u + 8), 4); if (ip) { memcpy(pk + 5, (void *)(uintptr_t)(ip + 0x10), 4); memcpy(pk + 9, (void *)(uintptr_t)(ip + 0x14), 4); } memcpy(pk + 13, &one, 4);
             *(uint32_t *)(G + 0x19050) = 1; feed(G, player, pk, 17); *(uint32_t *)(G + 0x19050) = 0; made[nmade++] = u; }
         st = 3; at = tq + 25;

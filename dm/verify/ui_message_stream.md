@@ -6,7 +6,7 @@ Every change in the game's UI (opening a panel, closing a panel, switching pages
 
 ## Capture point
 
-- All of the game's UI messages are dispatched through virtual function `+0x28` of the UI bus object `*(main + 0x2f05458)`; in `main` of 3.3.94012, the implementing function is `main + 0xb1dc60` (the vtable read at run time is authoritative; it is not hard-coded).
+- All of the game's UI messages are dispatched through virtual function `+0x28` of the UI bus object `*(main + GA_UI_ROOT)`; in `main` of 3.3.94012, the implementing function is `main + GA_UI_MSG_DISPATCH` (the vtable read at run time is authoritative; it is not hard-coded).
 - At entry: `x0` = the bus object, `x1` → the message header `{+0x00 u64 category hash, +0x08 u64 action hash, +0x10 u64 payload pointer}`.
 - The hash is FNV-1a 64 (offset basis `0xcbf29ce484222325`, multiplier `0x100000001b3`), computed byte by byte over the original string. Example: `PanelManager` = `0x7127a406e0b6452c`.
 - The same virtual function occasionally has non-message calls (`x1` is not a readable pointer): these are not output.

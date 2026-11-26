@@ -15,6 +15,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm.h"
 
 static uintptr_t main_base(void) {
@@ -27,8 +28,8 @@ HLE_FORCE("isalpha", "离线角色名放行非 ASCII：只对角色名三处校�
     if ((unsigned)((c | 0x20) - 'a') < 26) return 1;
     if (c >= 0x80 || c < 0) {
         uintptr_t off = (uintptr_t)__builtin_return_address(0) - main_base();
-        if ((off >= 0x7fe8a8 && off < 0x7feeec) || (off >= 0x807fd8 && off < 0x809d60) ||
-            (off >= 0x6f0c70 && off < 0x6f1220) || (off >= 0x6fe640 && off < 0x702e40)) return 1;
+        if ((off >= GA_CHARNAME_CHECK_JOIN && off < GA_AT_CHARNAME_CHECK_JOIN_END) || (off >= GA_CHARNAME_CHECK_LOAD && off < GA_AT_CHARNAME_CHECK_LOAD_END) ||
+            (off >= GA_SRV_SAVE_CHECK_A && off < GA_AT_SRV_SAVE_CHECK_A_END) || (off >= GA_SRV_SAVE_CHECK_B && off < GA_AT_SRV_SAVE_CHECK_B_END)) return 1;
     }
     return 0;
 }
@@ -39,8 +40,8 @@ HLE_FORCE("isalpha", "离线角色名放行非 ASCII：只对角色名三处校�
 
 int dm_charname_unfilter(void) {
     uintptr_t b = main_base(); if (!b) return 0;
-    uint64_t *fn = (uint64_t *)(b + 0x3213dd8);
-    if (fn[0] == 1 || fn[1] != b + 0xe09190) return 0;
+    uint64_t *fn = (uint64_t *)(b + GA_SWKBD_TEXT_FILTER);
+    if (fn[0] == 1 || fn[1] != b + GA_CHARNAME_TYPE_FILTER) return 0;
     fn[0] = 1; return 1;
 }
 

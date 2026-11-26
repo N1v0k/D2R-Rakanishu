@@ -23,6 +23,7 @@
 
 
 #include "dm_build.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "hle.h"
 #include "dm_actions.h"
@@ -49,12 +50,12 @@ static int env_int(const char *k, int def) { const char *e = getenv(k); return e
 
 #define env_int(k, def) (def)
 #endif
-static int gstat(uint8_t *b, uint64_t u, int st, int layer) { return u ? ((int (*)(uint64_t, int, int))(b + 0x5b9290))(u, st, layer) : 0; }
-static uint64_t player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); }
-static uint64_t item_by_id(uint8_t *b, uint32_t id) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), id & 0x7f, id, 4); }
+static int gstat(uint8_t *b, uint64_t u, int st, int layer) { return u ? ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(u, st, layer) : 0; }
+static uint64_t player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); }
+static uint64_t item_by_id(uint8_t *b, uint32_t id) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), id & 0x7f, id, 4); }
 static uint64_t first_item(uint64_t u) { uint64_t inv = u ? *(uint64_t *)(u + 0x90) : 0; return inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; }
 static uint64_t next_item(uint64_t it) { uint64_t d = *(uint64_t *)(it + 0x10); return d ? *(uint64_t *)(d + 0xb0) : 0; }
-static uint32_t item_code(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + 0x570260))(it); }
+static uint32_t item_code(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); }
 static uint64_t held_item(uint64_t pl) { uint64_t inv = pl ? *(uint64_t *)(pl + 0x90) : 0; return inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x40) : 0; }
 
 
@@ -88,10 +89,10 @@ static void dump_item(uint8_t *b, const char *who, uint64_t it, uint64_t pl) {
         *(uint32_t *)(it + 0xc), d ? *(uint8_t *)(d + 0x54) : 0, d ? *(uint8_t *)(d + 0x55) : 0, d ? *(uint32_t *)(d + 0x34) : 0);
     dump_getter(b, who, it, pl); dump_list(b, who, it);
     if (pl) {
-        int so = 0, dx = 0, lv = 0, ok = ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(it, pl, 1, &so, &dx, &lv, 0), rl = ((int (*)(uint64_t, uint64_t))(b + 0x571580))(it, pl);
-        uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4); int rs = -1, rd = -1;
+        int so = 0, dx = 0, lv = 0, ok = ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(it, pl, 1, &so, &dx, &lv, 0), rl = ((int (*)(uint64_t, uint64_t))(b + GA_ITEM_REQ_LEVEL))(it, pl);
+        uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4); int rs = -1, rd = -1;
         if (t && ci < *(uint32_t *)(t + 0x15c8)) { uint64_t rec = *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0; rs = *(uint16_t *)(rec + 0x11a); rd = *(uint16_t *)(rec + 0x11c); }
-        int pct = gstat(b, it, 91, 0), pct2 = ((int (*)(uint64_t, uint64_t, int, int))(b + 0x5b2a30))(pl, it, 0, 6);
+        int pct = gstat(b, it, 91, 0), pct2 = ((int (*)(uint64_t, uint64_t, int, int))(b + GA_SKILL_MASTERY))(pl, it, 0, 6);
         LOG("[cmp]   需求 %s：游戏判定 %d（力量够 %d 敏捷够 %d 等级够 %d）等级需求 %d 表力量 %d 表敏捷 %d 百分比 %d+%d 玩家 力量 %d 敏捷 %d 等级 %d", who, ok, so, dx, lv, rl, rs, rd, pct, pct2, gstat(b, pl, 0, 0), gstat(b, pl, 2, 0), gstat(b, pl, 12, 0)); }
     { uint64_t c = first_item(it); for (int n = 0; c && n < 6; n++, c = next_item(c)) { uint32_t cc = item_code(b, c); char w[48]; snprintf(w, sizeof w, "%s socket %.3s", who, (const char *)&cc); dump_getter(b, w, c, pl); } }
 }
@@ -109,8 +110,8 @@ void dm_itemcmp_spike_obs(uint64_t *regs) {
     uint64_t lr = regs[101], lro = lr - (uint64_t)(uintptr_t)b; if (lro > 0x2000000) lro = 0;
     const char *t = (const char *)(uintptr_t)regs[1], *t2 = (const char *)(uintptr_t)regs[5]; size_t tn = t ? strlen(t) : 0, t2n = t2 ? strlen(t2) : 0;
     g_panel = regs[0];
-    uint64_t w = 0, vt = 0, it = 0; int item_prod = lro == 0x3b28a8 || lro == 0x3b2944 || lro == 0x3d68e4;
-    if (item_prod) { w = regs[19]; vt = w ? *(uint64_t *)w - (uint64_t)(uintptr_t)b : 0; if (vt == 0x2089ab8 || vt == 0x2089fa0) it = ((uint64_t (*)(uint64_t, void *))(b + 0x3cc87c))(w, NULL); if (it && *(uint32_t *)it != 4) it = 0; }
+    uint64_t w = 0, vt = 0, it = 0; int item_prod = lro == GA_AT_ITEM_TIP_SUBMIT_RET || lro == GA_AT_ITEM_TIP_SUBMIT2_RET || lro == GA_AT_EQUIP_TIP_SUBMIT_RET;
+    if (item_prod) { w = regs[19]; vt = w ? *(uint64_t *)w - (uint64_t)(uintptr_t)b : 0; if (vt == GA_VT_ITEM_GRID || vt == GA_VT_EQUIP_SLOT) it = ((uint64_t (*)(uint64_t, void *))(b + GA_ITEM_CELL_ITEM))(w, NULL); if (it && *(uint32_t *)it != 4) it = 0; }
     uint64_t h = 1469598103934665603ull; for (size_t i = 0; i < tn; i++) h = (h ^ (uint8_t)t[i]) * 1099511628211ull; h ^= lro * 31 + (it ? *(uint32_t *)(it + 8) : 0);
     if (idx < 8 && sig_last[idx] != h) { sig_last[idx] = h;
         dm_cursor_item_info ci; int have = dm_cursor_item(&ci); static char e1[700], e2[200]; esc(e1, sizeof e1, t, tn < 600 ? tn : 600); esc(e2, sizeof e2, t2, t2n < 150 ? t2n : 150);
@@ -118,20 +119,20 @@ void dm_itemcmp_spike_obs(uint64_t *regs) {
             (unsigned long long)fr, idx, (unsigned long long)lro, (unsigned long long)regs[0], (unsigned long long)regs[2], (unsigned long long)regs[3], (unsigned long long)regs[4], tn, t2n,
             (unsigned long long)w, (unsigned long long)vt, it ? *(uint32_t *)(it + 8) : 0, it ? *(uint32_t *)(it + 0xc) : 0, w && vt ? *(uint8_t *)(w + 0x631) : -1, w && vt ? *(uint8_t *)(w + 0x632) : -1, have ? ci.id : 0);
         LOG("[cmp]   字「%s」 字2「%s」", e1, e2);
-        if (it) { uint64_t pl = player(b); dump_item(b, "cand", it, pl); int sl = 0; int ok = ((int (*)(uint64_t, uint64_t, int *, int, int))(b + 0x583b60))(pl, it, &sl, 1, 0);
-            int may = ok ? ((int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950))(pl, sl, it, 1, 0) : -1; LOG("[cmp]   选栏位 %d → %d，能放 %d", ok, sl, may);
+        if (it) { uint64_t pl = player(b); dump_item(b, "cand", it, pl); int sl = 0; int ok = ((int (*)(uint64_t, uint64_t, int *, int, int))(b + GA_EQUIP_SLOT_PICK))(pl, it, &sl, 1, 0);
+            int may = ok ? ((int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK))(pl, sl, it, 1, 0) : -1; LOG("[cmp]   选栏位 %d → %d，能放 %d", ok, sl, may);
             for (uint64_t q = first_item(pl); q; q = next_item(q)) { uint64_t d = *(uint64_t *)(q + 0x10); if (*(uint32_t *)(q + 0xc) == 1 && d && (!ok || *(uint8_t *)(d + 0x54) == sl)) dump_item(b, "worn", q, pl); }
             static int once; if (!once++) { dump_getter(b, "player", pl, pl); dump_list(b, "player", pl); } } }
     if (g_spike == 3 && item_prod && it) {
         static int done; static uint8_t rec[0x2e8]; static char tx[8192]; if (!done) { done = 1;
             module_t *mm = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) mm = &g_mod[i]; (void)mm;
-            uint64_t root = *(uint64_t *)(b + 0x2f05458); float sc = root ? ((float (*)(uint64_t))(b + 0x390b38))(root) : 0; int H = *(int32_t *)(b + 0x211da3c), W = *(int32_t *)(b + 0x211da38), pad = *(int32_t *)(regs[0] + 0xa40);
+            uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); float sc = root ? ((float (*)(uint64_t))(b + GA_UI_SCALE_GET))(root) : 0; int H = *(int32_t *)(b + GA_UI_HEIGHT), W = *(int32_t *)(b + GA_UI_WIDTH), pad = *(int32_t *)(regs[0] + 0xa40);
             LOG("[cmp] 量：屏 %dx%d 面板边距 %d 比例 %.3f → 上限高 %d；最小字号 %d", W, H, pad, sc, H - 2 * (int)(sc * pad), *(int32_t *)(regs[0] + 0xa50));
             static const char L1[] = "\xee\x81\xbe" "2Zauberrate +5 (15 % auf 20 %)";
             static const int nl[] = { 1, 2, 4, 8, 16, 24, 32, 40 }, nc[] = { 10, 20, 40, 80 };
             for (int v = 0; v < 12; v++) { int k = 0; if (v < 8) { for (int i = 0; i < nl[v]; i++) k += snprintf(tx + k, sizeof tx - k, "%s%s", i ? "\n" : "", L1); }
                 else { for (int i = 0; i < nc[v - 8]; i++) tx[k++] = "Leben Mana Feuer "[i % 17]; tx[k] = 0; }
-                memset(rec, 0, sizeof rec); ((void (*)(void *, const char *, uint64_t, uint64_t, uint64_t, const char *))(b + 0xb0f998))(rec, tx, regs[2], regs[3], regs[4], "");
+                memset(rec, 0, sizeof rec); ((void (*)(void *, const char *, uint64_t, uint64_t, uint64_t, const char *))(b + GA_TOOLTIP_RECORD_BUILD))(rec, tx, regs[2], regs[3], regs[4], "");
                 const int32_t *q = (const int32_t *)(rec + 0x60); uint64_t sp = *(uint64_t *)rec;
                 LOG("[cmp] 量 %s %d：框 %d %d %d %d %d %d %d %d 字号 %d %d；记录的字 %#llx（我们的 %p，%s）长 %llu 内容%s", v < 8 ? "行" : "字", v < 8 ? nl[v] : nc[v - 8], q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], *(int32_t *)(rec + 0x80), *(int32_t *)(rec + 0x84),
                     (unsigned long long)sp, (void *)tx, sp == (uint64_t)(uintptr_t)tx ? "同一块！" : "另一块", (unsigned long long)*(uint64_t *)(rec + 8), sp && sp != (uint64_t)(uintptr_t)tx && !memcmp((const void *)(uintptr_t)sp, tx, strlen(tx)) ? "相同（是拷贝）" : "不同"); } } }
@@ -203,51 +204,51 @@ static const uint64_t k_proven[] = {
     0x8c000040u,
 };
 static int cb_proven(uint64_t cell) { for (size_t i = 0; i < sizeof k_proven / sizeof *k_proven; i++) if (k_proven[i] && k_proven[i] == cell) return 1; return 0; }
-static int lstat_(uint8_t *b, uint64_t u, int st) { uint64_t l = u ? *(uint64_t *)(u + 0x88) : 0; return l ? ((int (*)(uint8_t, uint64_t, int, int))(b + 0x5bc810))(*(uint8_t *)(u + 0x1bd), l, st, 0) : 0; }
+static int lstat_(uint8_t *b, uint64_t u, int st) { uint64_t l = u ? *(uint64_t *)(u + 0x88) : 0; return l ? ((int (*)(uint8_t, uint64_t, int, int))(b + GA_STATLIST_GET))(*(uint8_t *)(u + 0x1bd), l, st, 0) : 0; }
 static uint64_t item_rec(uint8_t *b, uint64_t it) {
-    if (!it || *(uint32_t *)it != 4) return 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    if (!it || *(uint32_t *)it != 4) return 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     return t && ci < *(uint32_t *)(t + 0x15c8) ? *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0 : 0; }
-static int is_type(uint8_t *b, uint64_t it, int ty) { return it && ((int (*)(uint64_t, int))(b + 0x574bc0))(it, ty) != 0; }
+static int is_type(uint8_t *b, uint64_t it, int ty) { return it && ((int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE))(it, ty) != 0; }
 static int hand_off(uint64_t it) { uint64_t d = it && *(uint32_t *)it == 4 ? *(uint64_t *)(it + 0x10) : 0; return d && (*(uint8_t *)(d + 0x19) & 0x41); }
-static int wield(uint8_t *b, uint64_t pl, uint64_t it) { return ((int (*)(uint64_t, uint64_t, int))(b + 0x576de0))(pl, it, 0); }
+static int wield(uint8_t *b, uint64_t pl, uint64_t it) { return ((int (*)(uint64_t, uint64_t, int))(b + GA_ITEM_WIELD_MODE))(pl, it, 0); }
 static int hand_mode(uint8_t *b, uint64_t pl, uint64_t r4, uint64_t r5) {
     if (r4 && r5) { int a = wield(b, pl, r5), c = wield(b, pl, r4); return a == 3 || c == 3 ? 1 : a == 2 || c == 2 ? 2 : 1; }
     uint64_t x = r5 ? r5 : r4; if (!x) return 0; int r = wield(b, pl, x); return (r | 1) == 3 ? 2 : 1; }
 static int can_block(uint8_t *b, uint64_t r4, uint64_t r5) { return (r4 && !hand_off(r4) && is_type(b, r4, 51)) || (r5 && !hand_off(r5) && is_type(b, r5, 51)); }
 static uint64_t hands_weapon(uint8_t *b, uint64_t r4, uint64_t r5, int *dual) { int w4 = is_type(b, r4, 45), w5 = is_type(b, r5, 45); *dual = w4 && w5; return w5 ? r5 : w4 ? r4 : 0; }
 static uint64_t skill_node(uint64_t pl, int id) { uint64_t l = *(uint64_t *)(pl + 0x100), nd = l ? *(uint64_t *)l : 0; for (int k = 0; nd && k < 1024; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (r && *(int16_t *)r == id && *(int32_t *)(nd + 0x44) == -1) return nd; } return 0; }
-static const char *raw_str(uint8_t *b, const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = ((const char *(*)(void *))(b + 0x7f5630))(&s); return r && *r && strcmp(r, key) ? dm_untag(r) : NULL; }
+static const char *raw_str(uint8_t *b, const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = ((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&s); return r && *r && strcmp(r, key) ? dm_untag(r) : NULL; }
 typedef struct { int nowv[IC_C_N + 1], aftv[IC_C_N + 1], gamev[IC_C_N + 3]; dm_ic_veto v; unsigned unproven, affected, live; uint64_t cell[IC_C_N]; unsigned cat; dm_ic_cb now, aft; int r0[IC_C_N]; } cb_res;
-static int cb_classic(uint8_t *b) { uint64_t gi = *(uint64_t *)(b + 0x2d20b80); return gi && *(uint8_t *)(gi + 0x5c) == 1; }
+static int cb_classic(uint8_t *b) { uint64_t gi = *(uint64_t *)(b + GA_GAME_INFO); return gi && *(uint8_t *)(gi + 0x5c) == 1; }
 
 
 
 
 static int skill_calc(uint8_t *b, uint64_t pl, uint64_t nd, int lvl, int which) {
     uint64_t rec = nd ? *(uint64_t *)nd : 0; uint8_t ver = *(uint8_t *)(pl + 0x1bd); if (!rec || ver < 1 || ver > 3) return 0;
-    uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16); int16_t sd = *(int16_t *)(rec + 0x23c); if (!t || sd < 0 || (uint64_t)sd >= *(uint64_t *)(t + 0x11d0)) return 0;
+    uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16); int16_t sd = *(int16_t *)(rec + 0x23c); if (!t || sd < 0 || (uint64_t)sd >= *(uint64_t *)(t + 0x11d0)) return 0;
     uint32_t off = *(uint32_t *)(*(uint64_t *)(t + 0x11c8) + (uint64_t)sd * 0x12c + 0x14 + 4 * which); uint64_t size = *(uint64_t *)(t + 0x158); if (size <= off) return 0;
-    struct { uint64_t fn, u[7]; int32_t lvl; uint8_t z[4]; int32_t sk, lvl2; } ctx = { (uint64_t)(uintptr_t)(b + 0x209ce58), { pl, pl, pl, pl, pl, pl, pl }, lvl, { 0 }, *(int16_t *)rec, lvl };
-    return ((int (*)(int, uint64_t, int, uint64_t, uint64_t, int, void *))(b + 0xddab50))(ver, *(uint64_t *)(t + 0x150) + off, (int)(size - off), (uint64_t)(uintptr_t)(b + 0x527d50), (uint64_t)(uintptr_t)(b + 0x209cdb8), 9, &ctx);
+    struct { uint64_t fn, u[7]; int32_t lvl; uint8_t z[4]; int32_t sk, lvl2; } ctx = { (uint64_t)(uintptr_t)(b + GA_SKILL_CALC_CTX_FN), { pl, pl, pl, pl, pl, pl, pl }, lvl, { 0 }, *(int16_t *)rec, lvl };
+    return ((int (*)(int, uint64_t, int, uint64_t, uint64_t, int, void *))(b + GA_CALC_EVAL))(ver, *(uint64_t *)(t + 0x150) + off, (int)(size - off), (uint64_t)(uintptr_t)(b + GA_SKILL_CALC_TERM_CB), (uint64_t)(uintptr_t)(b + GA_SKILL_CALC_FN_TABLE), 9, &ctx);
 }
 
 static void skill_adds(uint8_t *b, uint64_t pl, uint64_t nd, int lvl, int *amn, int *amx) {
     int ver = *(uint8_t *)(pl + 0x1bd), sk = *(int16_t *)*(uint64_t *)nd; int (*f)(int, uint64_t, int, int, int);
-    f = (int (*)(int, uint64_t, int, int, int))(b + 0x5ad410); *amn = f(ver, pl, sk, lvl, 0) >> 8; f = (int (*)(int, uint64_t, int, int, int))(b + 0x5ac6f0); *amn += f(ver, pl, sk, lvl, 1) >> 8;
-    f = (int (*)(int, uint64_t, int, int, int))(b + 0x5ad880); *amx = f(ver, pl, sk, lvl, 0) >> 8; f = (int (*)(int, uint64_t, int, int, int))(b + 0x5aca00); *amx += f(ver, pl, sk, lvl, 1) >> 8;
+    f = (int (*)(int, uint64_t, int, int, int))(b + GA_SKILL_PHYS_MIN); *amn = f(ver, pl, sk, lvl, 0) >> 8; f = (int (*)(int, uint64_t, int, int, int))(b + GA_SKILL_ELEM_MIN); *amn += f(ver, pl, sk, lvl, 1) >> 8;
+    f = (int (*)(int, uint64_t, int, int, int))(b + GA_SKILL_PHYS_MAX); *amx = f(ver, pl, sk, lvl, 0) >> 8; f = (int (*)(int, uint64_t, int, int, int))(b + GA_SKILL_ELEM_MAX); *amx += f(ver, pl, sk, lvl, 1) >> 8;
 }
 static void cb_game(uint8_t *b, uint64_t pl, uint64_t nd, int lvl, uint64_t w, int *v) {
-    v[IC_C_DEF] = ((int (*)(uint64_t))(b + 0x5cd320))(pl);
-    v[IC_C_BLK] = ((int (*)(uint64_t, int))(b + 0x5cdac0))(pl, !cb_classic(b));
-    int ar = 0, col = 0; if (nd) ((void (*)(uint64_t, int *, int *, int, uint64_t, uint64_t))(b + 0x401ef0))(pl, &ar, &col, lvl, nd, w); v[IC_C_AR] = ar;
+    v[IC_C_DEF] = ((int (*)(uint64_t))(b + GA_CHAR_DEFENSE))(pl);
+    v[IC_C_BLK] = ((int (*)(uint64_t, int))(b + GA_CHAR_BLOCK))(pl, !cb_classic(b));
+    int ar = 0, col = 0; if (nd) ((void (*)(uint64_t, int *, int *, int, uint64_t, uint64_t))(b + GA_CHAR_ATTACK_RATING))(pl, &ar, &col, lvl, nd, w); v[IC_C_AR] = ar;
     int mn = 0, mx = 0; col = 0;
     v[IC_C_N + 1] = v[IC_C_N + 2] = 0;
 
 
     if (nd) { int x1 = skill_calc(b, pl, nd, lvl, 0), x2 = skill_calc(b, pl, nd, lvl, 1), a1, a2;
-              ((void (*)(uint64_t, int *, int *, int *, int, int, uint64_t, int, uint64_t))(b + 0x400120))(pl, &mn, &mx, &col, x1, x2, nd, 128, w);
+              ((void (*)(uint64_t, int *, int *, int *, int, int, uint64_t, int, uint64_t))(b + GA_CHAR_DAMAGE_BASE))(pl, &mn, &mx, &col, x1, x2, nd, 128, w);
               v[IC_C_N + 1] = mn; v[IC_C_N + 2] = mx;
-              ((void (*)(uint64_t, int *, int *, int *, uint64_t))(b + 0x400770))(pl, &mn, &mx, &col, nd);
+              ((void (*)(uint64_t, int *, int *, int *, uint64_t))(b + GA_CHAR_DAMAGE_ADD))(pl, &mn, &mx, &col, nd);
               skill_adds(b, pl, nd, lvl, &a1, &a2); mn += a1; mx += a2; if (!(mn < mx)) mx = mn + 1; }
     v[IC_C_DMG] = mn; v[IC_C_N] = mx;
 }
@@ -256,14 +257,14 @@ static const int k_cb_g[] = { 0, 2, 12, 17, 18, 19, 20, 21, 22, 23, 24, 25, 31, 
 static void cb_fill(uint8_t *b, uint64_t pl, const int *g, const int *lv, int cls, int canblk, uint64_t w, int mode, uint64_t nd, int alvl, dm_ic_cb *c) {
     #define GV(n) ({ int r_ = 0; for (int i_ = 0; i_ < CB_NG; i_++) if (k_cb_g[i_] == (n)) r_ = g[i_]; r_; })
     memset(c, 0, sizeof *c); c->str = GV(0); c->dex = GV(2); c->lvl = GV(12);
-    uint8_t ver = *(uint8_t *)(pl + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0;
+    uint8_t ver = *(uint8_t *)(pl + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0;
     if (t && (uint64_t)cls < *(uint64_t *)(t + 0x1280)) { uint64_t r = *(uint64_t *)(t + 0x1278) + (uint64_t)cls * 0xd4; c->thf = *(int32_t *)(r + 0x38); c->bf = *(uint8_t *)(r + 0x45); }
     c->expansion = !cb_classic(b);
     c->ac = GV(31); c->acpct = lv[0]; c->acovr = GV(182); c->toblock = GV(20); c->can_block = canblk; c->tohit = GV(19); c->tohitpct = lv[1];
-    c->ar_mast = ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + 0x5b2a30))(pl, w, nd, 0); c->ar_skill = ((int (*)(uint64_t, int, int))(b + 0x5acee0))(pl, 0, alvl);
+    c->ar_mast = ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + GA_SKILL_MASTERY))(pl, w, nd, 0); c->ar_skill = ((int (*)(uint64_t, int, int))(b + GA_SKILL_TOHIT))(pl, 0, alvl);
     uint64_t wr = item_rec(b, w); c->ar_zero = wr && *(uint16_t *)(wr + 0x12e) == 38;
     c->armed = w != 0; c->mode2 = mode == 2; c->mn[0] = GV(21); c->mx[0] = GV(22); c->mn[1] = GV(23); c->mx[1] = GV(24); c->bmn = GV(185); c->bmx = GV(186);
-    c->srcdam = *(uint8_t *)(*(uint64_t *)nd + 0x24d); c->dpct = GV(25); c->dmast = ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + 0x5b2a30))(pl, w, nd, 1);
+    c->srcdam = *(uint8_t *)(*(uint64_t *)nd + 0x24d); c->dpct = GV(25); c->dmast = ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + GA_SKILL_MASTERY))(pl, w, nd, 1);
     if (wr) { c->strb = *(int16_t *)(wr + 0x116); c->dexb = *(int16_t *)(wr + 0x118); }
     c->edmin = GV(18); c->edmax = GV(17); c->flat = lstat_(b, w, 111);
     for (int i = 0; i < 11; i++) c->el[i] = GV(48 + i);
@@ -284,8 +285,8 @@ static unsigned cb_dep(int st);
 static void cb_gather_scoped(uint8_t *b, uint64_t pl, uint64_t cand, const uint64_t *olds, int nold, int sl, int omask, uint64_t r4n, uint64_t r5n, int dsk, int force, cb_res *R, int current_snapshot, const int *gdelta, int charm) {
     memset(R, 0, sizeof *R); int cls = (int)*(uint32_t *)(pl + 4); uint64_t inv = *(uint64_t *)(pl + 0x90), nd = skill_node(pl, 0);
     uint64_t hands_after[2]; dm_ic_hands_after(sl, omask, cand, r4n, r5n, hands_after); uint64_t r4a = hands_after[0], r5a = hands_after[1];
-    int dn, da; uint64_t wn = hands_weapon(b, r4n, r5n, &dn), wa = hands_weapon(b, r4a, r5a, &da), wg = inv ? ((uint64_t (*)(uint64_t))(b + 0x560e70))(inv) : 0;
-    int mn_ = hand_mode(b, pl, r4n, r5n), ma = hand_mode(b, pl, r4a, r5a), mg = inv ? ((int (*)(uint64_t, uint64_t, int))(b + 0x560d20))(pl, inv, 0) : -1;
+    int dn, da; uint64_t wn = hands_weapon(b, r4n, r5n, &dn), wa = hands_weapon(b, r4a, r5a, &da), wg = inv ? ((uint64_t (*)(uint64_t))(b + GA_INV_GET_WEAPON))(inv) : 0;
+    int mn_ = hand_mode(b, pl, r4n, r5n), ma = hand_mode(b, pl, r4a, r5a), mg = inv ? ((int (*)(uint64_t, uint64_t, int))(b + GA_INV_HAND_MODE))(pl, inv, 0) : -1;
     int cbn = can_block(b, r4n, r5n), cba = can_block(b, r4a, r5a);
 
     unsigned cat = 0;
@@ -320,7 +321,7 @@ static void cb_gather_scoped(uint8_t *b, uint64_t pl, uint64_t cand, const uint6
 
 
 
-    if (((int (*)(uint64_t))(b + 0x5cb9e0))(pl) & 1) { R->live |= 4; dm_ic_veto_add(&R->v, 1u << IC_C_DMG, "dmCmpUnproven", 1); }
+    if (((int (*)(uint64_t))(b + GA_CHAR_DMG_ALT_PATH))(pl) & 1) { R->live |= 4; dm_ic_veto_add(&R->v, 1u << IC_C_DMG, "dmCmpUnproven", 1); }
     if (*(uint8_t *)(*(uint64_t *)nd + 0x24d) != 128) cb_why(R, 1u << IC_C_DMG, "dmCmpUnproven");
 
 
@@ -335,7 +336,7 @@ static void cb_gather_scoped(uint8_t *b, uint64_t pl, uint64_t cand, const uint6
     if (!cbn && !cba) setm &= ~(1u << IC_C_BLK);
     if (setm) R->cat |= CBK_SET;
     for (int m = 0; m < IC_C_N; m++) if (setm >> m & 1) { R->affected |= 1u << m; if (R->cell[m]) R->cell[m] = dm_ic_cell_key(cls, m, ctx, charm, ma, wt, cat & k_cb_mask[m], 0, 1); }
-    int alvl = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0);
+    int alvl = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0);
     cb_fill(b, pl, g, lv, cls, cbn, wn, mn_, nd, alvl, &R->now); cb_fill(b, pl, ga, la, cls, cba, wa, ma, nd, alvl + dsk, &R->aft);
     cb_game(b, pl, nd, alvl, wg, R->gamev);
 
@@ -365,8 +366,8 @@ static unsigned cb_dep(int st) {
 static int state101(uint64_t pl) { uint64_t l = *(uint64_t *)(pl + 0x88); return l && *(int32_t *)(l + 0x1c) < 0 && (*(uint8_t *)(l + 0xb3c) & 0x20); }
 
 static void cb_game_now(uint8_t *b, uint64_t pl, int *v) {
-    uint64_t inv = *(uint64_t *)(pl + 0x90), nd = skill_node(pl, 0); int lvl = nd ? *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0) : 0;
-    cb_game(b, pl, nd, lvl, inv ? ((uint64_t (*)(uint64_t))(b + 0x560e70))(inv) : 0, v); }
+    uint64_t inv = *(uint64_t *)(pl + 0x90), nd = skill_node(pl, 0); int lvl = nd ? *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0) : 0;
+    cb_game(b, pl, nd, lvl, inv ? ((uint64_t (*)(uint64_t))(b + GA_INV_GET_WEAPON))(inv) : 0, v); }
 
 
 void dm_itemcmp_sheet(uint8_t *b, uint64_t pl, int *def, int *block, int *ar) {
@@ -436,15 +437,15 @@ static int base_stat(uint64_t u, int st) {
     for (uint64_t i = 0; arr && i < cnt && i < 512; i++) if (*(uint32_t *)(arr + 8 * i) == (uint32_t)st << 16) return *(int32_t *)(arr + 8 * i + 4);
     return 0;
 }
-static int place_code(uint8_t *b, uint64_t pl, int sl, uint64_t it) { return ((int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950))(pl, sl, it, 1, 0); }
-static int two_handed(uint8_t *b, uint64_t it) { return it ? ((int (*)(uint64_t))(b + 0x572240))(it) != 0 : 0; }
+static int place_code(uint8_t *b, uint64_t pl, int sl, uint64_t it) { return ((int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK))(pl, sl, it, 1, 0); }
+static int two_handed(uint8_t *b, uint64_t it) { return it ? ((int (*)(uint64_t))(b + GA_ITEM_IS_2HANDED))(it) != 0 : 0; }
 static void worn_map(uint8_t *b, uint64_t pl, int *m) { (void)b; memset(m, 0, 16 * sizeof *m); for (uint64_t q = first_item(pl); q; q = next_item(q)) { uint64_t d = *(uint64_t *)(q + 0x10); if (d && *(uint32_t *)(q + 0xc) == 1 && *(uint8_t *)(d + 0x54) < 16) m[*(uint8_t *)(d + 0x54)] = (int)*(uint32_t *)(q + 8); } }
 static uint64_t totals(uint8_t *b, uint64_t pl, int *t) { uint64_t h = 1469598103934665603ull; for (int i = 0; i < NMS; i++) { t[i] = gstat(b, pl, k_ms[i].st, ms_layer(pl, k_ms[i].st)); h = (h ^ (uint32_t)t[i]) * 1099511628211ull; } return h; }
 
 static int skill_levels(uint8_t *b, uint64_t pl, int *id, int *lv, int max) {
     int n = 0; uint64_t l = *(uint64_t *)(pl + 0x100), nd = l ? *(uint64_t *)l : 0;
     for (int k = 0; nd && k < 1024 && n < max; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (!r || *(int32_t *)(nd + 0x44) != -1 || *(int32_t *)(nd + 0x38) <= 0) continue;
-        id[n] = *(int16_t *)r; lv[n] = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0); n++; }
+        id[n] = *(int16_t *)r; lv[n] = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0); n++; }
     return n;
 }
 static void skill_stats(uint8_t *b, const char *who, uint64_t it, uint64_t pl, const int *id, int n) {
@@ -452,15 +453,15 @@ static void skill_stats(uint8_t *b, const char *who, uint64_t it, uint64_t pl, c
     for (int i = 0; i < n && k < (int)sizeof o - 40; i++) { int a = gstat(b, it, 107, id[i]), c = gstat(b, it, 97, id[i]); if (a || c) k += snprintf(o + k, sizeof o - k, " skill %d: 107=%d 97=%d", id[i], a, c); }
     LOG("[cmp]   技能加成 %s:%s", who, o);
 }
-static int pick_slot(uint8_t *b, uint64_t pl, uint64_t it, int *sl) { *sl = 0; return ((int (*)(uint64_t, uint64_t, int *, int, int))(b + 0x583b60))(pl, it, sl, 1, 0) && *sl > 0 && *sl < 16; }
-static int may_place(uint8_t *b, uint64_t pl, int sl, uint64_t it) { return ((int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950))(pl, sl, it, 1, 0) != 0; }
+static int pick_slot(uint8_t *b, uint64_t pl, uint64_t it, int *sl) { *sl = 0; return ((int (*)(uint64_t, uint64_t, int *, int, int))(b + GA_EQUIP_SLOT_PICK))(pl, it, sl, 1, 0) && *sl > 0 && *sl < 16; }
+static int may_place(uint8_t *b, uint64_t pl, int sl, uint64_t it) { return ((int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK))(pl, sl, it, 1, 0) != 0; }
 static int inv_item(uint64_t it) { uint64_t d = *(uint64_t *)(it + 0x10); return d && *(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 0; }
-static int merc_open(uint8_t *b) { uint64_t root = *(uint64_t *)(b + 0x2f05458); (void)root; int dm_ui_panel_shown(const char *); return dm_ui_panel_shown("HirelingInventoryPanel"); }
+static int merc_open(uint8_t *b) { uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); (void)root; int dm_ui_panel_shown(const char *); return dm_ui_panel_shown("HirelingInventoryPanel"); }
 #define BENCH_FAIL(log_stmt) do { log_stmt; V.st = B_DONE; if (V.reqm && V.base_ok) { atomic_store(&g_req_base, V.base0); V.st = B_FAILREST; V.t0 = now_ns(); LOG("[cmp] 验算台：停台，基础力量设回 %d", V.base0); } } while (0)
 static void collect(uint8_t *b, uint64_t pl, int hands_only) {
     V.ncand = V.ci = 0;
     for (uint64_t q = first_item(pl); q && V.ncand < 24; q = next_item(q)) { int sl; if (inv_item(q) && pick_slot(b, pl, q, &sl) && may_place(b, pl, sl, q) && (!hands_only || sl == 4 || sl == 5)) V.cand[V.ncand++] = *(uint32_t *)(q + 8); }
-    LOG("[cmp] 验算台：背包里能穿的 %d 件（武器 %s 组）；难度 %u 职业 %u", V.ncand, V.set2 ? "II" : "I", *(uint8_t *)(b + 0x2d20b88), *(uint32_t *)(pl + 4)); dump_getter(b, "player", pl, pl); dump_list(b, "player", pl);
+    LOG("[cmp] 验算台：背包里能穿的 %d 件（武器 %s 组）；难度 %u 职业 %u", V.ncand, V.set2 ? "II" : "I", *(uint8_t *)(b + GA_DIFFICULTY), *(uint32_t *)(pl + 4)); dump_getter(b, "player", pl, pl); dump_list(b, "player", pl);
 }
 static int dress_one(uint8_t *b, uint64_t pl, int hands_only, int defer_2h, uint64_t now) {
     int m[16]; worn_map(b, pl, m); static int prep, prep1; static unsigned sockdone;
@@ -502,10 +503,10 @@ static void bench_pump(uint8_t *b, uint64_t pl) {
     static uint64_t start; if (pl && !start) start = now_ns(); uint64_t now = now_ns();
     { static int clr = -2; static uint64_t last; if (clr == -2) clr = env_int("DM_TEST_ITEMCMP_CLEAR", -1);
       if (clr >= 0 && pl && now - start >= (uint64_t)clr * 1000000000ull && now - last > 400000000ull) { last = now; uint32_t id = 0;
-          for (uint64_t q = first_item(pl); q && !id; q = next_item(q)) if (inv_item(q) && ((int (*)(uint64_t, int))(b + 0x574bc0))(q, 9)) id = *(uint32_t *)(q + 8);
+          for (uint64_t q = first_item(pl); q && !id; q = next_item(q)) if (inv_item(q) && ((int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE))(q, 9)) id = *(uint32_t *)(q + 8);
           if (id) dm_item_use(id); else { clr = -1; LOG("[cmp] 验算台：背包里的药水喝完了"); } } }
     if (at < 0 || !pl || V.st == B_DONE) return;
-    static int stow_sent; void (*swap0)(int) = (void (*)(int))(b + 0x41db90); int dm_swapskill_wset(void);
+    static int stow_sent; void (*swap0)(int) = (void (*)(int))(b + GA_WEAPON_SWAP); int dm_swapskill_wset(void);
     switch (V.st) {
     case B_OFF: if (now - start < (uint64_t)at * 1000000000ull) return; V.st = B_IDENT; V.wait_id = 0; LOG("[cmp] 验算台：开始（%s%s）", dress ? "先穿上" : "不先穿", sets ? "，含武器 II 组" : ""); return;
     case B_IDENT: {
@@ -555,9 +556,9 @@ static void bench_pump(uint8_t *b, uint64_t pl) {
           if (dstr || ddex) { V.nrq = req_scan(b, pl, it, wi, om, sl, V.in.tot[IC_S_STR], V.in.tot[IC_S_DEX], dstr, ddex, rf, 8, &V.rq_closed); if (V.nrq > 8) V.nrq = 8; }
           for (int k = 0; k < V.nrq; k++) { V.rq_slot[k] = rf[k].slot; V.rq_stat[k] = rf[k].stat; V.rq_oc[k] = rf[k].oc; LOG("[cmp] 验算台 需求预测 id %u：栏位 %d %s 需求 %d → %s（%s）", V.cid, rf[k].slot, rf[k].stat ? "敏捷" : "力量", rf[k].req,
               rf[k].oc == IC_REQ_GAIN ? "之后够" : rf[k].oc == IC_REQ_LOSS ? "之后不够" : "说不准", V.rq_closed ? "闭合" : "不闭合"); }
-          for (int s2 = 1; s2 <= 10; s2++) { V.vs0[s2] = V.vd0[s2] = -1; if (!wi[s2]) continue; int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(wi[s2], pl, 1, &so, &dx, &lv, 0); V.vs0[s2] = so; V.vd0[s2] = dx; } }
+          for (int s2 = 1; s2 <= 10; s2++) { V.vs0[s2] = V.vd0[s2] = -1; if (!wi[s2]) continue; int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(wi[s2], pl, 1, &so, &dx, &lv, 0); V.vs0[s2] = so; V.vd0[s2] = dx; } }
         { static char sk[900]; int q = 0; uint64_t l = *(uint64_t *)(pl + 0x100), nd = l ? *(uint64_t *)l : 0;
-          for (int k = 0; nd && k < 1024 && q < (int)sizeof sk - 40; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (!r) continue; int bs = *(int32_t *)(nd + 0x38), bo = ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0);
+          for (int k = 0; nd && k < 1024 && q < (int)sizeof sk - 40; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (!r) continue; int bs = *(int32_t *)(nd + 0x38), bo = ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0);
               if (bs > 0 || bo > 0 || *(int32_t *)(nd + 0x44) != -1) q += snprintf(sk + q, sizeof sk - q, " %d:%d+%d(%d)", *(int16_t *)r, bs, bo, *(int32_t *)(nd + 0x44)); }
           LOG("[cmp] 验算台 技能节点（号:基础+加成(来源物品)）:%s", q ? sk : " 无"); }
         { uint64_t r4 = V.worn0[4] ? item_by_id(b, (uint32_t)V.worn0[4]) : 0, r5 = V.worn0[5] ? item_by_id(b, (uint32_t)V.worn0[5]) : 0; int om = 0; for (int k = 0; k < V.nold; k++) om |= 1 << V.oslot[k];
@@ -604,7 +605,7 @@ static void bench_pump(uint8_t *b, uint64_t pl) {
         { int m2[16]; worn_map(b, pl, m2); static char rl[600]; int q = 0, ok = 0, bad = 0;
 #define RL(...) do { if (q < (int)sizeof rl - 1) { int w_ = snprintf(rl + q, sizeof rl - q, __VA_ARGS__); q += w_ > 0 ? w_ : 0; if (q > (int)sizeof rl - 1) q = (int)sizeof rl - 1; } } while (0)
           for (int s2 = 1; s2 <= 10; s2++) { uint64_t w = m2[s2] ? item_by_id(b, (uint32_t)m2[s2]) : 0; if (!w) continue; int out_ = 0; for (int k = 0; k < V.nold; k++) out_ |= V.oslot[k] == s2 && (uint32_t)m2[s2] != V.cid; if (out_) continue;
-              int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(w, pl, 1, &so, &dx, &lv, 0);
+              int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(w, pl, 1, &so, &dx, &lv, 0);
               for (int st = 0; st < 2; st++) { int was = s2 == V.slot && (uint32_t)m2[s2] == V.cid ? 1 : st ? V.vd0[s2] : V.vs0[s2], is = st ? dx : so, want = was, pr = -1; if (was < 0) continue;
                   for (int k = 0; k < V.nrq; k++) if (V.rq_slot[k] == s2 && V.rq_stat[k] == (st ? 2 : 0)) pr = V.rq_oc[k];
                   if (pr == IC_REQ_AMBIG) { RL(" %d/%s %d->%d ambiguous;", s2, st ? "dex" : "str", was, is); continue; }
@@ -719,8 +720,8 @@ static void bench_pump(uint8_t *b, uint64_t pl) {
 enum { PAD_SHORT = 15 };
 static _Atomic int g_lock, g_held_own = -1;
 static int own_ok(uint8_t *b) {
-    int dm_runeword_list_open(void), dm_item_targeting(void); uint64_t root = *(uint64_t *)(b + 0x2f05458), fm = root ? *(uint64_t *)(root + 0xd0) : 0, w = fm ? *(uint64_t *)(fm + 0x190) : 0;
-    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x2089ab8 || !*(uint8_t *)(w + 0x631)) return 0;
+    int dm_runeword_list_open(void), dm_item_targeting(void); uint64_t root = *(uint64_t *)(b + GA_UI_ROOT), fm = root ? *(uint64_t *)(root + 0xd0) : 0, w = fm ? *(uint64_t *)(fm + 0x190) : 0;
+    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_ITEM_GRID || !*(uint8_t *)(w + 0x631)) return 0;
     if (!dm_ui_panel_shown("PlayerInventoryExpansionLayout") || dm_ui_panel_shown("HirelingInventoryPanel")) return 0;
     if (dm_ui_panel_state() & (DM_PS_BANK | DM_PS_VENDOR | DM_PS_IMBUE | DM_PS_CUBE | DM_PS_VAULT | DM_PS_DEAD)) return 0;
     uint64_t pl = player(b); return pl && !held_item(pl) && !dm_item_targeting() && !dm_runeword_list_open();
@@ -784,7 +785,7 @@ int dm_itemcmp_skill_class(int skill) { data_load(); if (D.ok <= 0) return -2; f
 
 static int bench_coeffs(int cls, int *lpv, int *mpm, int *pen, uint8_t *b) {
     data_load(); if (D.ok <= 0 || cls < 0 || cls > 7) return 0; *lpv = D.lpv[cls]; *mpm = D.mpm[cls];
-    int df = *(uint8_t *)(b + 0x2d20b88); if (df > 2) df = 2; uint64_t gi = *(uint64_t *)(b + 0x2d20b80); *pen = D.pen[df][gi && *(uint8_t *)(gi + 0x5c) == 1]; return 1;
+    int df = *(uint8_t *)(b + GA_DIFFICULTY); if (df > 2) df = 2; uint64_t gi = *(uint64_t *)(b + GA_GAME_INFO); *pen = D.pen[df][gi && *(uint8_t *)(gi + 0x5c) == 1]; return 1;
 }
 
 #define CC "\xee\x81\xbe"
@@ -822,12 +823,12 @@ static uint64_t item_hash_stable(uint64_t it, uint64_t h) { h = list_hash(it, h)
 static int item_skill_sig_but(uint64_t it, int cls, int skip, int64_t *acc) { int r = skill_sig_but(it, cls, skip, acc), n = 0; KIDS(it, c, n) skill_sig_but(c, cls, skip, acc); return r; }
 static int item_skill_sig(uint64_t it, int cls, int64_t *acc) { return item_skill_sig_but(it, cls, -1, acc); }
 static void read_stats(uint8_t *b, uint64_t u, int cls, int *v) { for (int i = 0; i < IC_S_N; i++) v[i] = u ? gstat(b, u, dm_ic_stat_id[i], dm_ic_stat_id[i] == 83 ? cls : 0) : 0; }
-static int item_effective(uint8_t *b, uint64_t pl, uint64_t it) { int s = 0, d = 0, l = 0; return ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(it, pl, 1, &s, &d, &l, 0) != 0; }
+static int item_effective(uint8_t *b, uint64_t pl, uint64_t it) { int s = 0, d = 0, l = 0; return ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(it, pl, 1, &s, &d, &l, 0) != 0; }
 
 static void req_table_with(uint8_t *b, uint64_t pl, uint64_t it, int mastery, int *rs, int *rd) {
-    *rs = *rd = 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    *rs = *rd = 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     if (!t || ci >= *(uint32_t *)(t + 0x15c8)) return; uint64_t rec = *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0, d = *(uint64_t *)(it + 0x10);
-    int pct = gstat(b, it, 91, 0) + (mastery ? ((int (*)(uint64_t, uint64_t, int, int))(b + 0x5b2a30))(pl, it, 0, 6) : 0), eth = d && (*(uint32_t *)(d + 0x18) & 0x400000);
+    int pct = gstat(b, it, 91, 0) + (mastery ? ((int (*)(uint64_t, uint64_t, int, int))(b + GA_SKILL_MASTERY))(pl, it, 0, 6) : 0), eth = d && (*(uint32_t *)(d + 0x18) & 0x400000);
     int s0 = *(uint16_t *)(rec + 0x11a), d0 = *(uint16_t *)(rec + 0x11c); *rs = s0 ? dm_ic_req_value(s0, pct, eth) : 0; *rd = d0 ? dm_ic_req_value(d0, pct, eth) : 0;
 }
 static void req_table(uint8_t *b, uint64_t pl, uint64_t it, int *rs, int *rd) { req_table_with(b, pl, it, 1, rs, rd); }
@@ -846,7 +847,7 @@ static int skill_pred(uint8_t *b, uint64_t pl, uint64_t cand, const uint64_t *ol
     int pg = D.sk[si].page, ly = cls * 8 + pg - 1, d107 = gstat(b, cand, 107, id) - gsum(b, olds, nold, 107, id), dt = pg >= 1 && pg <= 3 ? gstat(b, cand, 188, ly) - gsum(b, olds, nold, 188, ly) : 0;
     int dall = gstat(b, cand, 127, 0) - gsum(b, olds, nold, 127, 0) + gstat(b, cand, 83, cls) - gsum(b, olds, nold, 83, cls);
     uint64_t l = *(uint64_t *)(pl + 0x100), nd = l ? *(uint64_t *)l : 0, node = 0; for (int k = 0; nd && k < 1024 && !node; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (r && *(int16_t *)r == id && *(int32_t *)(nd + 0x44) == -1) node = nd; }
-    int base = node ? *(int32_t *)(node + 0x38) : 0, after; *now = node ? base + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, node, 0) : 0;
+    int base = node ? *(int32_t *)(node + 0x38) : 0, after; *now = node ? base + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, node, 0) : 0;
     if (!d107 && !((dt || dall) && node)) return -2;
     if (raw_has(cand, 126) || any_has(olds, nold, 126) || gstat(b, cand, 97, id) || gsum(b, olds, nold, 97, id)) return -1;
     if (base >= 1) after = *now + d107 + dall + dt; else { if (dall || dt) return -4; after = *now + d107; }
@@ -857,7 +858,7 @@ static const char *slot_name(uint8_t *b, int sl) { static char k[16]; snprintf(k
 
 
 static const char *game_str(uint8_t *b, const char *key, int nfmt, int maxg, const char *fallback) {
-    struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = ((const char *(*)(void *))(b + 0x7f5630))(&s);
+    struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = ((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&s);
     int ok = r && *r && strcmp(r, key) != 0, nd = 0, g = 0;
     for (const unsigned char *p = (const unsigned char *)r; ok && *p; p++) { if (*p == '\n' || *p == '\r') ok = 0; else if (*p == '%') { if (p[1] == 'd') { nd++; p++; } else ok = 0; }
         if ((*p & 0xc0) != 0x80) g++; }
@@ -876,7 +877,7 @@ static int req_scan(uint8_t *b, uint64_t pl, uint64_t cand, const uint64_t *wit,
     (void)cand;
     for (int s2 = 1; s2 <= 10; s2++) { uint64_t w = (omask >> s2 & 1) || s2 == sl ? 0 : wit[s2]; if (!w) continue;
         int rs, rd; req_table(b, pl, w, &rs, &rd); if (!rs && !rd) continue;
-        int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(w, pl, 1, &so, &dx, &lv, 0);
+        int so = 1, dx = 1, lv = 1; ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(w, pl, 1, &so, &dx, &lv, 0);
         for (int k = 0; k < 2; k++) { int req = k ? rd : rs, t = k ? tdex : tstr, d = k ? ddex : dstr, own = gstat(b, w, k ? 2 : 0, 0), game = k ? dx : so; if (!req || !d) continue;
             int oc = dm_ic_req_outcome(req, t, t + d, own);
             if (game != (t >= req) && game != (t - own >= req)) oc = IC_REQ_AMBIG;
@@ -960,7 +961,7 @@ static void pkg_block(uint8_t *b, uint64_t pl, int cls, const dm_gtab_pkg *pk, c
         for (int m = 0; m < IC_C_N; m++) { cb_label(b, m, cbl[m], sizeof cbl[m]);
             if ((m == IC_C_AR || m == IC_C_DMG) && atk[0]) { size_t L = strlen(cbl[m]); snprintf(cbl[m] + L, sizeof cbl[m] - L, " (%s)", atk); }
             w.cb_label[m] = cbl[m]; }
-        int df = *(uint8_t *)(b + 0x2d20b88); if (df > 2) df = 2;
+        int df = *(uint8_t *)(b + GA_DIFFICULTY); if (df > 2) df = 2;
         dm_ic_pkg_in in = { pk->before, pk->after, D.pen[df][cb_classic(b)], pk->with, ps, nsk, pk->cb, pk->cb_before, pk->cb_after, splash };
         static dm_ic_pkg_line out[64]; int n = dm_ic_pkg_lines(&in, &w, out, 64);
         for (int i = 0; i < n; i++) add(out[i].kind == IC_PKG_NOTE ? K_NOTE : out[i].kind == IC_PKG_MORE ? K_MORE : K_VAL, 0, "%s", out[i].text);
@@ -1109,7 +1110,7 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
     for (uint64_t q = first_item(pl); q; q = next_item(q)) { uint64_t qd = *(uint64_t *)(q + 0x10); if (qd && *(uint32_t *)(q + 0xc) == 1 && *(uint8_t *)(qd + 0x54) < 16) { worn[*(uint8_t *)(qd + 0x54)] = (int)*(uint32_t *)(q + 8); wit[*(uint8_t *)(qd + 0x54)] = q; } }
     int ident = (*(uint32_t *)(d + 0x18) & 0x10) != 0;
     if (!ident && !unequip) {
-        uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4); int loc = 0;
+        uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4); int loc = 0;
         if (t && ci < *(uint32_t *)(t + 0x15c8)) { int16_t ty = *(int16_t *)(*(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0 + 0x12e); if (ty >= 0 && (uint64_t)ty < *(uint64_t *)(t + 0x1370)) loc = *(uint8_t *)(*(uint64_t *)(t + 0x1368) + (uint64_t)ty * 0xe8 + 0xa); }
         if ((!loc && !charm) || !dm_custom_get("item_cmp")) return 0;
         *key = 0x5eed ^ iid; C.key = 0; C.dots = 0; S.n = S.lost = 0;
@@ -1120,7 +1121,7 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
     if (charm == IC_CHARM_OUT && !item_effective(b, pl, it)) return 0;
 
     int l1 = 0, l2 = 0;
-    { uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    { uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
       if (t && ci < *(uint32_t *)(t + 0x15c8)) { int16_t ty = *(int16_t *)(*(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0 + 0x12e); if (ty >= 0 && (uint64_t)ty < *(uint64_t *)(t + 0x1370)) { uint64_t tr = *(uint64_t *)(t + 0x1368) + (uint64_t)ty * 0xe8; l1 = *(uint8_t *)(tr + 0xa); l2 = *(uint8_t *)(tr + 0xb); } } }
 
 
@@ -1142,7 +1143,7 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
 
 
     int place = 0, dmask = 0, ot = dm_ic_other_hand(sl);
-    if (!unequip && !charm) { int (*pf_)(uint64_t, int, uint64_t, int, int) = (int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950); place = pf_(pl, sl, it, 1, 1); if (!place) place = pf_(pl, sl, it, 0, 1);
+    if (!unequip && !charm) { int (*pf_)(uint64_t, int, uint64_t, int, int) = (int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK); place = pf_(pl, sl, it, 1, 1); if (!place) place = pf_(pl, sl, it, 0, 1);
         if (!place) return 0;
         dmask = dm_ic_displaced(place, sl, sl > 0 && sl < 16 && worn[sl], ot >= 0 && worn[ot]); }
 
@@ -1168,12 +1169,12 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
     h=(h ^ (unsigned)dm_custom_get("item_cmp"))*1099511628211ull;
     h = dm_ic_splash_key(h, splash_on, IC_SPLASH_NONE, 0, 0);
     for(int i=0;i<sim_nbound;i++)h=(h ^ (unsigned)sim_bound[i])*1099511628211ull;
-    h = (h ^ *(uint8_t *)(b + 0x2d20b88)) * 1099511628211ull;
+    h = (h ^ *(uint8_t *)(b + GA_DIFFICULTY)) * 1099511628211ull;
     h = sim_tip_key(b, pl, h);
     if (pk) h = (h ^ (0x6b67ull << 32 | pk->gen)) * 1099511628211ull;
     { dm_gear_goal g; dm_gear_goal_get(dm_build_session(), &g); h = (h ^ (uint64_t)lround(g.survival_hits * 1000 + g.boss_share * 100)) * 1099511628211ull; }
     { int gv[IC_C_N + 3]; cb_game_now(b, pl, gv); for (int i = 0; i <= IC_C_N; i++) h = (h ^ (uint32_t)gv[i]) * 1099511628211ull;
-      uint64_t l = *(uint64_t *)(pl + 0x88); uint8_t ver = *(uint8_t *)(pl + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0;
+      uint64_t l = *(uint64_t *)(pl + 0x88); uint8_t ver = *(uint8_t *)(pl + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0;
       if (l && t && *(int32_t *)(l + 0x1c) < 0) { uint64_t nw = (*(uint64_t *)(t + 0x2d0) + 31) / 32; for (uint64_t i = 0; i < nw && i < 32; i++) h = (h ^ *(uint32_t *)(l + 0xb30 + 4 * i)) * 1099511628211ull; } }
 
     *key = ((uint64_t)iid << 32 ^ (uint64_t)((old ? *(uint32_t *)(old + 8) : 0) ^ (olds[1] ? *(uint32_t *)(olds[1] + 8) << 12 : 0)) << 8 ^ (uint64_t)(sl | unequip << 5 | c->pad << 6 | charm << 7)) * 1099511628211ull;
@@ -1212,7 +1213,7 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
         dm_ic_in in; memset(&in, 0, sizeof in); read_stats(b, pl, cls, in.tot); read_stats(b, cand, cls, in.new_);
         for (int k = 0; k < nold; k++) { int v[IC_S_N]; read_stats(b, olds[k], cls, v); for (int i = 0; i < IC_S_N; i++) in.old_[i] += v[i]; }
         in.lpv = D.lpv[cls]; in.mpm = D.mpm[cls];
-        { int df = *(uint8_t *)(b + 0x2d20b88); if (df > 2) df = 2; uint64_t gi = *(uint64_t *)(b + 0x2d20b80); int classic = gi && *(uint8_t *)(gi + 0x5c) == 1;
+        { int df = *(uint8_t *)(b + GA_DIFFICULTY); if (df > 2) df = 2; uint64_t gi = *(uint64_t *)(b + GA_GAME_INFO); int classic = gi && *(uint8_t *)(gi + 0x5c) == 1;
           in.penalty = D.pen[df][classic]; }
         int nonum = 0;
         unsigned cbop = 0, cbpas = 0; int skchg = 0;
@@ -1239,18 +1240,18 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
 
 
 
-        if (!removing) { int so = 1, dx = 1, lv = 1, ok = ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + 0x5706d0))(it, pl, 1, &so, &dx, &lv, 0);
+        if (!removing) { int so = 1, dx = 1, lv = 1, ok = ((int (*)(uint64_t, uint64_t, int, int *, int *, int *, int))(b + GA_ITEM_REQS_MET))(it, pl, 1, &so, &dx, &lv, 0);
             int rs, rd, hs = in.tot[IC_S_STR], hx = in.tot[IC_S_DEX]; req_table(b, pl, it, &rs, &rd);
             if (ok) { hs -= in.old_[IC_S_STR]; hx -= in.old_[IC_S_DEX]; so = dm_ic_req_kept(rs, in.tot[IC_S_STR], in.old_[IC_S_STR]); dx = dm_ic_req_kept(rd, in.tot[IC_S_DEX], in.old_[IC_S_DEX]); ok = so && dx; }
 
 
             int64_t sa = 0, sz = 0; item_skill_sig(cand, cls, &sa); for (int k = 0; k < nold; k++) item_skill_sig(olds[k], cls, &sz);
-            if (ok && sa != sz && ((int (*)(uint64_t, uint64_t, int, int))(b + 0x5b2a30))(pl, it, 0, 6)) { int ms, md; req_table_with(b, pl, it, 0, &ms, &md);
+            if (ok && sa != sz && ((int (*)(uint64_t, uint64_t, int, int))(b + GA_SKILL_MASTERY))(pl, it, 0, 6)) { int ms, md; req_table_with(b, pl, it, 0, &ms, &md);
                 if (!dm_ic_req_kept(ms, in.tot[IC_S_STR], in.old_[IC_S_STR]) || !dm_ic_req_kept(md, in.tot[IC_S_DEX], in.old_[IC_S_DEX])) { static char rq[96], ln[DM_TIPX_LINEB]; int st = md != rd;
                     snprintf(rq, sizeof rq, game_str(b, st ? "ItemStats1f" : "ItemStats1e", 1, 40, st ? "dmCmpReqDexT" : "dmCmpReqStrT"), st ? rd : rs);
                     snprintf(ln, sizeof ln, dm_str(b, "dmCmpReqMaybe"), slot_name(b, sl), rq); add(K_REQ, 0, CC "5%s", ln); WHY("dmCmpChainNote"); nonum = 1; } }
             if (!ok) { static char rq[200]; int k = 0;
-                if (!lv) k += snprintf(rq + k, sizeof rq - k, dm_str(b, "dmCmpReqLvl"), ((int (*)(uint64_t, uint64_t))(b + 0x571580))(it, pl), gstat(b, pl, 12, 0));
+                if (!lv) k += snprintf(rq + k, sizeof rq - k, dm_str(b, "dmCmpReqLvl"), ((int (*)(uint64_t, uint64_t))(b + GA_ITEM_REQ_LEVEL))(it, pl), gstat(b, pl, 12, 0));
                 if (!so) k += snprintf(rq + k, sizeof rq - k, "%s", k ? " \xc2\xb7 " : ""), k += snprintf(rq + k, sizeof rq - k, dm_str(b, "dmCmpReqStr"), rs, hs);
                 if (!dx) k += snprintf(rq + k, sizeof rq - k, "%s", k ? " \xc2\xb7 " : ""), k += snprintf(rq + k, sizeof rq - k, dm_str(b, "dmCmpReqDex"), rd, hx);
                 if (!k) snprintf(rq, sizeof rq, "?");
@@ -1351,7 +1352,7 @@ int dm_itemcmp_block(const dm_tipx_ctx *c, dm_tipx_line *ln, int max, uint64_t *
                     int id = *(int16_t *)r, bs = *(int32_t *)(nd + 0x38), si = -1; for (int j = 0; j < D.nsk && si < 0; j++) if (D.sk[j].id == id) si = j;
                     if (si < 0 || D.sk[si].cls != cls) continue;
                     int pg = D.sk[si].page, tch = pg >= 1 && pg <= 3 && tabd[pg - 1];
-                    if ((dall || tch) && (bs >= 1 || bs + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0) > 0)) SKADD(id, bs); } }
+                    if ((dall || tch) && (bs >= 1 || bs + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0) > 0)) SKADD(id, bs); } }
               for (int k = 0; k < 3; k++) { uint64_t x = k ? olds[k - 1] : cand, sl3 = x ? *(uint64_t *)(x + 0x88) : 0; if (!sl3) continue;
                   uint64_t a3 = *(int32_t *)(sl3 + 0x1c) < 0 ? sl3 + 0xe8 : sl3 + 0x30, arr = *(uint64_t *)a3, cnt = *(uint64_t *)(a3 + 8);
                   for (uint64_t i = 0; arr && i < cnt && i < 512; i++) { uint32_t kk = *(uint32_t *)(arr + 8 * i); if ((kk >> 16) != 107) continue; int id = (int)(kk & 0xffff), bs = 0;
@@ -1576,7 +1577,7 @@ static int g_peel_n;
 void dm_test_peel_client(uint8_t *b) {
     int n = __atomic_load_n(&g_peel_n, __ATOMIC_ACQUIRE);
     for (int k = n - 1; k >= 0; k--) { uint32_t id = g_peel_ids[k].id;
-        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), id & 0x7f, id, 4);
+        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), id & 0x7f, id, 4);
         if (!u) continue; uint32_t mode = *(uint32_t *)(u + 0xc);
         if (mode != 0 && mode != 1) continue;
         int p = dm_test_peel_stats(b, u);
@@ -1609,15 +1610,15 @@ static void mk_socketed(uint64_t G, uint64_t player, uint8_t *b) {
     static int done; const char *e = getenv("DM_TEST_ITEMCMP_MK"); if (done || !e) return;
     char buf[200]; strlcpy(buf, e, sizeof buf); char *ap = strrchr(buf, '@'); uint32_t at = ap ? (uint32_t)atoi(ap + 1) : 60; if (ap) *ap = 0;
     if (*(uint32_t *)(G + 0x170) < at) return; done = 1;
-    uint64_t T = *(uint64_t *)(b + 0x2d64a18 + *(uint8_t *)(G + 0x106) * 16), ix = T ? *(uint64_t *)(T + 0x258) : 0, ar = ix ? *(uint64_t *)ix : 0, cnt = ix ? *(uint64_t *)(ix + 8) : 0;
+    uint64_t T = *(uint64_t *)(b + GA_DATA_TABLES + *(uint8_t *)(G + 0x106) * 16), ix = T ? *(uint64_t *)(T + 0x258) : 0, ar = ix ? *(uint64_t *)ix : 0, cnt = ix ? *(uint64_t *)(ix + 8) : 0;
     for (char *sv, *t = strtok_r(buf, ",", &sv); t; t = strtok_r(NULL, ",", &sv)) { char code4[5] = "    "; int q = 2, il = 20, socks = -1;
         if (sscanf(t, "%4[^:]:%d:%d=%d", code4, &q, &il, &socks) < 1) continue;
         for (int k = (int)strlen(code4); k < 4; k++) code4[k] = ' '; uint32_t code; memcpy(&code, code4, 4); int cls = -1;
         for (uint64_t k = 0; ar && k < cnt; k++) if (*(uint32_t *)(ar + k * 8) == code) { cls = *(int32_t *)(ar + k * 8 + 4); break; }
         if (cls < 0) { LOG("[cmp] 带孔物品：码 %.4s 查不到", code4); continue; }
         uint64_t pth = *(uint64_t *)(player + 0x38), room0 = pth ? *(uint64_t *)(pth + 0x20) : 0;
-        int32_t p0[2] = { 0, 0 }, p1[2] = { 0, 0 }; ((void (*)(uint64_t, int32_t *))(b + 0x5c84f0))(player, p0);
-        uint64_t room = ((uint64_t (*)(uint64_t, uint64_t, int32_t *, int32_t *, int))(b + 0x6529e0))(G, room0, p0, p1, 1);
+        int32_t p0[2] = { 0, 0 }, p1[2] = { 0, 0 }; ((void (*)(uint64_t, int32_t *))(b + GA_UNIT_GET_POS))(player, p0);
+        uint64_t room = ((uint64_t (*)(uint64_t, uint64_t, int32_t *, int32_t *, int))(b + GA_ROOM_FIND_DROP_SPOT))(G, room0, p0, p1, 1);
         static uint8_t prm[0xd8]; memset(prm, 0, sizeof prm);
         *(uint64_t *)(prm + 0) = player; *(uint64_t *)(prm + 0x10) = G; *(int32_t *)(prm + 0x18) = il; *(int32_t *)(prm + 0x20) = cls; *(int32_t *)(prm + 0x24) = 3;
         *(int32_t *)(prm + 0x28) = p1[0]; *(int32_t *)(prm + 0x2c) = p1[1]; *(uint64_t *)(prm + 0x30) = room; *(uint16_t *)(prm + 0x38) = 1; *(uint16_t *)(prm + 0x3a) = *(uint16_t *)(G + 0x128); *(int32_t *)(prm + 0x40) = q;
@@ -1628,7 +1629,7 @@ static void mk_socketed(uint64_t G, uint64_t player, uint8_t *b) {
 
 
 
-        uint64_t u = room ? ((uint64_t (*)(uint64_t, void *, int))(b + 0x656780))(G, prm, 0) : 0;
+        uint64_t u = room ? ((uint64_t (*)(uint64_t, void *, int))(b + GA_ITEM_SPAWN))(G, prm, 0) : 0;
         uint64_t ip = u ? *(uint64_t *)(u + 0x38) : 0; int inv = 0;
         if (u) {
 #ifndef DM_PLAYER_BUILD
@@ -1638,12 +1639,12 @@ static void mk_socketed(uint64_t G, uint64_t player, uint8_t *b) {
             dm_test_give_stats_server(b, u, code3);
 #endif
             uint8_t pk[17] = { 0x16 }; uint32_t one = 1; memcpy(pk + 1, (void *)(u + 8), 4); if (ip) { memcpy(pk + 5, (void *)(ip + 0x10), 4); memcpy(pk + 9, (void *)(ip + 0x14), 4); } memcpy(pk + 13, &one, 4);
-            *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + 0x6e5b40))(G, player, pk, 17); *(uint32_t *)(G + 0x19050) = 0; inv = *(uint32_t *)(u + 0xc) != 3; }
+            *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(b + GA_C2S_DISPATCH))(G, player, pk, 17); *(uint32_t *)(G + 0x19050) = 0; inv = *(uint32_t *)(u + 0xc) != 3; }
         LOG("[cmp] 带孔物品：%.4s 品质 %d 物品等级 %d → %s（id %u，孔 %d）%s", code4, q, il, u ? "成" : "【红】败", u ? *(uint32_t *)(u + 8) : 0, u ? gstat(b, u, 194, 0) : 0, u && !inv ? "，【注意】没捡进背包" : ""); }
 }
 void dm_itemcmp_srv_tick(uint64_t G, uint64_t player, uint8_t *b) {
     if (!player || !b) return; mk_socketed(G, player, b);
-    int v = atomic_exchange(&g_req_base, -1); if (v >= 0) { ((void (*)(uint64_t, int, int, int))(b + 0x5bc1f0))(player, 0, v, 0); LOG("[cmp] 验算台（服务端）：基础力量设成 %d", v); }
+    int v = atomic_exchange(&g_req_base, -1); if (v >= 0) { ((void (*)(uint64_t, int, int, int))(b + GA_STAT_SET))(player, 0, v, 0); LOG("[cmp] 验算台（服务端）：基础力量设成 %d", v); }
 }
 
 
@@ -1724,7 +1725,7 @@ static void drop_charm_pump(uint8_t *b, uint64_t pl) {
 void dm_itemcmp_pump(uint8_t *b, uint64_t pl) {
     if (!b) return;
     { static int td = -2; if (td == -2) { const char *e = getenv("DM_TEST_ITEMCMP_DIFF"); td = e ? atoi(e) : -1; }
-      if (td >= 0 && td <= 2 && pl) { LOG("[cmp] 测试 DM_TEST_ITEMCMP_DIFF：客户端难度字节 %u → %d", *(uint8_t *)(b + 0x2d20b88), td); *(uint8_t *)(b + 0x2d20b88) = (uint8_t)td; td = -1; } }
+      if (td >= 0 && td <= 2 && pl) { LOG("[cmp] 测试 DM_TEST_ITEMCMP_DIFF：客户端难度字节 %u → %d", *(uint8_t *)(b + GA_DIFFICULTY), td); *(uint8_t *)(b + GA_DIFFICULTY) = (uint8_t)td; td = -1; } }
     if (g_spike > 0 && g_panel) probe_records("pump");
     sock_pump(b, pl);
     drop_charm_pump(b, pl);

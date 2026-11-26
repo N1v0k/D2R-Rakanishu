@@ -21,6 +21,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <stdatomic.h>
 #include <stdint.h>
 #include <string.h>
@@ -31,15 +32,15 @@ void dm_shoprefresh_on_uimsg(const char *cat, const char *act, const char *arg, 
     if (strcmp(cat, "PanelManager") || strcmp(act, "ClosePanel") || strcmp(arg, "TouchShopRefresh")) return;
     if (!b) return;
     { int dm_looks_ui_reset(void); if (dm_looks_ui_reset()) return; }
-    uint32_t npc = *(volatile uint32_t *)(b + 0x2d5ebfc);
+    uint32_t npc = *(volatile uint32_t *)(b + GA_NPC_ID);
     if (!npc) { LOG("商人刷新：点了，但客户端没有在交易的商人，不发"); return; }
-    if (*(volatile uint32_t *)(b + 0x2d5eca8)) {
+    if (*(volatile uint32_t *)(b + GA_SHOP_GAMBLE_MODE)) {
         uint8_t g[9] = {0x38, 2, 0, 0, 0}; memcpy(g + 5, &npc, 4); LOG("商人刷新：赌博页 → 照原版发 0x38 类型 2（商人 %u）", npc);
-        ((void (*)(const uint8_t *, int))(b + 0x2ceab0))(g, 9); return; }
+        ((void (*)(const uint8_t *, int))(b + GA_CLIENT_SEND))(g, 9); return; }
     uint8_t pkt[9] = {0x38, 1, 0, 0, 0}; memcpy(pkt + 5, &npc, 4);
     atomic_store(&g_req, npc);
     LOG("商人刷新：点了 → 发 0x38 类型 1（商人 %u）", npc);
-    ((void (*)(const uint8_t *, int))(b + 0x2ceab0))(pkt, 9);
+    ((void (*)(const uint8_t *, int))(b + GA_CLIENT_SEND))(pkt, 9);
 }
 
 void dm_shoprefresh_c2s(uint64_t G, uint64_t player, const uint8_t *pkt, uint32_t len) {

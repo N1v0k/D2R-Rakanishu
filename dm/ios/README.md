@@ -49,7 +49,7 @@ The remaining modes are for diagnostics: the three probes `anon`, `mapjit` and `
    ```bash
    xcrun devicectl device copy to --device <device identifier> \
      --domain-type appDataContainer --domain-identifier <bundle ID> \
-     --source $DM_ROOT/data/switch/3.3.94012/Update/RomFS \
+     --source $DM_ROOT/data/switch/3.4.95035/Update/RomFS \
      --destination 'Library/Application Support/romfs'
    ```
 
@@ -168,7 +168,7 @@ Commonly used environment variables:
 |---|---|---|
 | `DM_OUT` | Directory of the rewrite output | The output of `../tools/product.sh path touch` |
 | `DM_IOS_DD` | Xcode derived data directory | `$DM_ROOT/run/ios/dd` |
-| `DM_ROMFS_SRC` | Original RomFS (`Update/RomFS`) | `$DM_ROOT/data/switch/3.3.94012/Update/RomFS` |
+| `DM_ROMFS_SRC` | Original RomFS (`Update/RomFS`) | `$DM_ROOT/data/switch/3.4.95035/Update/RomFS` |
 | `DM_GEN_ONLY=1` | Only generate `Gen/` and the project, do not compile | Unset |
 | `DM_ASTC_PACK` | ASTC supplement pack directory; the matching overlay is produced only when it is set | Unset |
 
@@ -208,7 +208,7 @@ The last line is `SMOKE-MAC OK <passes>/<count> 用时 … 秒` (`用时 … 秒
 
 Key points:
 
-- The game assets are read from this app's container on the Mac (`Library/Application Support/romfs`). When the container has none, the script clones them from the directory `SMOKE_MAC_ROMFS` points to; this variable must point to the `data` directory of the RomFS, for example `SMOKE_MAC_ROMFS=$DM_ROOT/data/switch/3.3.94012/Update/RomFS/data`. If you have run `make_fixture.sh` first, you can ignore this item.
+- The game assets are read from this app's container on the Mac (`Library/Application Support/romfs`). When the container has none, the script clones them from the directory `SMOKE_MAC_ROMFS` points to; this variable must point to the `data` directory of the RomFS, for example `SMOKE_MAC_ROMFS=$DM_ROOT/data/switch/3.4.95035/Update/RomFS/data`. If you have run `make_fixture.sh` first, you can ignore this item.
 - A given bundle ID can have only one instance on one Mac. If the script finds an existing instance before starting, it reports red and does not terminate it for you. On the same Mac, the Mac smoke test, the touch-screen cases and the UI regression share one lock, `$DM_ROOT/run/ios/macsmoke.lock`, and queue automatically.
 - By default a set of "real-device profile" parameters is applied (screen resolution and left/right safe areas), so that layout and touch-point conversion match the phone; `DM_MAC_DEVICE_PROFILE=0` switches back to running as is in the Mac window.
 - While the package is running, the system mounts its `Wrapper` directory. Deleting this directory or replacing it wholesale at that time leaves a stale mount point that cannot be unmounted; that path can no longer be opened from then on, and only a reboot clears it. So do not touch the package while it is running.
@@ -263,7 +263,7 @@ No device is needed, and the app is not launched. Contents:
 
 - The behaviours of the touch classification state machine `dm_touch_controls.c` (`t_touch_controls.c`, `t_skill_aim.c`, `t_joy_travel.c`, `t_portal_sequence.c`).
 - Parsing and reading of the skill bindings (`t_native_binding.c`, `t_game_bridge.c`, `t_binding_*.c`, `t_native_hud_*.c`), using the two fixtures in [tests/fixtures/native_binding/](tests/fixtures/native_binding/README.md). The public repository does not ship these two fixtures: without them, the three tests that read them are skipped automatically and the rest run as usual.
-- The skill atlas index (`t_native_art.c`, `test_native_art_capture.py`). This item needs the game files on your machine: the skill index `Sources/dm_touch_native_art.c` is not kept in the repository, and when it is missing it is generated on the spot from `DM_ROMFS_SRC` (default `$DM_ROOT/data/switch/3.3.94012/Update/RomFS`).
+- The skill atlas index (`t_native_art.c`, `test_native_art_capture.py`). This item needs the game files on your machine: the skill index `Sources/dm_touch_native_art.c` is not kept in the repository, and when it is missing it is built on the spot from `DM_ROMFS_SRC` (default `$DM_ROOT/data/switch/3.4.95035/Update/RomFS`).
 - A few Python scripts that check the wiring of the touch path in `front_ios.m` and the format of the diagnostic log.
 
 Under `tools/` there are also self-tests that come with a few of the scripts: `devlock_test.sh`, `devlock_max_test.sh`, `devlock_locale_test.sh` (device lock), `devbattery_test.sh` (battery check).

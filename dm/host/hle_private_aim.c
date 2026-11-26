@@ -1,6 +1,7 @@
 
 
 #include <stdint.h>
+#include "game_addrs.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,9 +64,9 @@ void dm_aim_cone_pump(void) {
 static uint32_t g_cone_dropped[8]; static int g_cone_ndrop;
 static uint64_t cone_pick(const module_t *m, uint64_t pl, const float pos[2], const float vec[2], float cmin, int *out_n, float *out_cos) {
     uint64_t best = 0; float bc = -2; int n = 0;
-    for (int k = 0; k < 128; k++) for (uint64_t u = *(uint64_t *)(m->base + 0x2d603a0 + 1 * 0x400 + k * 8); u; u = *(uint64_t *)(u + 0x158)) {
+    for (int k = 0; k < 128; k++) for (uint64_t u = *(uint64_t *)(m->base + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + k * 8); u; u = *(uint64_t *)(u + 0x158)) {
         float x, y; uint32_t mode = *(uint32_t *)(u + 0xc); if (mode == 0 || mode == 12 || !cone_unit_xy(u, &x, &y)) continue;
-        if (((int (*)(int, uint64_t, uint64_t))(m->base + 0x2f7b7c))(0x165, pl, u) != 1 || !(((int (*)(uint64_t, int, int, int, int))(m->base + 0x464a70))(u, 0, 0, -1, -1) & 1)) continue;
+        if (((int (*)(int, uint64_t, uint64_t))(m->base + GA_UNIT_INTERACT_CLASS))(0x165, pl, u) != 1 || !(((int (*)(uint64_t, int, int, int, int))(m->base + GA_UNIT_SELECTABLE))(u, 0, 0, -1, -1) & 1)) continue;
         { int dr = 0; for (int i = 0; i < g_cone_ndrop; i++) if (g_cone_dropped[i] == *(uint32_t *)(u + 8)) dr = 1; if (dr) continue; }
         float dx = x - pos[0], dy = y - pos[1], d = sqrtf(dx * dx + dy * dy); if (d < 0.01f || d > AIM_CONE_MAX_DIST) continue; n++;
         float c = (dx * vec[0] + dy * vec[1]) / d; if (c >= cmin && c > bc) { bc = c; best = u; } }
@@ -76,9 +77,9 @@ static uint64_t cone_pick(const module_t *m, uint64_t pl, const float pos[2], co
 static int cone_test_dir(const module_t *m, uint64_t pl, const float pos[2], int32_t *rx, int32_t *ry) {
     const char *e = getenv("DM_TEST_AIM_AT"); if (!e) return 0; float ang[64], dist[64]; uint32_t ids[64]; int n = 0;
     static int latched; static float la; if (latched) { *rx = (int32_t)(32767.0f * cosf(la)); *ry = (int32_t)(32767.0f * sinf(la)); return 1; }
-    for (int k = 0; k < 128 && n < 64; k++) for (uint64_t u = *(uint64_t *)(m->base + 0x2d603a0 + 1 * 0x400 + k * 8); u && n < 64; u = *(uint64_t *)(u + 0x158)) {
+    for (int k = 0; k < 128 && n < 64; k++) for (uint64_t u = *(uint64_t *)(m->base + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + k * 8); u && n < 64; u = *(uint64_t *)(u + 0x158)) {
         float x, y; uint32_t mode = *(uint32_t *)(u + 0xc); if (mode == 0 || mode == 12 || !cone_unit_xy(u, &x, &y)) continue;
-        if (((int (*)(int, uint64_t, uint64_t))(m->base + 0x2f7b7c))(0x165, pl, u) != 1) continue;
+        if (((int (*)(int, uint64_t, uint64_t))(m->base + GA_UNIT_INTERACT_CLASS))(0x165, pl, u) != 1) continue;
         float dx = x - pos[0], dy = y - pos[1], d = sqrtf(dx * dx + dy * dy); if (d < 0.01f || d > AIM_CONE_MAX_DIST) continue;
         ang[n] = atan2f(-(dx + dy) * 0.5f, dx - dy); dist[n] = d; ids[n] = *(uint32_t *)(u + 8); n++; }
     float a = 0;
@@ -96,7 +97,7 @@ void svc_private_skill_aim(uint64_t *regs) {
     if(!m)die("skill-aim缺main");
     typedef void (*Original)(uint64_t,uint64_t,float *,float *);
     float *position=(float *)regs[2],*direction=(float *)regs[3];
-    ((Original)(m->base+0x2b4ef8))(regs[0],regs[1],position,direction);
+    ((Original)(m->base+GA_SKILL_GROUND_DIR))(regs[0],regs[1],position,direction);
     uint64_t caller=0;uint32_t type=99,id=0,current=0;
     int scope=regs[29]<=UINT64_MAX-8 && read_live(regs[29]+8,&caller,8) &&
 
@@ -105,9 +106,9 @@ void svc_private_skill_aim(uint64_t *regs) {
 
 
 
-        (caller==(uint64_t)m->base+0x2b5b80 || caller==(uint64_t)m->base+0x2b3298) &&
+        (caller==(uint64_t)m->base+GA_AT_SKILL_AIM_PRESS_RET || caller==(uint64_t)m->base+GA_AT_SKILL_AIM_HOLD_RET) &&
         read_live(regs[1],&type,4) && !type && read_live(regs[1]+8,&id,4) &&
-        read_live((uint64_t)m->base+0x2d60380,&current,4) && id==current;
+        read_live((uint64_t)m->base+GA_PLAYER_SLOT_IDS,&current,4) && id==current;
     if(!scope)return;
     int32_t rx=0,ry=0;dm_input_sampled_right(&rx,&ry);
     { const char *t=getenv("DM_TEST_AIM");if(t)sscanf(t,"%d,%d",&rx,&ry); }
@@ -134,14 +135,14 @@ void svc_private_skill_aim(uint64_t *regs) {
 
         typedef uint64_t (*Rec)(uint64_t,int32_t);
         int32_t sk=-1;read_live(regs[23]+(uint64_t)(uint32_t)regs[25]*0xb8+0xd4c,&sk,4);
-        uint64_t mg=((Mgr)(m->base+0x2acecc))(),rec=sk>=0?((Rec)(m->base+0x2b4bc8))(mg,sk):0;
+        uint64_t mg=((Mgr)(m->base+GA_CTRL_MGR_GET))(),rec=sk>=0?((Rec)(m->base+GA_CTRL_SKILL_RECORD_GET))(mg,sk):0;
         float dist=0.0f;uint8_t scaled=1,ver=0;uint16_t fn=0;int far=0;
         if(rec && read_live(rec+8,&dist,4) && read_live(rec+0x10,&scaled,1) && dist>0.0f && dist<=2.0f && !scaled && read_live(regs[1]+0x1bd,&ver,1) && ver>=1 && ver<=3) {
             uint64_t tbl=0,base=0,cnt=0;
-            if(read_live((uint64_t)m->base+0x2d64a18+(uint64_t)ver*16,&tbl,8) && read_live(tbl+0x11e8,&base,8) && read_live(tbl+0x11f0,&cnt,8) && (uint64_t)sk<cnt &&
+            if(read_live((uint64_t)m->base+GA_DATA_TABLES+(uint64_t)ver*16,&tbl,8) && read_live(tbl+0x11e8,&base,8) && read_live(tbl+0x11f0,&cnt,8) && (uint64_t)sk<cnt &&
                read_live(base+(uint64_t)sk*0x2ec+0x4e,&fn,2)) far=!(fn==27||fn==52||fn==67||fn==76||fn==77||fn==78);
         }
-        float rg=((Range)(m->base+0x2b5c70))(mg,regs[1],0),k=(far && rg>0.0f && isfinite(rg))?24.0f/rg:1.0f;
+        float rg=((Range)(m->base+GA_CTRL_SKILL_RANGE))(mg,regs[1],0),k=(far && rg>0.0f && isfinite(rg))?24.0f/rg:1.0f;
         { static int lg; if(getenv("DM_SKILL_AIM_LOG") && lg++<12)LOG("瞄准适配：技能号 %d 手柄落点距离 %.2f 施放函数 %u 射程 %.2f 放大 %.1f",sk,dist,fn,rg,k); }
         direction[0]=vec[0]*k;direction[1]=vec[1]*k;
         if(cone_cos()<=1.0f) {

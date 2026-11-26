@@ -9,6 +9,7 @@
 
 
 #include "dm_gear_equip.h"
+#include "game_addrs.h"
 #include "dm_feats.h"
 #include "dm_gear_equip_rules.h"
 #include "dm_gear_equip_tab.h"
@@ -38,15 +39,15 @@ static uint64_t inv_of(uint64_t u) { uint64_t inv = u ? *(uint64_t *)(u + 0x90) 
 static uint64_t first_of(uint64_t u) { uint64_t inv = inv_of(u); return inv ? *(uint64_t *)(inv + 0x10) : 0; }
 static uint64_t next_of(uint64_t it) { uint64_t d = *(uint64_t *)(it + 0x10); return d ? *(uint64_t *)(d + 0xb0) : 0; }
 static uint64_t held_of(uint64_t pl) { uint64_t inv = inv_of(pl), h = inv ? *(uint64_t *)(inv + 0x40) : 0; return h && *(uint32_t *)h == 4 ? h : 0; }
-static uint64_t unit_of(uint8_t *b, uint32_t id, int type) { return id ? ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + type * 0x400), id & 0x7f, id, (uint32_t)type) : 0; }
+static uint64_t unit_of(uint8_t *b, uint32_t id, int type) { return id ? ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + type * 0x400), id & 0x7f, id, (uint32_t)type) : 0; }
 static uint32_t id_of(uint64_t it) { return it ? *(uint32_t *)(it + 8) : 0; }
-static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + 0x570260))(it); }
+static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); }
 static void size_of(uint8_t *b, uint64_t it, int *w, int *h) {
-    *w = *h = 1; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    *w = *h = 1; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     if (t && ci < *(uint32_t *)(t + 0x15c8)) { uint64_t rec = *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0; *w = *(uint8_t *)(rec + 0x11e); *h = *(uint8_t *)(rec + 0x11f); }
 }
 static void cell_of(uint64_t it, int *x, int *y) { uint64_t pp = *(uint64_t *)(it + 0x38); *x = pp ? *(int32_t *)(pp + 0x10) : -1; *y = pp ? *(int32_t *)(pp + 0x14) : -1; }
-static int stash_open(uint8_t *b) { return *(uint8_t *)(b + 0x2d5ff60) != 0; }
+static int stash_open(uint8_t *b) { return *(uint8_t *)(b + GA_STASH_OPEN) != 0; }
 
 static dm_ge_loc where_of(uint64_t it, int shown) {
     dm_ge_loc l = { DM_GE_NOWHERE, -1, -1, -1 }; uint64_t d = *(uint64_t *)(it + 0x10); if (!d) return l;
@@ -335,18 +336,18 @@ static void observe(uint8_t *b, uint64_t pl, dm_ge_seen *s) {
     s->hand = held ? -2 : -1;
     for (int i = 0; i < n; i++) if (s->at[i].where == DM_GE_HAND) s->hand = i;
     const dm_go_move *m = dm_ge_pending(&g_job.core);
-    if (m && m->op == DM_GO_PUT_SLOT && held && s->hand == m->item) s->code = ((int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950))(pl, m->slot, held, 0, 0);
+    if (m && m->op == DM_GO_PUT_SLOT && held && s->hand == m->item) s->code = ((int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK))(pl, m->slot, held, 0, 0);
     if (m && m->op == DM_GO_PUT_CELL && m->cell.grid >= 0 && m->cell.grid < c->w.ngrid) {
         grid_t g; const dm_go_item *it = &c->w.item[m->item];
         s->cell_free = !grid_of(b, pl, c->gp[m->cell.grid], s->shown, &g) && rect_free(&g, m->cell.x, m->cell.y, it->w, it->h);
     }
 }
-static void send(uint8_t *b, const uint8_t *p, int n) { ((void (*)(const uint8_t *, int))(b + 0x2ceab0))(p, n); }
+static void send(uint8_t *b, const uint8_t *p, int n) { ((void (*)(const uint8_t *, int))(b + GA_CLIENT_SEND))(p, n); }
 static void carry_out(uint8_t *b, uint64_t pl, const dm_go_move *m) {
     const dm_gear_equip_cap *c = &g_job.cap; uint64_t held = held_of(pl);
     switch (m->op) {
-    case DM_GO_PICK_SLOT: ((void (*)(uint64_t, int, int, int, int))(b + 0x3bb24c))(0, m->slot, 0, -1, 0); break;
-    case DM_GO_PUT_SLOT: if (held) ((void (*)(uint64_t, int, int, int, int))(b + 0x3bb24c))(held, m->slot, 0, -1, 0); break;
+    case DM_GO_PICK_SLOT: ((void (*)(uint64_t, int, int, int, int))(b + GA_EQUIP_SLOT_PUT))(0, m->slot, 0, -1, 0); break;
+    case DM_GO_PUT_SLOT: if (held) ((void (*)(uint64_t, int, int, int, int))(b + GA_EQUIP_SLOT_PUT))(held, m->slot, 0, -1, 0); break;
     case DM_GO_PICK_CELL: case DM_GO_PUT_CELL: {
         dm_ge_place p = c->gp[m->cell.grid]; uint32_t id = m->op == DM_GO_PICK_CELL ? g_job.unit[m->item] : id_of(held);
         if (!id) { LOG("[gear-equip] item %d has no unit to move", m->item); break; }

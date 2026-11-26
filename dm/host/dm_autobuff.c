@@ -33,6 +33,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "dm_custom.h"
 #include "dm_hud.h"
 #include "dm_unit.h"
@@ -69,7 +70,7 @@ static int equip_ok(uint8_t *b, uint64_t pl, int skill) {
     uint64_t inv = *(uint64_t *)(pl + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; int ok = need == 0; uint32_t sig = 0;
     for (int k = 0; it && k < 512; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; int loc = *(uint8_t *)(d + 0x54);
         if (*(uint32_t *)(it + 0xc) == 1 && (loc == 4 || loc == 5)) { sig += *(uint32_t *)(it + 8) * (uint32_t)(loc == 4 ? 3 : 7);
-            int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + 0x574bc0); if (need && is(it, need) && !(excl && is(it, excl))) ok = 1; }
+            int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE); if (need && is(it, need) && !(excl && is(it, excl))) ok = 1; }
         it = *(uint64_t *)(d + 0xb0); }
     g_hand_sig = sig; return ok;
 }
@@ -78,7 +79,7 @@ static int equip_ok(uint8_t *b, uint64_t pl, int skill) {
 static int swap_gives(uint8_t *b, uint64_t pl, int skill) {
     uint64_t inv = *(uint64_t *)(pl + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0;
     for (int k = 0; it && k < 512; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; int loc = *(uint8_t *)(d + 0x54);
-        if (*(uint32_t *)(it + 0xc) == 1 && (loc == 11 || loc == 12) && ((int (*)(uint64_t, int, int))(b + 0x5b9290))(it, 97, skill) > 0) return 1;
+        if (*(uint32_t *)(it + 0xc) == 1 && (loc == 11 || loc == 12) && ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(it, 97, skill) > 0) return 1;
         it = *(uint64_t *)(d + 0xb0); }
     return 0;
 }
@@ -86,10 +87,10 @@ static int swap_gives(uint8_t *b, uint64_t pl, int skill) {
 
 static int enemy_near(uint8_t *b, uint64_t pl, int r) {
     uint64_t pp = *(uint64_t *)(pl + 0x38); if (!pp) return 0; int px = *(uint16_t *)(pp + 2), py = *(uint16_t *)(pp + 6), best = -1;
-    for (int k = 0; k < 128; k++) for (uint64_t u = *(uint64_t *)(b + 0x2d603a0 + 1 * 0x400 + k * 8); u; u = *(uint64_t *)(u + 0x158)) {
+    for (int k = 0; k < 128; k++) for (uint64_t u = *(uint64_t *)(b + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + k * 8); u; u = *(uint64_t *)(u + 0x158)) {
         uint32_t m = *(uint32_t *)(u + 0xc); uint64_t up = *(uint64_t *)(u + 0x38); if (m == 0 || m == 12 || !up) continue;
         int dx = abs(*(uint16_t *)(up + 2) - px), dy = abs(*(uint16_t *)(up + 6) - py), d = dx > dy ? dx : dy; if (d > r) continue;
-        if (((int (*)(int, uint64_t, uint64_t))(b + 0x2f7b7c))(0x165, pl, u) != 1) continue;
+        if (((int (*)(int, uint64_t, uint64_t))(b + GA_UNIT_INTERACT_CLASS))(0x165, pl, u) != 1) continue;
         if (best < 0 || d < best) best = d; }
     return best;
 }
@@ -108,7 +109,7 @@ static int has_state(uint64_t u, int st) {
 }
 
 
-static void stat_line(uint8_t *b, uint64_t u, char *o, size_t n) { int (*gs)(uint64_t, int, int) = (void *)(b + 0x5b9290);
+static void stat_line(uint8_t *b, uint64_t u, char *o, size_t n) { int (*gs)(uint64_t, int, int) = (void *)(b + GA_STAT_GET);
     snprintf(o, n, "防御 31=%d、16=%d、171=%d，命中 19=%d、119=%d，伤害%% 25=%d", gs(u, 31, 0), gs(u, 16, 0), gs(u, 171, 0), gs(u, 19, 0), gs(u, 119, 0), gs(u, 25, 0)); }
 static uint64_t own_node(uint64_t pl, int skill) {
     uint64_t sl = *(uint64_t *)(pl + 0x100);
@@ -117,7 +118,7 @@ static uint64_t own_node(uint64_t pl, int skill) {
 }
 
 
-static int eff_level(uint8_t *b, uint64_t pl, uint64_t node) { return *(int32_t *)(node + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, node, 0); }
+static int eff_level(uint8_t *b, uint64_t pl, uint64_t node) { return *(int32_t *)(node + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, node, 0); }
 static int mana_cost(uint64_t node, int lvl) {
     uint64_t rec = *(uint64_t *)node; int sh = *(uint8_t *)(rec + 0x228), base = *(int16_t *)(rec + 0x22a), per = *(int16_t *)(rec + 0x22c), mn = *(int16_t *)(rec + 0x224);
     int c = ((lvl - 1) * per + base) << sh; if (c < 0) c = 0; if ((mn << 8) > c) c = mn << 8; return c;
@@ -136,7 +137,7 @@ int dm_swapskill_wset(void); int dm_swapskill_busy(void); static int g_wait = -1
 static void test_learn(uint8_t *b, uint64_t unit, const char *side) {
     const char *e = getenv("DM_TEST_BUFF_LEARN"); if (!e || !unit) return; char bf[160]; strlcpy(bf, e, sizeof bf);
     for (char *sv, *k = strtok_r(bf, ",", &sv); k; k = strtok_r(NULL, ",", &sv)) { int sk = 0, lv = 1; if (sscanf(k, "%d:%d", &sk, &lv) < 1 || sk <= 0) continue;
-        uint64_t n = own_node(unit, sk); if (!n) n = ((uint64_t (*)(uint64_t, int))(b + 0x7bf010))(unit, sk);
+        uint64_t n = own_node(unit, sk); if (!n) n = ((uint64_t (*)(uint64_t, int))(b + GA_SKILL_ADD_FREE))(unit, sk);
         if (n && *(int32_t *)(n + 0x38) < lv) { *(int32_t *)(n + 0x38) = lv; LOG("测试 DM_TEST_BUFF_LEARN：%s玩家技能 %d 基础等级设成 %d", side, sk, lv); } }
 }
 
@@ -165,15 +166,15 @@ void dm_autobuff_pump(uint8_t *b, uint64_t pl) {
     { static int at = -1, at2; static char code[5], code2[5]; if (at < 0) { const char *e = getenv("DM_TEST_EQUIP"); if (!e || sscanf(e, "%d:%4[^,],%d:%4s", &at, code, &at2, code2) < 2) at = 0; }
       if (!at && at2 > 0) { at = at2; at2 = 0; memcpy(code, code2, sizeof code); }
       if (at > 0 && t >= (uint32_t)at) { at = 0; uint64_t inv = *(uint64_t *)(pl + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; uint32_t iid = 0;
-          for (int k = 0; it && k < 512 && !iid; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+          for (int k = 0; it && k < 512 && !iid; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
               if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 0 && !memcmp(&c, code, strlen(code))) iid = *(uint32_t *)(it + 8); it = *(uint64_t *)(d + 0xb0); }
-          void dm_item_equip(uint32_t); if (iid) dm_item_equip(iid); int (*gs)(uint64_t, int, int) = (void *)(b + 0x5b9290);
+          void dm_item_equip(uint32_t); if (iid) dm_item_equip(iid); int (*gs)(uint64_t, int, int) = (void *)(b + GA_STAT_GET);
           LOG("测试 DM_TEST_EQUIP：拍 %u 背包里的 %s id %u → 交原版装备；此刻生命 %d / 上限 %d", t, code, iid, gs(pl, 6, 0) >> 8, gs(pl, 7, 0) >> 8); } }
 
 
     { static int at = -1; static char code[5]; if (at < 0) { const char *e = getenv("DM_TEST_UNEQUIP"); if (!e || sscanf(e, "%d:%4s", &at, code) != 2) at = 0; }
       if (at > 0 && t >= (uint32_t)at) { at = 0; uint64_t inv = *(uint64_t *)(pl + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; uint32_t iid = 0;
-          for (int k = 0; it && k < 512 && !iid; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+          for (int k = 0; it && k < 512 && !iid; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
               if (*(uint32_t *)(it + 0xc) == 1 && !memcmp(&c, code, strlen(code))) iid = *(uint32_t *)(it + 8); it = *(uint64_t *)(d + 0xb0); }
           void dm_item_unequip(uint32_t); if (iid) dm_item_unequip(iid);
           LOG("DM_TEST_UNEQUIP: tick %u worn %s id %u -> native unequip", t, code, iid); } }
@@ -190,14 +191,14 @@ void dm_autobuff_pump(uint8_t *b, uint64_t pl) {
     { int u = atomic_exchange(&g_unusable, -1); if (u >= 0) { g_stop[u] = 1; if (g_wait == u) g_wait = -1; LOG("增益自动补：「%s」此刻用不了（原版没进施法：缺装备条件等），本局不再补它", k_ab[u].nm); } }
     if (g_wait >= 0 && atomic_exchange(&g_busy, 0)) { g_try[g_wait] = 0; g_wait = -1; return; }
     if (g_wait >= 0) {
-        if (has[g_wait]) { uint64_t sl = *(uint64_t *)(pl + 0x100), rn = sl ? *(uint64_t *)(sl + 0x10) : 0; LOG("增益自动补：拍 %u「%s」已补上（法力 %d → %d；客户端右键技能 %d、左键技能 %d）", t, k_ab[g_wait].nm, g_mana0 >> 8, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 8, 0) >> 8, rn && *(uint64_t *)rn ? *(int16_t *)*(uint64_t *)rn : -1, sl && *(uint64_t *)(sl + 8) && *(uint64_t *)*(uint64_t *)(sl + 8) ? *(int16_t *)*(uint64_t *)*(uint64_t *)(sl + 8) : -1); g_wait = -1; }
+        if (has[g_wait]) { uint64_t sl = *(uint64_t *)(pl + 0x100), rn = sl ? *(uint64_t *)(sl + 0x10) : 0; LOG("增益自动补：拍 %u「%s」已补上（法力 %d → %d；客户端右键技能 %d、左键技能 %d）", t, k_ab[g_wait].nm, g_mana0 >> 8, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 8, 0) >> 8, rn && *(uint64_t *)rn ? *(int16_t *)*(uint64_t *)rn : -1, sl && *(uint64_t *)(sl + 8) && *(uint64_t *)*(uint64_t *)(sl + 8) ? *(int16_t *)*(uint64_t *)*(uint64_t *)(sl + 8) : -1); g_wait = -1; }
         else if (t >= g_wait_until) { int i = g_wait; g_wait = -1; g_fail[i]++;
             if (g_fail[i] >= 3) { g_stop[i] = 1; LOG("【红】增益自动补：「%s」连着 3 次没补上，本局不再补它", k_ab[i].nm); } else LOG("增益自动补：拍 %u「%s」这次没补上（第 %d 次），隔一会儿再试", t, k_ab[i].nm, g_fail[i]); }
         return; }
-    uint32_t mode = *(uint32_t *)(pl + 0xc); int wset = dm_swapskill_wset(), dead = mode == 0 || mode == 17; void (*swap0)(int) = (void (*)(int))(b + 0x41db90);
+    uint32_t mode = *(uint32_t *)(pl + 0xc); int wset = dm_swapskill_wset(), dead = mode == 0 || mode == 17; void (*swap0)(int) = (void (*)(int))(b + GA_WEAPON_SWAP);
     static int swapmax = -1, safe, swaplife; if (swapmax < 0) { swapmax = cfg("DM_AUTOBUFF_SWAPMAX", 150); safe = cfg("DM_AUTOBUFF_SAFE", 40); swaplife = cfg("DM_AUTOBUFF_SWAPLIFE", 50); }
     if (w_ph == W_OUT) {
-        if (wset >= 0 && wset != w_from) { w_ph = W_CAST; w_start = t; w_moved = 0; LOG("增益自动补：拍 %u 已换到副手组（第 %d 组），开始补（此刻生命 %d / 上限 %d）", t, wset, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 6, 0) >> 8, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 7, 0) >> 8); }
+        if (wset >= 0 && wset != w_from) { w_ph = W_CAST; w_start = t; w_moved = 0; LOG("增益自动补：拍 %u 已换到副手组（第 %d 组），开始补（此刻生命 %d / 上限 %d）", t, wset, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 6, 0) >> 8, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 7, 0) >> 8); }
         else if (dead || t - w_start > 60) { w_ph = W_IDLE; w_next = t + 250; LOG("增益自动补：拍 %u 换武器没换过去（%s），这一轮作罢", t, dead ? "人死了" : "2 秒多没变"); return; }
         else if (t - w_t0 >= 8 && w_tries < 4 && (mode == 1 || mode == 5)) { w_tries++; w_t0 = t; swap0(w_from); return; }
         else return; }
@@ -213,17 +214,17 @@ void dm_autobuff_pump(uint8_t *b, uint64_t pl) {
                 LOG("增益自动补：「%s」换武器连着 2 次没补上，歇 %d 秒再试", k_ab[x].nm, cool / 25); }
             LOG("增益自动补：拍 %u 副手组上%s → 换回第 %d 组", t, !left ? "该补的都补上了" : dead ? "人死了" : "到点了还没补完", w_from); w_ph = W_BACK; w_t0 = 0; w_tries = 0; g_wait = -1; } }
     if (w_ph == W_BACK) {
-        if (wset == w_from) { w_ph = W_IDLE; w_next = t + 250; int l1 = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 6, 0) >> 8, mx = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 7, 0) >> 8;
+        if (wset == w_from) { w_ph = W_IDLE; w_next = t + 250; int l1 = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 6, 0) >> 8, mx = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 7, 0) >> 8;
             LOG("增益自动补：拍 %u 已换回第 %d 组（生命 %d → %d / 上限 %d；左键技能 %d → %d、右键技能 %d → %d）", t, w_from, w_life0, l1, mx, w_lr0[0], lr_skill(pl, 0), w_lr0[1], lr_skill(pl, 1)); }
         else { if (!dead && (mode == 1 || mode == 5 || t - w_t0 >= 25) && (!w_t0 || t - w_t0 >= 8)) { w_t0 = t; w_tries++; swap0(wset);
                    if (w_tries % 10 == 0) LOG("【红】增益自动补：换回第 %d 组已试 %d 次还没成（模式 %u），继续试", w_from, w_tries, mode); }
                return; } }
     if (mode != 1 && mode != 5) { if (!dead && w_ph == W_IDLE) w_why(b, pl, has, t, 0, "人没站定（走 / 跑 / 攻击 / 施法 / 受击中），等站住的那一拍"); return; }
     if (dm_hud_area_is_town(dm_unit_level(pl))) return;
-    if (((uint64_t (*)(void))(b + 0x2aa7c0))()) { if (w_ph == W_IDLE) w_why(b, pl, has, t, 1, "手上拿着物品"); return; }
+    if (((uint64_t (*)(void))(b + GA_CURSOR_ITEM_GET))()) { if (w_ph == W_IDLE) w_why(b, pl, has, t, 1, "手上拿着物品"); return; }
     static int retry = -1; if (retry < 0) retry = cfg("DM_AUTOBUFF_RETRY", 75);
     { static uint32_t last_sig; equip_ok(b, pl, 0); if (g_hand_sig != last_sig) { last_sig = g_hand_sig; memset(g_stop, 0, sizeof g_stop); memset(g_fail, 0, sizeof g_fail); } }
-    int mana = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 8, 0);
+    int mana = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 8, 0);
     for (int i = 0; i < NAB; i++) { int g = k_ab[i].grp;
         if (has[i] || g_stop[i] || skipped(k_ab[i].skill) || (g_try[i] && t - g_try[i] < (uint32_t)retry)) continue;
         uint64_t node = own_node(pl, k_ab[i].skill); int lvl = node ? eff_level(b, pl, node) : 0; if (lvl <= 0) continue;
@@ -245,11 +246,11 @@ void dm_autobuff_pump(uint8_t *b, uint64_t pl) {
         uint64_t node = own_node(pl, k_ab[i].skill); if (node && eff_level(b, pl, node) > 0) continue;
         if (swap_gives(b, pl, k_ab[i].skill)) w_list[w_n++] = i; }
     if (!w_n) { int cooling = 0; if (w_due(b, pl, has, t, &cooling) == 0 && cooling && (!w_said[5] || t - w_said[5] >= 250)) { w_said[5] = t; LOG("增益自动补：副手组的增益要补，但换武器连败后在歇（%d 个）", cooling); } return; }
-    { int lf = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 6, 0) >> 8, mx = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 7, 0) >> 8;
+    { int lf = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 6, 0) >> 8, mx = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 7, 0) >> 8;
       if (mx > 0 && (long long)lf * 100 < (long long)mx * swaplife) { char m[64]; snprintf(m, sizeof m, "生命 %d / %d 不到上限的 %d%%", lf, mx, swaplife); w_why(b, pl, has, t, 4, m); return; } }
     int en = enemy_near(b, pl, safe); if (en >= 0) { static uint32_t said; if (!said || t - said > 250) { said = t; LOG("增益自动补：副手组的增益要补，但 %d 格内有敌对怪（最近 %d 格），先不换武器", safe, en); } return; }
-    w_ph = W_OUT; w_from = wset; w_t0 = w_start = t; w_tries = 1; w_life0 = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 6, 0) >> 8; w_lr0[0] = lr_skill(pl, 0); w_lr0[1] = lr_skill(pl, 1);
-    { char bf[120]; int o = 0; for (int k = 0; k < w_n; k++) o += snprintf(bf + o, sizeof bf - o, " %s", k_ab[w_list[k]].nm); LOG("增益自动补：拍 %u 副手组给的增益不在身上（%s）→ 换武器（当前第 %d 组，生命 %d / 上限 %d，左键技能 %d、右键技能 %d）", t, bf, wset, w_life0, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 7, 0) >> 8, w_lr0[0], w_lr0[1]); }
+    w_ph = W_OUT; w_from = wset; w_t0 = w_start = t; w_tries = 1; w_life0 = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 6, 0) >> 8; w_lr0[0] = lr_skill(pl, 0); w_lr0[1] = lr_skill(pl, 1);
+    { char bf[120]; int o = 0; for (int k = 0; k < w_n; k++) o += snprintf(bf + o, sizeof bf - o, " %s", k_ab[w_list[k]].nm); LOG("增益自动补：拍 %u 副手组给的增益不在身上（%s）→ 换武器（当前第 %d 组，生命 %d / 上限 %d，左键技能 %d、右键技能 %d）", t, bf, wset, w_life0, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 7, 0) >> 8, w_lr0[0], w_lr0[1]); }
     swap0(wset);
 }
 
@@ -261,16 +262,16 @@ void dm_autobuff_srv_tick(uint8_t *b, uint64_t G, uint64_t player) {
       if (at > 0 && player && *(uint32_t *)(G + 0x170) >= (uint32_t)at) { at = 0; uint64_t sl = *(uint64_t *)(player + 0x88); if (sl && *(uint32_t *)(sl + 0x1c) >> 31) *(uint32_t *)(sl + 0xb30 + 4 * (uint64_t)(st >> 5)) &= ~(1u << (st & 31)); LOG("测试 DM_TEST_BUFF_DROP：服务端清掉状态 %d", st); } }
     { static uint64_t tl; if (tl != player && player && *(uint32_t *)(G + 0x170) > 40) { tl = player; test_learn(b, player, "服务端"); } }
     static uint32_t chk_at; static int chk_m, chk_i;
-    if (chk_at && player && *(uint32_t *)(G + 0x170) >= chk_at) { chk_at = 0; char sb[200]; stat_line(b, player, sb, sizeof sb); LOG("增益自动补读数：「%s」施放后 30 拍，服务端法力 %d → %d，模式 %u；%s", k_ab[chk_i].nm, chk_m >> 8, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(player, 8, 0) >> 8, *(uint32_t *)(player + 0xc), sb); }
+    if (chk_at && player && *(uint32_t *)(G + 0x170) >= chk_at) { chk_at = 0; char sb[200]; stat_line(b, player, sb, sizeof sb); LOG("增益自动补读数：「%s」施放后 30 拍，服务端法力 %d → %d，模式 %u；%s", k_ab[chk_i].nm, chk_m >> 8, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(player, 8, 0) >> 8, *(uint32_t *)(player + 0xc), sb); }
     int i = atomic_exchange(&g_req, -1); if (i < 0 || !player) return;
     uint32_t pm = *(uint32_t *)(player + 0xc); uint64_t node = own_node(player, k_ab[i].skill), sl = *(uint64_t *)(player + 0x100);
     if ((pm != 1 && pm != 5) || !node || !sl) { atomic_store(&g_busy, 1); return; }
-    uint64_t pp = *(uint64_t *)(player + 0x38); int x = pp ? *(uint16_t *)(pp + 2) : 0, y = pp ? *(uint16_t *)(pp + 6) : 0, m0 = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(player, 8, 0);
+    uint64_t pp = *(uint64_t *)(player + 0x38); int x = pp ? *(uint16_t *)(pp + 2) : 0, y = pp ? *(uint16_t *)(pp + 6) : 0, m0 = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(player, 8, 0);
     uint64_t old_r = *(uint64_t *)(sl + 0x10); *(uint64_t *)(sl + 0x10) = node;
-    int r = ((int (*)(uint64_t, uint64_t, int, int, int, uint64_t))(b + 0x6e77f0))(G, player, x, y, 1, node);
+    int r = ((int (*)(uint64_t, uint64_t, int, int, int, uint64_t))(b + GA_SKILL_CAST_AT))(G, player, x, y, 1, node);
     uint64_t mid_r = *(uint64_t *)(sl + 0x10); *(uint64_t *)(sl + 0x10) = old_r;
     if (*(uint32_t *)(player + 0xc) != 10) atomic_store(&g_unusable, i);
-    int m1 = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(player, 8, 0); if (getenv("DM_TEST_BUFF_DUMP")) { char sb[200]; stat_line(b, player, sb, sizeof sb); LOG("增益自动补读数：放「%s」之前服务端玩家 %s", k_ab[i].nm, sb); chk_at = *(uint32_t *)(G + 0x170) + 30; chk_m = m0; chk_i = i; }
+    int m1 = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(player, 8, 0); if (getenv("DM_TEST_BUFF_DUMP")) { char sb[200]; stat_line(b, player, sb, sizeof sb); LOG("增益自动补读数：放「%s」之前服务端玩家 %s", k_ab[i].nm, sb); chk_at = *(uint32_t *)(G + 0x170) + 30; chk_m = m0; chk_i = i; }
     LOG("增益自动补：服务端放「%s」（技能 %d，基础等级 %d）→ 返回 %d，模式 %u → %u，法力 %d → %d；右键技能节点 %#llx（技能 %d）调用后是 %#llx，已放回", k_ab[i].nm, k_ab[i].skill, *(int32_t *)(node + 0x38), r, pm, *(uint32_t *)(player + 0xc), m0 >> 8, m1 >> 8, (unsigned long long)old_r, old_r && *(uint64_t *)old_r ? *(int16_t *)*(uint64_t *)old_r : -1, (unsigned long long)mid_r);
 }
 

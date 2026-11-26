@@ -13,6 +13,7 @@
 
 
 #include "t_gear_stock.h"
+#include "../game_addrs.h"
 #include "../dm_gear_equip.h"
 #include "../dm_gear_equip_rules.h"
 #include "../dm_gear_pages.h"
@@ -116,12 +117,12 @@ static void f_send(const uint8_t *p, int n) {
 static int f_place_check(uint64_t pl, int slot, uint64_t it, int a, int b) { (void)pl; (void)it; (void)a; (void)b; return worn_in(slot) ? 5 : 1; }
 static void tramp(uint64_t off, void *fn) { uint8_t *p = g_base + off; p[0] = 0x48; p[1] = 0xb8; memcpy(p + 2, &fn, 8); p[10] = 0xff; p[11] = 0xe0; }
 static int base_init(void) {
-    g_base = mmap(NULL, 0x2d70000, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    g_base = mmap(NULL, (GA_DATA_TABLES + 0xffff) & ~0xffff, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (g_base == MAP_FAILED) return -1;
-    tramp(0x570260, (void *)f_code); tramp(0x3bb24c, (void *)f_body_put); tramp(0x2ceab0, (void *)f_send); tramp(0x565950, (void *)f_place_check);
-    *(uint64_t *)(g_base + 0x2d64a18 + 16) = P(g_table); *(uint64_t *)(g_table + 0x15c0) = P(g_rec); *(uint32_t *)(g_table + 0x15c8) = CI_N;
+    tramp(GA_ITEM_CODE, (void *)f_code); tramp(GA_EQUIP_SLOT_PUT, (void *)f_body_put); tramp(GA_CLIENT_SEND, (void *)f_send); tramp(GA_ITEM_PLACE_CHECK, (void *)f_place_check);
+    *(uint64_t *)(g_base + GA_DATA_TABLES + 16) = P(g_table); *(uint64_t *)(g_table + 0x15c0) = P(g_rec); *(uint32_t *)(g_table + 0x15c8) = CI_N;
     for (int c = 0; c < CI_N; c++) { g_rec[c * 0x1c0 + 0x11e] = CI_W[c]; g_rec[c * 0x1c0 + 0x11f] = CI_H[c]; }
-    g_base[0x2d5ff60] = 1;
+    g_base[GA_STASH_OPEN] = 1;
     *(uint64_t *)(g_player + 0x90) = P(g_inv); *(uint32_t *)g_inv = 0x01020304;
     return 0;
 }

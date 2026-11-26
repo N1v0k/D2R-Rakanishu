@@ -26,8 +26,8 @@
   "tags": ["leveling", "endgame", "budget", "magicfind", "fire", "physical", "caster"],
   "difficulty": 1,
   "mode": {"core": "softcore", "ladder": "nonladder"},
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [262, 276, 251],
   "trees": [1, 2],
   "profile": {
@@ -172,5 +172,5 @@
     {"site": "Blizzard", "title": "Diablo II: Resurrected Ladder Season 15 Now Live (3.3)", "url": "https://news.blizzard.com/en-us/article/24296140/diablo-ii-resurrected-ladder-season-15-now-live", "seen": "2026-11-04", "patch": "3.3", "kind": "database", "lang": "en",
      "note": {"de": "Ganz gelesen; keine Änderung an Assassinen-Fertigkeiten", "en": "Read in full; no change to Assassin skills"}}
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

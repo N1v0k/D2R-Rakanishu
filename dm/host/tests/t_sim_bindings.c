@@ -1,4 +1,5 @@
 #include "../../ios/Sources/dm_touch_game_state.h"
+#include "../game_addrs.h"
 #include "../dm.h"
 #include <assert.h>
 
@@ -10,9 +11,9 @@ int dm_swapskill_equipped(int32_t item){(void)item;return 0;}
 int dm_swapskill_offhand_gives(int skill){(void)skill;return 0;}
 int dm_touch_game_test_identity(const uint64_t *regs,uint64_t *caller,uint64_t *hud){(void)regs;*caller=*hud=0;return DM_TG_IDENTITY_UNCONFIRMED;}
 int main(void){
-    size_t size=0x2d5f0c0+32*DM_TG_STRIDE;unsigned char *memory=calloc(1,size);assert(memory);
+    size_t size=GA_SKILL_SLOT_BINDS+32*DM_TG_STRIDE;unsigned char *memory=calloc(1,size);assert(memory);
     g_mod[0].base=memory;g_mod[0].size=size;strcpy(g_mod[0].name,"main");g_nmod=1;
-    unsigned char *binding=memory+0x2d5f0c0;
+    unsigned char *binding=memory+GA_SKILL_SLOT_BINDS;
     memset(binding,255,32*DM_TG_STRIDE);
     uint32_t ids[]={4,9,4,40};int slots[]={0,7,16,31};
     for(int i=0;i<4;i++)memcpy(binding+slots[i]*DM_TG_STRIDE,&ids[i],4);

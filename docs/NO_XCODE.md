@@ -23,7 +23,7 @@ Download the shell from this repository's [Releases page](https://github.com/jha
 
 ## What you need
 
-- The files of the game you bought: `ExeFS` and `RomFS` of the Switch release 1.0.34.0 (corresponding to PC version 3.3.94012); the upstream project describes how to prepare them from your own copy
+- The files of the game you bought: `ExeFS` and `RomFS` of the Switch release 1.0.35 (corresponding to PC version 3.4.95035); the upstream project describes how to prepare them from your own copy
 - The source of this repository, at the same release as the shell (the tool checks and says so if they differ)
 - Python 3.9 or later, plus: `python3 -m pip install pillow numpy lz4 capstone unicorn`
 - A C compiler (`clang`; on Windows, installing LLVM is enough) and the .NET SDK. Apple's Metal shader compiler is **not** required: if it is there (a Mac with Xcode) the shaders are compiled into libraries on the computer, otherwise they are compiled on the phone

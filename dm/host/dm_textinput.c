@@ -13,6 +13,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include <string.h>
 #include <stdio.h>
@@ -39,23 +40,23 @@ static uint64_t ti_find(uint64_t w, const char *name, int dep) {
     return 0;
 }
 void dm_textinput_pump(void) {
-    uint8_t *b = tb(); if (!b) return; uint64_t root = *(uint64_t *)(b + 0x2f05458); if (!root) return;
+    uint8_t *b = tb(); if (!b) return; uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); if (!root) return;
     if (atomic_exchange(&g_ti_open, 0)) {
-        uint64_t w = *(uint64_t *)(b + 0x2f02540);
+        uint64_t w = *(uint64_t *)(b + GA_CUR_INPUT_BOX);
         if (w) {
-            int num = *(uint64_t *)w - (uint64_t)(uintptr_t)b == 0x20b91c0; g_swkbd_numeric_max = num ? *(int32_t *)(w + 0x12e0) : -1;
+            int num = *(uint64_t *)w - (uint64_t)(uintptr_t)b == GA_VT_NUMERIC_INPUT; g_swkbd_numeric_max = num ? *(int32_t *)(w + 0x12e0) : -1;
             LOG("文本框：TextInputModal 打开 → 弹系统键盘（%s%s%d）", num ? "数字框" : "文字框", num ? "，上限 " : "，类型 ", num ? g_swkbd_numeric_max : *(int32_t *)(w + 0x58c));
-            ((void (*)(uint64_t))(b + 0xac5bb8))(w); *(uint8_t *)(root + 0xb8) = 1;
+            ((void (*)(uint64_t))(b + GA_TEXTINPUT_OPEN_KEYBOARD))(w); *(uint8_t *)(root + 0xb8) = 1;
         }
     }
     int n = atomic_exchange(&g_num_set, INT32_MIN);
     if (n != INT32_MIN) {
         uint64_t modal = ti_find(root, "DropGoldModal", 0), w = modal && *(uint8_t *)(modal + 0x50) ? *(uint64_t *)(modal + 0x210) : 0;
-        if (w && *(uint64_t *)w - (uint64_t)(uintptr_t)b == 0x20b91c0) {
+        if (w && *(uint64_t *)w - (uint64_t)(uintptr_t)b == GA_VT_NUMERIC_INPUT) {
             int max = *(int32_t *)(w + 0x12e0), min = *(int32_t *)(w + 0x12e4), v = n == -1 ? max : n == -2 ? max / 2 : n; if (v > max) v = max; if (v < min) v = min;
             char t[16]; struct { const char *p; uint64_t n; } sv = { t, (uint64_t)snprintf(t, sizeof t, "%d", v) };
-            ((void (*)(uint64_t, void *))(b + 0xac2058))(w, &sv);
-            ((void (*)(uint64_t))(b + 0xace780))(w);
+            ((void (*)(uint64_t, void *))(b + GA_TEXTINPUT_SET_TEXT))(w, &sv);
+            ((void (*)(uint64_t))(b + GA_NUMINPUT_PARSE_CLAMP))(w);
             LOG("数量框：设为 %d（范围 %d–%d）→ 控件当前值 %d", v, min, max, *(int32_t *)(w + 0x12fc));
         } else LOG("数量框：没有打开的数量弹窗，忽略设值 %d", n);
     }

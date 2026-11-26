@@ -22,6 +22,7 @@
 
 
 #include "dm_custom.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include <stdatomic.h>
 #include <stdint.h>
@@ -47,15 +48,15 @@ static const dh_rule k_rules[] = {
 static _Atomic int g_pending;
 
 static int tier_of(uint8_t *b, uint64_t u, const char **why) {
-    int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + 0x574bc0);
-    uint32_t code = ((uint32_t (*)(uint64_t))(b + 0x570260))(u);
+    int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE);
+    uint32_t code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(u);
     const uint8_t *d = (const uint8_t *)(uintptr_t)*(uint64_t *)(u + 0x10); uint32_t q = d ? *(const uint32_t *)d : 0;
     for (unsigned i = 0; i < sizeof k_rules / sizeof *k_rules; i++) { const dh_rule *r = &k_rules[i]; int hit = 0;
         switch (r->kind) {
         case K_CODE: hit = !memcmp(&code, r->code, 4); break;
         case K_QUAL: hit = q == r->a; break;
         case K_TYPE_QMIN: hit = q >= r->b && is(u, r->a); break;
-        case K_SOCK: hit = q <= 3 && (is(u, T_WEAP) || is(u, T_ARMO)) && ((int (*)(uint64_t, int, int))(b + 0x5b9290))(u, 194, 0) >= r->a; break; }
+        case K_SOCK: hit = q <= 3 && (is(u, T_WEAP) || is(u, T_ARMO)) && ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(u, 194, 0) >= r->a; break; }
         if (hit) { *why = r->note; return r->tier; } }
     return 0;
 }

@@ -16,12 +16,12 @@ import sys
 DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 sys.path.insert(0, os.path.join(DM, 'ios', 'tools'))
 
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 STATES = 232
 STRINGS = ('skills', 'shrines', 'item-modifiers', 'ui')
 PALETTE = 'global/palette/ACT1/pal.dat'
 TABLES = tuple('global/excel/%s.txt' % f for f in ('states', 'itemstatcost', 'skills', 'skilldesc', 'misc', 'shrines', 'overlay', 'difficultylevels', 'experience')) + tuple('local/lng/strings/%s.json' % f for f in STRINGS + ('item-names',)) + ('hd/items/items.json', PALETTE)
-TABLES_SHA = '457e5dec1a0e3c34370bfd58108a8be00b8e4c284e991ca0681663ba8ca7d394'
+TABLES_SHA = '704bd01226aaf6d04b2bc8e68ff4c4e1bb4b254840a9ff79ba6d7e2c54bd820e'
 
 ART_SHA = '96b6a3c56b79dc4c54fcb086e34a6577d5bd6eb2b655b56a117a5052c0658307'
 OVERLAYS = 'global/overlays/%s.dcc'

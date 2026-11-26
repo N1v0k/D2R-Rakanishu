@@ -5,6 +5,7 @@
 
 
 #include "dm_cursor.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_uiscreen.h"
 
@@ -365,14 +366,14 @@ static void scale3d_tick(void) {
     if (s3g_on()) { float g = fresh && !qual ? atomic_load(&g_s3g_scale) : 0; dyn = g > 0 && g < want_cfg ? g : want_cfg; }
     float want = dm_nvn_ruler_truth() ? 1.0f : dyn;
     if (want == cur || !main || dm_nvn_frame_count() < 30) return;
-    uintptr_t renderer = *(uintptr_t *)(main->base + 0x31e0848); if (!renderer) return;
-    uint32_t ow = *(uint32_t *)(renderer + 0xee88), oh = *(uint32_t *)(renderer + 0xee8c); if (!ow || !oh) return;
+    uintptr_t renderer = *(uintptr_t *)(main->base + GA_RENDERER); if (!renderer) return;
+    uint32_t ow = *(uint32_t *)(renderer + GF_RENDER_OUT_SIZE), oh = *(uint32_t *)(renderer + GF_RENDER_OUT_SIZE + 4); if (!ow || !oh) return;
     { extern void mtl_rt_force_full(int) __attribute__((weak)); if (mtl_rt_force_full) mtl_rt_force_full(4); }
-    float *scale = (float *)(renderer + 0x66a4); dm_guest_write_prepare(scale, sizeof *scale); *scale = want;
-    ((void (*)(uint32_t, uint32_t))(main->base + 0x8582f0))(ow, oh);
+    float *scale = (float *)(renderer + GF_RENDER_3D_SCALE); dm_guest_write_prepare(scale, sizeof *scale); *scale = want;
+    ((void (*)(uint32_t, uint32_t))(main->base + GA_DISPLAY_SET_RES))(ow, oh);
     cur = want; atomic_store(&g_scale3d_cur, want);
-    LOG("3D 渲染比例 %.2f：3D 目标 %ux%u，输出 %ux%u（帧 %llu）", want, *(uint32_t *)(renderer + 0xee78), *(uint32_t *)(renderer + 0xee7c),
-        *(uint32_t *)(renderer + 0xee88), *(uint32_t *)(renderer + 0xee8c), (unsigned long long)dm_nvn_frame_count());
+    LOG("3D 渲染比例 %.2f：3D 目标 %ux%u，输出 %ux%u（帧 %llu）", want, *(uint32_t *)(renderer + GF_RENDER_3D_SIZE), *(uint32_t *)(renderer + GF_RENDER_3D_SIZE + 4),
+        *(uint32_t *)(renderer + GF_RENDER_OUT_SIZE), *(uint32_t *)(renderer + GF_RENDER_OUT_SIZE + 4), (unsigned long long)dm_nvn_frame_count());
 }
 HLE_FORCE("_ZN2nn2oe25TryPopNotificationMessageEPj", "系统通知队列；前端状态变化入队", unsigned, h_oe_TryPopMsg, uint32_t *msg) {
     scale3d_tick();

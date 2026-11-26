@@ -183,7 +183,7 @@ DM_ROMFS=<Update/RomFS 目录> DM_SAVE=<存档目录> DM_TEMP=<临时目录> DM_
 
 **游戏内功能**
 
-`dm_*.c` 是在原版之上加的功能和触摸适配，每个文件开头的注释说明它做什么、依据游戏里的哪些地址。例如 `dm_cursor.c`、`dm_world.c`、`dm_actions.c`（触摸点选、与世界交互、买卖与加点）、`dm_hud.c`（底部界面上的数字）、`dm_vault.c` 与 `dm_vault_ui.c`（编年史仓库）、`dm_pouch.c`（百宝囊）、`dm_rift.c`（秘境）、`dm_cloudsync.c`（iCloud 存档同步）、`dm_custom.c`（这些功能的开关）。文件里的地址都是 3.3.94012 原映像的偏移。
+`dm_*.c` 是在原版之上加的功能和触摸适配，每个文件开头的注释说明它做什么、依据游戏里的哪些地址。例如 `dm_cursor.c`、`dm_world.c`、`dm_actions.c`（触摸点选、与世界交互、买卖与加点）、`dm_hud.c`（底部界面上的数字）、`dm_vault.c` 与 `dm_vault_ui.c`（编年史仓库）、`dm_pouch.c`（百宝囊）、`dm_rift.c`（秘境）、`dm_cloudsync.c`（iCloud 存档同步）、`dm_custom.c`（这些功能的开关）。文件里的地址都是原映像的偏移：按名字写的（`GA_…`）取地址表 `host/game_addrs.def` 里的值，表里是所支持的 3.4.95035 版；注释里留下的数字地址记的是编写时依据的 3.3.94012 版。
 
 ## 从你的游戏文件生成资源
 
@@ -191,12 +191,12 @@ DM_ROMFS=<Update/RomFS 目录> DM_SAVE=<存档目录> DM_TEMP=<临时目录> DM_
 
 **要哪些文件**
 
-- 必需：Switch 版 1.0.34.0（对应 PC 版 3.3.94012）的更新包 RomFS（`Update/RomFS`，里面有 `data/build_manifest.psv`）。版本不对时，生成脚本会按登记的校验值报错（「原件和冻结的不一样」「原文变了」）。
+- 必需：Switch 版 1.0.35（对应 PC 版 3.4.95035）的更新包 RomFS（`Update/RomFS`，里面有 `data/build_manifest.psv`）。版本不对时，生成脚本会按登记的校验值报错（「原件和冻结的不一样」「原文变了」）。
 - 可选：PC 版 D2R 的解包目录（下面是 `hd/global/ui/...`，原始 `.sprite`）。有它，底部 UI 用 PC 版的 2 倍原图；没有它，底部 UI 用 Switch 版素材放大，会略糊，生成时打印「没找到 PC 版文件……底栏用 Switch 素材放大，会略糊」。
 
 **放哪**
 
-- Switch RomFS：缺省 `$DM_ROOT/data/switch/3.3.94012/Update/RomFS`，或用环境变量 `DM_ROMFS_SRC=<你的 Update/RomFS>`。
+- Switch RomFS：缺省 `$DM_ROOT/data/switch/3.4.95035/Update/RomFS`，或用环境变量 `DM_ROMFS_SRC=<你的 Update/RomFS>`。
 - PC 版解包目录：缺省 `$DM_ROOT/data/assets-src/raw`，或 `DM_PC_DATA=<目录>`。
 
 **跑哪条命令**

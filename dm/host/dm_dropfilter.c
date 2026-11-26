@@ -9,6 +9,7 @@
 
 
 #include "dm_custom.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm.h"
 #include <stdlib.h>
@@ -38,8 +39,8 @@ static int code_in(uint32_t c, const char *const *l) { for (; *l; l++) if (!memc
 static int light_tier(uint8_t *b, uint64_t u) {
     static int force = -2; if (force == -2) { const char *e = getenv("DM_DROP_LIGHT"); force = e ? strcmp(e, "0") != 0 : -1; }
     if (!(force >= 0 ? force : dm_custom_get("drop_light"))) return 0;
-    int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + 0x574bc0);
-    uint32_t code = ((uint32_t (*)(uint64_t))(b + 0x570260))(u);
+    int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE);
+    uint32_t code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(u);
     const uint8_t *d = (const uint8_t *)(uintptr_t)*(uint64_t *)(u + 0x10); uint32_t q = d ? *(const uint32_t *)d : 0;
     static const char *const high_rune[] = {"r23 ", "r24 ", "r25 ", "r26 ", "r27 ", "r28 ", "r29 ", "r30 ", "r31 ", "r32 ", "r33 ", 0},
         *const quest[] = {"pk1 ", "pk2 ", "pk3 ", "tes ", "ceh ", "bet ", "fed ", "toa ", 0};
@@ -49,7 +50,7 @@ static int light_tier(uint8_t *b, uint64_t u) {
 }
 void svc_ground_asset(uint64_t *regs) {
     uint8_t *b = main_base(); uint64_t u = regs[1]; uint8_t *out = (uint8_t *)(uintptr_t)regs[8];
-    {   register uint64_t x0 __asm__("x0") = regs[0], x1 __asm__("x1") = u; register uint64_t x8 __asm__("x8") = regs[8]; register uint64_t x16 __asm__("x16") = (uint64_t)(uintptr_t)(b + 0xa14dc4);
+    {   register uint64_t x0 __asm__("x0") = regs[0], x1 __asm__("x1") = u; register uint64_t x8 __asm__("x8") = regs[8]; register uint64_t x16 __asm__("x16") = (uint64_t)(uintptr_t)(b + GA_UNIT_MODEL_PATH);
         __asm__ volatile("blr x16" : "+r"(x0), "+r"(x1), "+r"(x8), "+r"(x16) : : "x2", "x3", "x4", "x5", "x6", "x7", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x17", "x30",
             "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "cc", "memory"); }
     if (!u || *(uint32_t *)u != 4 || (*(uint32_t *)(u + 0xc) != 3 && *(uint32_t *)(u + 0xc) != 5)) return;
@@ -80,7 +81,7 @@ void svc_ground_asset(uint64_t *regs) {
 enum { TIER1_SOUND = 40 };
 void svc_drop_sound(uint64_t *regs) {
     uint8_t *b = main_base(); uint64_t u = regs[0];
-    uint32_t snd = ((uint32_t (*)(uint64_t, uint64_t))(b + 0x470c20))(u, regs[1]); regs[0] = snd;
+    uint32_t snd = ((uint32_t (*)(uint64_t, uint64_t))(b + GA_ITEM_DROP_SOUND))(u, regs[1]); regs[0] = snd;
     { void dm_drop_haptic_land(uint8_t *, uint64_t); dm_drop_haptic_land(b, u); }
     if (!u || *(uint32_t *)u != 4 || light_tier(b, u) != 1) return;
     static int alt = -2; if (alt == -2) { const char *e = getenv("DM_TEST_DROP_SOUND"); alt = e ? atoi(e) : -1; }

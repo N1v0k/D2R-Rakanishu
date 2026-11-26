@@ -66,8 +66,8 @@
     "core": "softcore",
     "ladder": "nonladder"
   },
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [
     388,
     389,
@@ -981,5 +981,5 @@
       }
     }
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

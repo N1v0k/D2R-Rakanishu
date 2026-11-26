@@ -4,6 +4,7 @@
 
 
 #include "../dm_dmgnum.c"
+#include "../game_addrs.h"
 #include <stdio.h>
 
 module_t g_mod[MAX_MOD];
@@ -48,7 +49,7 @@ static int kind_of(int g) { return (int)out[g * FIELDS + 5]; }
 static int flags_of(int g) { return (int)out[g * FIELDS + 3] >> 5; }
 
 int main(void) {
-    strcpy(g_mod[0].name, "main"); g_mod[0].base = (uint8_t *)(uintptr_t)life_stub - 0x5b9290; g_nmod = 1;
+    strcpy(g_mod[0].name, "main"); g_mod[0].base = (uint8_t *)(uintptr_t)life_stub - GA_STAT_GET; g_nmod = 1;
     int k;
 
 

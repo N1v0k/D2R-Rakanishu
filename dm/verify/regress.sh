@@ -16,7 +16,7 @@
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 PY=${DM_PY:-${DM_ROOT:-$HOME/dm-work}/build/cache/dm/venv/bin/python}
-NSO_DIR=${DM_NSO_DIR:-${DM_ROOT:-$HOME/dm-work}/data/switch/3.3.94012/Update/ExeFS}
+NSO_DIR=${DM_NSO_DIR:-${DM_ROOT:-$HOME/dm-work}/data/switch/$(sed -n '1s/-.*//p' "$HERE/../PRODUCT")/Update/ExeFS}
 RUN=${DM_ROOT:-$HOME/dm-work}/run/verify/dm
 FRESH=0; STRUCT_ONLY=0
 [ "${1:-}" = --fresh ] && { FRESH=1; shift; }

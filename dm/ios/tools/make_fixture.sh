@@ -12,7 +12,7 @@ TOOLS=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); export DM_ROOT=${DM_ROOT:-$
 source "$TOOLS/local_env.sh"; local_env_need DM_BUNDLE_ID || exit 1
 B=$DM_BUNDLE_ID; DST=$DM_ROOT/data/switch/save_ref_warlock/0000000000000001/0
 [ -d "$DST" ] && { echo "已有标准存档 ${DST}，不覆盖"; exit 0; }
-GAME=${SMOKE_MAC_ROMFS:-$DM_ROOT/data/switch/3.3.94012/Update/RomFS/data}
+GAME=${SMOKE_MAC_ROMFS:-$DM_ROOT/data/switch/$(sed -n '1s/-.*//p' "$TOOLS/../../PRODUCT")/Update/RomFS/data}
 [ -f "$GAME/.build.config" ] || { echo "✗ 没有游戏资源 $GAME"; exit 1; }
 W=$(SMOKE_MAC_PKG_ONLY=1 bash "$TOOLS/smoke_mac.sh" 1 2>&1 | sed -n 's/^SMOKE-MAC 只出包 //p' | tail -1)
 [ -d "$W" ] || { echo "✗ 没出成能在 Mac 上跑的包"; exit 1; }

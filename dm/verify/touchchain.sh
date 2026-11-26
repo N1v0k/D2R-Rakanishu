@@ -41,7 +41,7 @@ export DM_TOUCH_SCRIPT="$CASE_DIR/script.txt"
 
 
 if [ -z "${DM_ROMFS_OVERLAY:-}" ]; then
-    python3 "$ROOT/ios/tools/gen_romfs_overlay.py" "${DM_ROMFS_SRC:-${DM_ROOT:-$HOME/dm-work}/data/switch/3.3.94012/Update/RomFS}" "$RUN/romfs_overlay" > /dev/null || { echo "【红】界面覆盖层生成失败（gen_romfs_overlay.py）" >&2; exit 2; }
+    python3 "$ROOT/ios/tools/gen_romfs_overlay.py" "${DM_ROMFS_SRC:-${DM_ROOT:-$HOME/dm-work}/data/switch/$(sed -n '1s/-.*//p' "$ROOT/PRODUCT")/Update/RomFS}" "$RUN/romfs_overlay" > /dev/null || { echo "【红】界面覆盖层生成失败（gen_romfs_overlay.py）" >&2; exit 2; }
     export DM_ROMFS_OVERLAY="$RUN/romfs_overlay"
 fi
 

@@ -1,6 +1,7 @@
 
 
 #include "../dm_padmode.c"
+#include "../game_addrs.h"
 
 module_t g_mod[MAX_MOD];
 int g_nmod;
@@ -75,7 +76,7 @@ static void reset(void) {
     root[1] = addr("PanelManager"); root[0x58 / 8] = addr(children); root[0x60 / 8] = 1;
     children[0] = addr(overlay); overlay[1] = addr("ControllerOverlay");
     ((uint8_t *)overlay)[0x50] = 1; overlay[0x440 / 8] = addr(&a);
-    *(uint64_t *)(g_b + 0x2f05458) = addr(root);
+    *(uint64_t *)(g_b + GA_UI_ROOT) = addr(root);
     g_lg_n = g_lg_on_n = g_lh_n = 0; dm_wref_set(&g_lg_widget, 0); g_lg_frame = 0;
     frame = 100; g_cur = 1; atomic_store(&g_freeze, 0);
     appends = removals = overruns = 0;
@@ -86,7 +87,7 @@ static void declare_pages(void) {
 static void fill(test_legend *lg, int n) { for (int i = 0; i < n; i++) native_add(lg, 100 + i, "Native"); }
 int main(void) {
     unsetenv("DM_TEST_LEGEND"); unsetenv("DM_TEST_LEGEND_LOG");
-    g_b = calloc(1, 0x3211708); if (!g_b) return 2;
+    g_b = calloc(1, GA_GAME_ALLOC_READY + 8); if (!g_b) return 2;
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = g_b;
     g_lg_api.base = g_b; g_lg_api.make = make; g_lg_api.add = add;
     g_lg_api.remove = remove_entry; g_lg_api.append = append;

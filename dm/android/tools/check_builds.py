@@ -2,7 +2,7 @@
 """构建指南校验：dm/android/builds/<id>.json 是我们自己写的指南（只有自己的话、游戏表里的键 / 编号与数字）。
   不带游戏文件（CI）：按 builds/schema.json 查结构，再查语义——两种语言都在、阶段不重叠、步骤按等级排、属性规则最后一条是「其余」、
   至少两个不同站点的来源、日期与链接格式。
-  带游戏文件（本机，--romfs <RomFS> 或 --tables <已解出的表目录>，只读，什么都不写）：表必须正是 3.3.94012 的（指纹）；
+  带游戏文件（本机，--romfs <RomFS> 或 --tables <已解出的表目录>，只读，什么都不写）：表必须正是 3.4.95035 的（指纹）；
   技能号 ↔ 键 ↔ 职业、前置与等级要求；逐级模拟加点（每级 1 点，任务点按下面写明的假设，另按「一个任务点都没有」的最坏情况再跑一遍），
   两种情况都不许走进死路；有任务点时每个阶段到它的末级必须走完；符文之语的键 / 底材类型 / 孔数 / 等级、暗金与套装的键与等级、
   佣兵（hireling.txt）、构建画像里的属性名（itemstatcost.txt），以及按具体底材算出的力量 / 敏捷要求。
@@ -12,7 +12,7 @@ Build guide validator: dm/android/builds/<id>.json are our own guides (only our 
   Without game files (CI): structure per builds/schema.json, then semantics -- both languages present, phases do not overlap, steps ordered by level,
   the last stat rule takes "the rest", at least two sources from different sites, date and link formats.
   With game files (locally, --romfs <RomFS> or --tables <directory of extracted tables>, read only, nothing is written): the tables must be exactly those
-  of 3.3.94012 (fingerprint); skill id <-> key <-> class, prerequisites and level requirements; a per-level simulation of the skill points (1 per level,
+  of 3.4.95035 (fingerprint); skill id <-> key <-> class, prerequisites and level requirements; a per-level simulation of the skill points (1 per level,
   quest points by the assumption written below, and again for the worst case without any quest point) that must never run into a dead end;
   with quest points every phase must be complete by its last level; rune word keys / base types / sockets / levels, unique and set keys and levels,
   the mercenary (hireling.txt), the stat names of the build profile (itemstatcost.txt), and the strength / dexterity requirements of specific bases.
@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 DM = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 BUILDS = os.path.join(DM, 'android', 'builds')
 SCHEMA = os.path.join(BUILDS, 'schema.json')
-VERSION = '3.3.94012'
+VERSION = '3.4.95035'
 CLASSES = ('ama', 'sor', 'nec', 'pal', 'bar', 'dru', 'ass', 'war')
 STATS = ('str', 'dex', 'vit', 'ene')
 STAT_COLUMN = {'str': 'str', 'dex': 'dex', 'vit': 'vit', 'ene': 'int'}
@@ -50,7 +50,7 @@ OK, R_LEVEL, R_PREREQ, R_CAP, R_MAX, R_DATA = 0, 2, 3, 5, 6, 7
 PERMANENT = (R_CAP, R_MAX, R_DATA)
 TABLES = ('skills.txt', 'skilldesc.txt', 'charstats.txt', 'uniqueitems.txt', 'setitems.txt', 'Runes.txt', 'armor.txt', 'weapons.txt', 'misc.txt',
           'itemtypes.txt', 'itemstatcost.txt', 'hireling.txt')
-TABLES_SHA = '6b195791e092fb41c860f21011eb6b223d6df304ecfb5d2b53acf8d2cee7e7d0'
+TABLES_SHA = 'ee44d8cdf8b00e913f8a9f89ffad33449bc0417104404ce0f05135b0038333ac'
 SLOT_TYPES = {'weapon': ('weap',), 'offhand': ('shld', 'weap'), 'switch': ('weap', 'shld'), 'helm': ('helm',), 'armor': ('tors',), 'gloves': ('glov',),
               'belt': ('belt',), 'boots': ('boot',), 'amulet': ('amul',), 'ring': ('ring',), 'charm': ('char',)}
 
@@ -347,7 +347,7 @@ def check_ci(g, name):
 
 
 def check_tables(g, T):
-    """mit 3.3.94012-Tabellen | with the 3.3.94012 tables"""
+    """mit 3.4.95035-Tabellen | with the 3.4.95035 tables"""
     err, warn, report = [], [], []
     cls = g['class']
     for p in g['phases']:
@@ -511,7 +511,7 @@ def load(paths):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--romfs', help='RomFS 3.3.94012 (liest nur | read only)')
+    ap.add_argument('--romfs', help='RomFS 3.4.95035 (liest nur | read only)')
     ap.add_argument('--tables', help='Verzeichnis mit den .txt-Tabellen | directory with the .txt tables')
     ap.add_argument('--report', action='store_true', help='Simulation ausgeben | print the simulation')
     ap.add_argument('--print-sha', action='store_true', help='Fingerabdruck der Tabellen ausgeben | print the table fingerprint')

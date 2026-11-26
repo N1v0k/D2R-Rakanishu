@@ -37,6 +37,7 @@
 
 
 #include "dm_build.h"
+#include "game_addrs.h"
 #include "dm_widget.h"
 #include "dm_input.h"
 #include "dm_i18n.h"
@@ -70,7 +71,7 @@ static uint64_t find(uint64_t w, const char *name, int dep) {
 static void set_text(uint8_t *b, uint64_t w, const char *s) {
     if (!w || !DM_WIDGET_OK(b, w, DM_VT_TEXT, "build guide card")) return;
     size_t n = strlen(s); if (*(uint64_t *)(uintptr_t)(w + 0x90) == n && (!n || !memcmp(*(const char **)(uintptr_t)(w + 0x88), s, n))) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 
 static int tab_of(int page) {

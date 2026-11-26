@@ -73,10 +73,10 @@ static int sim_weapon(uint8_t *b,uint64_t item,int mode,int cls,dm_sim_weapon *w
     if(item) {
         unsigned version=*(uint8_t *)(item+0x1bd);
         if(version<1 || version>3)return 0;
-        index=((unsigned (*)(unsigned,int))(b+0x576ad0))(version,*(int32_t *)(item+4))&0xffff;
+        index=((unsigned (*)(unsigned,int))(b+GA_ITEM_WEAPON_CLASS))(version,*(int32_t *)(item+4))&0xffff;
     }
     if(index>7 && index!=12)return 0;
-    w->start_frame=*(int32_t *)(b+0x1dae854+index*32+cls*4);
+    w->start_frame=*(int32_t *)(b+GA_WEAPON_START_FRAMES+index*32+cls*4);
     if(w->start_frame<0 || w->start_frame>144)return 0;
     w->start_known=1;
     if(!item){w->kind=DM_WK_NONE;w->wsm=0;snprintf(w->wclass,4,"HTH");return 1;}
@@ -146,7 +146,7 @@ static int sim_charge_state(uint8_t *b,uint64_t pl) {
     uint64_t root=*(uint64_t *)(pl+0x88);
     if(!root || *(int32_t *)(root+0x1c)>=0)return 0;
     if(ver<1 || ver>3)return -1;
-    uint64_t table=*(uint64_t *)(b+0x2d64a18+ver*16);
+    uint64_t table=*(uint64_t *)(b+GA_DATA_TABLES+ver*16);
     if(!table)return -1;
     uint64_t states=*(uint64_t *)(table+0x458),count=*(uint64_t *)(table+0x460);
     if(count>512 || (count && !states))return -1;
@@ -161,7 +161,7 @@ static int sim_charge_state(uint8_t *b,uint64_t pl) {
             if(node && !list && walked==1024)return -1;
         }
         if(!list)continue;
-        int (*stat)(int,uint64_t,int,int)=(void *)(b+0x5bc690);
+        int (*stat)(int,uint64_t,int,int)=(void *)(b+GA_STATLIST_GET_OWN);
         int skill=stat(ver,list,350,0),level=stat(ver,list,351,0);
         if(skill<1 || level<1)continue;
         uint64_t skills=*(uint64_t *)(table+0x11e8),nskills=*(uint64_t *)(table+0x11f0);
@@ -180,9 +180,9 @@ static void sim_ar_inputs(uint8_t *b,uint64_t pl,uint64_t weapon,const dm_ic_cb 
     for(int id=0;id<DM_SIM_MAXSKILL;id++) {
         uint64_t node=skill_node(pl,id),record=node?*(uint64_t *)node:0;
         if(!record)continue;
-        int mastery=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,weapon,node,0);
+        int mastery=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,weapon,node,0);
         c->ar_bonus[id]=v->tohitpct+mastery+((*(uint8_t *)(record+0x24)&8)?c->stat_value[325]:0);
-        c->damage_mastery_delta[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,weapon,node,1)-v->dmast;
+        c->damage_mastery_delta[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,weapon,node,1)-v->dmast;
         c->endpoint_state_bad[id]=charge>0 && (*(uint8_t *)(record+0x24)&8)!=0;
     }
 }
@@ -226,7 +226,7 @@ static uint32_t sim_worn_identity(uint8_t *b,uint64_t pl) {
 static int sim_capture_read(const dm_sim_data *d,void *ctx) {
     sim_capture *q=ctx;uint8_t *b=q->b;uint64_t pl=q->pl;dm_sim_snapshot *s=&q->now;
     memset(s,0,sizeof *s);dm_sim_char *c=&s->c;dm_sim_char_init(c,(int)*(uint32_t *)(pl+4));
-    c->clvl=gstat(b,pl,12,0);c->diff=*(uint8_t *)(b+0x2d20b88);if(c->diff>2)return -1;
+    c->clvl=gstat(b,pl,12,0);c->diff=*(uint8_t *)(b+GA_DIFFICULTY);if(c->diff>2)return -1;
     s->players=dm_hud_players_wanted();
     s->set=*(uint8_t *)(pl+0x1bd)==3;s->session=dm_build_session();s->elysium=dm_elysium_active();
     uint64_t pd=*(uint64_t *)(pl+0x10);if(pd)snprintf(s->name,sizeof s->name,"%.16s",(char *)pd);
@@ -254,7 +254,7 @@ static int sim_capture_read(const dm_sim_data *d,void *ctx) {
     for(int k=0;nd && k<1024;k++,nd=*(uint64_t *)(nd+8)) {
         uint64_t r=*(uint64_t *)nd;if(!r)continue;int id=*(int16_t *)r;if(id<0 || id>=512 || !d->skill[id])continue;
         int base=*(int32_t *)(nd+0x38),item=*(int32_t *)(nd+0x44),lv=base;
-        if(item==-1)lv+=((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,nd,0);
+        if(item==-1)lv+=((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,nd,0);
         if(lv<0)lv=0;if(lv>256)lv=256;if(lv>c->lvl[id])c->lvl[id]=(int16_t)lv;
         if(item==-1)c->blvl[id]=(int16_t)base;
         if(item!=-1){s->item_charges=1;}
@@ -299,7 +299,7 @@ static int sim_capture_read(const dm_sim_data *d,void *ctx) {
         if(!sim_weapon(b,weapon,R.now.mode2?2:1,c->cls,&c->hand[0]) || dual){c->capture_bad|=1;c->endpoint_bad=1;}
         c->sias=sim_get(c,d,"attackrate")-100+c->hand[0].wsm;
         sim_ar_inputs(b,pl,weapon,&R.now,c);
-        c->mastery_cs=weapon?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,weapon,0,2):0;
+        c->mastery_cs=weapon?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,weapon,0,2):0;
     }
     sim_armor(b,c,d,hands[0],hands[1],boots);
     sim_belt(b,pl,c);
@@ -346,7 +346,7 @@ static int sim_capture_read(const dm_sim_data *d,void *ctx) {
             if((lv==-1 || lv==-2) && own){int el=sim_elem_after(b,d,pl,c->cls,id,q->cand,q->olds,q->nold,a);if(el>=0)a->lvl[id]=(int16_t)el;}
 
 
-            uint64_t own_node=skill_node(pl,id);int level_now=own_node?*(int32_t *)(own_node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,own_node,0):0;
+            uint64_t own_node=skill_node(pl,id);int level_now=own_node?*(int32_t *)(own_node+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,own_node,0):0;
             if(lv==-4 || !own)a->lvl[id]=(int16_t)(own_node?level_now+sim_bonus_change(b,c->cls,id,q->cand,q->olds,q->nold)-os:0);
             a->lvl[id]+=os;
             if(oskill>=0)a->lvl[id]=(int16_t)(oskill>256?256:oskill);
@@ -380,10 +380,10 @@ static int sim_capture_read(const dm_sim_data *d,void *ctx) {
         if(dual || (R.live&3))a->endpoint_bad=1;
 
 
-        a->mastery_cs=after_weapon?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,after_weapon,0,2):0;
+        a->mastery_cs=after_weapon?((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,after_weapon,0,2):0;
         for(int id=0;id<DM_SIM_MAXSKILL;id++) {
             uint64_t node=skill_node(pl,id);q->mastery_th[id]=q->mastery_dmg[id]=DM_SIM_NO_NODE;
-            if(node && *(uint64_t *)node){q->mastery_th[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,after_weapon,node,0);q->mastery_dmg[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+0x5b2a30))(pl,after_weapon,node,1);}
+            if(node && *(uint64_t *)node){q->mastery_th[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,after_weapon,node,0);q->mastery_dmg[id]=((int (*)(uint64_t,uint64_t,uint64_t,int))(b+GA_SKILL_MASTERY))(pl,after_weapon,node,1);}
         }
         dm_sim_passive_shift shift;int passive_unknown=dm_sim_passive_levels(d,c,a,q->mastery_th,q->mastery_dmg,a->mastery_cs,&shift)!=0;
         if(passive_unknown && mastery_only==1){a->capture_bad|=1|16;a->endpoint_bad=1;}
@@ -574,7 +574,7 @@ static void sim_exact_values(const dm_sim_data *d,sim_capture *q) {
     fprintf(stderr,"[dm] [sim-exact] {\"sequence\":%u,\"speed_native\":[%d,%d,%d,%d],\"sias\":%d,\"form\":%d}\n",
         sequence,sim_get(c,d,"attackrate"),weapon?gstat(b,weapon,68,0):0,sim_get(c,d,"item_fasterattackrate"),weapon?gstat(b,weapon,93,0):0,c->sias,c->form);
     int count=0;
-    const uintptr_t functions[]={0x5ac6f0,0x5aca00,0x5ad410,0x5ad880};
+    const uintptr_t functions[]={GA_SKILL_ELEM_MIN,GA_SKILL_ELEM_MAX,GA_SKILL_PHYS_MIN,GA_SKILL_PHYS_MAX};
     for(int id=0;id<DM_SIM_MAXSKILL;id++)if(c->lvl[id] && d->skill[id] && skill_node(pl,id)) {
         int raw[4],model[4],display[4],bad=0;
         long long model_raw[4];
@@ -583,7 +583,7 @@ static void sim_exact_values(const dm_sim_data *d,sim_capture *q) {
         char ar_model[32]="null",ar_game[32]="null";
         if((s->fam&DM_FAM_WEAPON) && !s->alwayshit && s->srvdofunc!=150) {
             int actual=0,colour=0;
-            ((void (*)(uint64_t,int *,int *,int,uint64_t,uint64_t))(b+0x401ef0))(pl,&actual,&colour,c->lvl[id],skill_node(pl,id),weapon);
+            ((void (*)(uint64_t,int *,int *,int,uint64_t,uint64_t))(b+GA_CHAR_ATTACK_RATING))(pl,&actual,&colour,c->lvl[id],skill_node(pl,id),weapon);
             snprintf(ar_model,sizeof ar_model,"%d",sim_attack_rating(d,c,id,&bad));
             snprintf(ar_game,sizeof ar_game,"%d",actual);
         }
@@ -599,7 +599,7 @@ static void sim_exact_values(const dm_sim_data *d,sim_capture *q) {
         const int variables[]={DM_V_MATH,DM_V_MADM,DM_V_MACR};
         for(int k=0;k<3;k++) {
             mastery_model[k]=(int)sim_skill_var(d,c,id,variables[k],&bad);
-            mastery_game[k]=((int (*)(int,uint64_t,int,int,int))(b+0x5ad010))(*(uint8_t *)(pl+0x1bd),pl,id,c->lvl[id],k);
+            mastery_game[k]=((int (*)(int,uint64_t,int,int,int))(b+GA_SKILL_MASTERY_VALUE))(*(uint8_t *)(pl+0x1bd),pl,id,c->lvl[id],k);
         }
         fprintf(stderr,"[dm] [sim-exact] {\"sequence\":%u,\"mastery_skill\":%d,\"bad\":%d,\"mastery_model\":[%d,%d,%d],\"mastery_game\":[%d,%d,%d]}\n",
             sequence,id,bad,mastery_model[0],mastery_model[1],mastery_model[2],mastery_game[0],mastery_game[1],mastery_game[2]);
@@ -607,10 +607,10 @@ static void sim_exact_values(const dm_sim_data *d,sim_capture *q) {
             int expected[2]={0},actual[2]={0},colour=0,*colour_pointer=&colour;
             uint64_t node=skill_node(pl,id);
             int status=dm_sim_skill_endpoints(d,c,id,expected);
-            int length=((int (*)(int,uint64_t,int,int,int))(b+0x5acd00))(*(uint8_t *)(pl+0x1bd),pl,id,c->lvl[id],1);
+            int length=((int (*)(int,uint64_t,int,int,int))(b+GA_SKILL_ELEM_LEN))(*(uint8_t *)(pl+0x1bd),pl,id,c->lvl[id],1);
             int length_model=(int)dm_sim_skill_value(d,c,id,c->lvl[id],DM_SV_ELEN,&bad);
             if(s->descdam==5 || s->descdam==25) {
-                ((void (*)(int,uint64_t,int **,uint64_t,int *,int *,uint64_t,int))(b+0x401b50))(
+                ((void (*)(int,uint64_t,int **,uint64_t,int *,int *,uint64_t,int))(b+GA_SKILL_DESC_DAMAGE))(
                     *(uint8_t *)(pl+0x1bd),*(uint64_t *)node,&colour_pointer,pl,&actual[0],&actual[1],node,c->lvl[id]);
                 if(s->descdam==25)for(int k=0;k<2;k++)actual[k]=(int)((float)actual[k]*(((float)skill_calc(b,pl,node,c->lvl[id],k)+100.0f)/100.0f));
             } else if(s->descdam==8) {
@@ -620,9 +620,9 @@ static void sim_exact_values(const dm_sim_data *d,sim_capture *q) {
                 for(int k=0;k<2;k++)actual[k]=(int)((int64_t)raw[k]*12*a/z)>>8;
             } else {
                 int with_percent=s->descdam==7 || s->descdam==18;
-                ((void (*)(uint64_t,int *,int *,int *,int,int,uint64_t,int,uint64_t))(b+0x400120))(
+                ((void (*)(uint64_t,int *,int *,int *,int,int,uint64_t,int,uint64_t))(b+GA_CHAR_DAMAGE_BASE))(
                     pl,&actual[0],&actual[1],&colour,with_percent?skill_calc(b,pl,node,c->lvl[id],0):0,with_percent?skill_calc(b,pl,node,c->lvl[id],1):0,node,128,0);
-                ((void (*)(uint64_t,int *,int *,int *,uint64_t))(b+0x400770))(pl,&actual[0],&actual[1],&colour,node);
+                ((void (*)(uint64_t,int *,int *,int *,uint64_t))(b+GA_CHAR_DAMAGE_ADD))(pl,&actual[0],&actual[1],&colour,node);
                 uint64_t record=*(uint64_t *)node;
                 int source=*(uint8_t *)(record+0x24d);
                 for(int k=0;k<2;k++) {
@@ -672,7 +672,7 @@ static void sim_test_select(uint8_t *b,uint64_t player) {
     }
     if(next>=count || dm_guest_frame()<(uint64_t)actions[next].frame)return;
     int skill=actions[next].skill,side=actions[next++].side;
-    int result=((int (*)(int,int,int))(b+0x43f170))(skill,side,-1);
+    int result=((int (*)(int,int,int))(b+GA_SKILL_SELECT))(skill,side,-1);
     uint64_t list=*(uint64_t *)(player+0x100),node=list?*(uint64_t *)(list+(side?8:16)):0;
     uint64_t record=node?*(uint64_t *)node:0;
     int actual=record?*(int16_t *)record:-1,item=node?*(int32_t *)(node+0x44):0;
@@ -716,7 +716,7 @@ static int sim_key_read(const dm_sim_data *d,void *ctx){sim_key_request *q=ctx;q
 static uint64_t sim_tip_key(uint8_t *b,uint64_t pl,uint64_t key) {
     if(!dm_custom_get("combat_sim"))return key;
     uint64_t sp=(uint64_t)dm_custom_splash_on();
-    sim_key_request q={*(uint8_t *)(b+0x2d20b88),dm_unit_level(pl),gstat(b,pl,12,0),key};
+    sim_key_request q={*(uint8_t *)(b+GA_DIFFICULTY),dm_unit_level(pl),gstat(b,pl,12,0),key};
     if(dm_sim_try_read(*(uint8_t *)(pl+0x1bd)==3?"rotw":"lod",sim_key_read,&q))return ((key ^ 0x5157)*1099511628211ull ^ sp)*1099511628211ull;
     return (q.key ^ sp)*1099511628211ull;
 }
@@ -831,8 +831,8 @@ static void sim_skill_previews(const dm_sim_data *d,sim_capture *q) {
     int act=dm_sim_target_act(d,c,&target);if(act<0)return;
     int de=dm_lang_group()==DM_LG_DE;
     char heading[DM_TIPX_LINEB],line[DM_TIPX_LINEB];dm_sim_heading_text(heading,sizeof heading,act,de);
-    uint64_t table=*(uint64_t *)(q->b+0x2d64a18+(uint64_t)*(uint8_t *)(q->pl+0x1bd)*16);
-    int (*bonus)(uint64_t,uint64_t,int)=(int (*)(uint64_t,uint64_t,int))(q->b+0x5b1710);
+    uint64_t table=*(uint64_t *)(q->b+GA_DATA_TABLES+(uint64_t)*(uint8_t *)(q->pl+0x1bd)*16);
+    int (*bonus)(uint64_t,uint64_t,int)=(int (*)(uint64_t,uint64_t,int))(q->b+GA_SKILL_BONUS_LEVEL);
     for(int i=0;i<D.nsk;i++) {
         int id=D.sk[i].id;
         if(D.sk[i].cls!=c->cls || id<=0 || id>=DM_SIM_MAXSKILL || !d->skill[id])continue;

@@ -1,4 +1,5 @@
 #include "dm_touch_game_state.h"
+#include "../../host/game_addrs.h"
 #include "../../host/dm.h"
 #ifdef RED_BASELINE
 #define SCENE(g,s,w) dm_touch_game_set_scene(g,s)
@@ -16,18 +17,18 @@ uint64_t now_ns(void){clock_reads++;return ++clock_ns;}
 #define CHECK(x) do{checks++;if(!(x)){fprintf(stderr,"FAIL line=%d %s\n",__LINE__,#x);exit(1);}}while(0)
 static void emit(uint64_t *regs,uint64_t *frame,unsigned char widget[7][0xc98],int slot,int arg,uint64_t caller){frame[1]=(uint64_t)widget[slot];frame[3]=caller;regs[19]=(uint64_t)arg;regs[23]=(uint64_t)arg+(uint64_t)x23_off;regs[8]=(uint64_t)arg*28;uint64_t before[31],stack_before[8];unsigned char widgets_before[7][0xc98];memcpy(before,regs,sizeof before);memcpy(stack_before,frame,sizeof stack_before);memcpy(widgets_before,widget,sizeof widgets_before);hook(regs);CHECK(!memcmp(before,regs,sizeof before) && !memcmp(stack_before,frame,sizeof stack_before) && !memcmp(widgets_before,widget,sizeof widgets_before));}
 int main(int argc,char **argv){
- CHECK(argc==3);size_t size=0x2d5f0c0+896;unsigned char *mem=calloc(1,size);CHECK(mem!=NULL);g_nmod=1;g_mod[0].base=mem;g_mod[0].size=size;strcpy(g_mod[0].name,"main");
- FILE *f=fopen(argv[1],"rb");CHECK(f!=NULL);CHECK(fread(mem+0x2d13cbc,1,72,f)==72);fclose(f);f=fopen(argv[2],"rb");CHECK(f!=NULL);CHECK(fread(mem+0x2d5f0c0,1,896,f)==896);fclose(f);
- unsigned char original_mapping[72],original_table[896];memcpy(original_mapping,mem+0x2d13cbc,72);memcpy(original_table,mem+0x2d5f0c0,896);
+ CHECK(argc==3);size_t size=GA_SKILL_SLOT_BINDS+896;unsigned char *mem=calloc(1,size);CHECK(mem!=NULL);g_nmod=1;g_mod[0].base=mem;g_mod[0].size=size;strcpy(g_mod[0].name,"main");
+ FILE *f=fopen(argv[1],"rb");CHECK(f!=NULL);CHECK(fread(mem+GA_PAD_BUTTON_SLOTS,1,72,f)==72);fclose(f);f=fopen(argv[2],"rb");CHECK(f!=NULL);CHECK(fread(mem+GA_SKILL_SLOT_BINDS,1,896,f)==896);fclose(f);
+ unsigned char original_mapping[72],original_table[896];memcpy(original_mapping,mem+GA_PAD_BUTTON_SLOTS,72);memcpy(original_table,mem+GA_SKILL_SLOT_BINDS,896);
  unsigned char widget[7][0xc98]={{0}};for(uint32_t i=0;i<7;i++){uint32_t slot=i<6?i:5;memcpy(widget[i]+0xb18,&slot,4);}
- uint64_t regs[31]={0},frame[8]={0};regs[29]=(uint64_t)&frame[2];regs[10]=(uint64_t)(mem+0x2d5f0c0);uint64_t hud_lr=(uint64_t)mem+0x3e2f74;dm_tg_snapshot s,before;
+ uint64_t regs[31]={0},frame[8]={0};regs[29]=(uint64_t)&frame[2];regs[10]=(uint64_t)(mem+GA_SKILL_SLOT_BINDS);uint64_t hud_lr=(uint64_t)mem+GA_AT_HUD_BIND_GET_RET;dm_tg_snapshot s,before;
  CHECK(dm_touch_game_attach() && hook!=NULL);SCENE(1,2,1);
  for(int i=0;i<6;i++)emit(regs,frame,widget,i,i,hud_lr);
  CHECK(!dm_touch_game_snapshot(&s) && !s.ready && clock_reads==0);
  for(int i=0;i<6;i++)emit(regs,frame,widget,i,i,hud_lr);
  CHECK(dm_touch_game_snapshot(&s) && s.ready && s.identity_scope==DM_TG_IDENTITY_NATIVE && s.group_seen==63 && s.portal.buttons==258 && WORLD(s)==1);
  before=s;int reads=clock_reads;
- for(int i=0;i<12;i++)emit(regs,frame,widget,i%6,i,(uint64_t)mem+0x2fa1d0);
+ for(int i=0;i<12;i++)emit(regs,frame,widget,i%6,i,(uint64_t)mem+GA_AT_NONHUD_BIND_GET_CALLER);
  CHECK(dm_touch_game_snapshot(&s) && !memcmp(&s,&before,sizeof s) && clock_reads==reads);
  x23_off=1;for(int i=0;i<6;i++)emit(regs,frame,widget,i,i+6,hud_lr);x23_off=0;
  CHECK(dm_touch_game_snapshot(&s) && !memcmp(&s,&before,sizeof s) && clock_reads==reads);
@@ -45,7 +46,7 @@ int main(int argc,char **argv){
  SCENE(0,5,2);for(int i=0;i<6;i++)emit(regs,frame,widget,i,i,hud_lr);CHECK(!dm_touch_game_snapshot(&s));
  SCENE(1,6,3);for(int i=0;i<6;i++)emit(regs,frame,widget,i,i,hud_lr);CHECK(!dm_touch_game_snapshot(&s));
  for(int i=0;i<6;i++)emit(regs,frame,widget,i,i,hud_lr);CHECK(dm_touch_game_snapshot(&s) && s.ready && WORLD(s)==3 && s.hud_identity!=cohort);
- CHECK(!memcmp(original_mapping,mem+0x2d13cbc,72) && !memcmp(original_table,mem+0x2d5f0c0,896));
+ CHECK(!memcmp(original_mapping,mem+GA_PAD_BUTTON_SLOTS,72) && !memcmp(original_table,mem+GA_SKILL_SLOT_BINDS,896));
  free(mem);printf("PASS production strong HUD Mach ABI -> group/ignore/world bridge %d/%d checks\n",checks,checks);return 0;
 }
 

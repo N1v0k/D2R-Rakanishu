@@ -28,9 +28,11 @@ endif
 SRC=\
 	app_mac.m \
 	crash.c \
+	data_build.c \
 	diag.c \
 	entry.S \
 	front_mac.m \
+	game_fields.c \
 	hle.c \
 	loader.c \
 	main.c \
@@ -169,9 +171,11 @@ print-macos-min-m3:
 	@echo $(MACOS_MIN_M3)
 
 
-ROMFS?=$(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/3.3.94012/Update/RomFS)
+
+GAME_VERSION:=$(firstword $(subst -, ,$(shell head -1 $(dir $(lastword $(MAKEFILE_LIST)))../PRODUCT)))
+ROMFS?=$(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/$(GAME_VERSION)/Update/RomFS)
 GENH=dm_vault_tab.h dm_hud_exp.h dm_bright_levels.inc
-NEED_ROMFS=@test -f "$(ROMFS)/data/build_manifest.psv" || { echo "🔴 没找到游戏文件：$(ROMFS)/data/build_manifest.psv。把 Switch 版 3.3.94012 的 Update/RomFS 放到这里，或用环境变量 DM_ROMFS_SRC 指过去（见 dm/README.md「从你的游戏文件生成资源」）"; exit 1; }
+NEED_ROMFS=@test -f "$(ROMFS)/data/build_manifest.psv" || { echo "🔴 没找到游戏文件：$(ROMFS)/data/build_manifest.psv。把 Switch 版 $(GAME_VERSION) 的 Update/RomFS 放到这里，或用环境变量 DM_ROMFS_SRC 指过去（见 dm/README.md「从你的游戏文件生成资源」）"; exit 1; }
 dm_vault_tab.h: ../ios/tools/gen_vault_table.py
 	$(NEED_ROMFS)
 	python3 ../ios/tools/gen_vault_table.py "$(ROMFS)" > $@.tmp && mv $@.tmp $@

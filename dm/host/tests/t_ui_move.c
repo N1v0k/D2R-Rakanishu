@@ -1,6 +1,7 @@
 
 
 #include "../dm_cursor.c"
+#include "../game_addrs.h"
 
 module_t g_mod[MAX_MOD];
 int g_nmod;
@@ -49,7 +50,7 @@ static void reset(void) {
     root.data[0x58 / 8] = (uint64_t)(uintptr_t)children;
     root.data[0x60 / 8] = 2;
     children[0] = address(&bank); children[1] = address(&inventory);
-    *(uint64_t *)(g_mod[0].base + 0x2f05458) = address(&root);
+    *(uint64_t *)(g_mod[0].base + GA_UI_ROOT) = address(&root);
 }
 static void wide_tree(void) {
     reset();
@@ -70,7 +71,7 @@ static void native_inventory_open(int dx) {
 }
 int main(void) {
     g_nmod = 1; strcpy(g_mod[0].name, "main");
-    g_mod[0].base = calloc(1, 0x2f05458 + 8);
+    g_mod[0].base = calloc(1, GA_UI_ROOT + 8);
     if (!g_mod[0].base) return 2;
     vt[0x10 / 8] = (uint64_t)(uintptr_t)relayout;
 

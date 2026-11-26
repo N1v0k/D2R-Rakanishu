@@ -8,6 +8,8 @@ dm/tools/pack_steps.py
 dm/tools/pack_steps.tsv
 dm/tools/d2rm_pack.py
 dm/tools/patch_nso.py
+dm/tools/game_addrs.py
+dm/host/game_addrs.def
 qa dm/tools/patch_nso_qa.py
 dm/tools/casc_overlay.py
 dm/tools/dmx.py

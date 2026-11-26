@@ -1,7 +1,7 @@
 # Glossary
 
 `terms.json` holds our own explanations of game terms in German and English, plus stat ids and string keys from the
-game tables of 3.3.94012 and numbers of the game mechanics. It contains no game text: every term name comes from the
+game tables of 3.4.95035 and numbers of the game mechanics. It contains no game text: every term name comes from the
 player's own game strings at runtime (the import pack's `appart/effects.json`: `stats`, `groups`, `words`), and the
 monster values for hit chances come from `appart/glossary.json` (`dm/android/tools/gen_glossary_data.py`, made from
 `monlvl.txt` and `difficultylevels.txt` when the pack is built). The file goes into the APK as

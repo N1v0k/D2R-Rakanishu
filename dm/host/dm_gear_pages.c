@@ -12,6 +12,7 @@
 
 
 #include "dm_gear_pages.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "dm_itembuild.h"
 #include "hle.h"
@@ -50,10 +51,10 @@ static atomic_uint g_ask, g_answered;
 static uint64_t g_frame, g_frame_ns;
 
 static uint64_t clock_cb(void *ctx) { (void)ctx; return now_ns(); }
-static uint64_t client_player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); }
+static uint64_t client_player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); }
 static uint64_t inv_first(uint64_t u) { uint64_t inv = u ? *(uint64_t *)(u + 0x90) : 0; return inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; }
 static uint64_t inv_next(uint64_t it) { uint64_t d = *(uint64_t *)(it + 0x10); return d ? *(uint64_t *)(d + 0xb0) : 0; }
-static void item_free(uint8_t *b, uint64_t G, uint64_t it) { ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, it); }
+static void item_free(uint8_t *b, uint64_t G, uint64_t it) { ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, it); }
 static int item_skip(uint64_t it) { uint64_t d = *(uint64_t *)(it + 0x10); uint32_t fl = d ? *(uint32_t *)(d + 0x18) : 0; return !(fl & 0x10) || (fl & 0x100); }
 static void item_cell(uint64_t it, int *x, int *y) { uint64_t pp = *(uint64_t *)(it + 0x38); *x = pp ? *(int32_t *)(pp + 0x10) : 0; *y = pp ? *(int32_t *)(pp + 0x14) : 0; }
 static const char *place_name(int place) { return place < DM_GPG_PAGES ? "personal" : "shared"; }
@@ -303,7 +304,7 @@ int dm_gear_pages_slot_items(uint8_t *b, uint64_t G, int page, void (*fn)(uint64
 
 
 static void unit_size(uint8_t *b, uint64_t it, int *w, int *h) {
-    *w = *h = 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    *w = *h = 0; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     if (t && ci < *(uint32_t *)(t + 0x15c8)) { uint64_t rec = *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0; *w = *(uint8_t *)(rec + 0x11e); *h = *(uint8_t *)(rec + 0x11f); }
 }
 int dm_gear_pages_bits_size(uint8_t *b, const uint8_t *bits, int len, int *w, int *h) {
@@ -359,7 +360,7 @@ int dm_gear_pages_census(uint8_t *b, int *count, uint64_t *hash) {
 
 
 
-static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + 0x570260))(it); }
+static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); }
 static void code_str(uint32_t c, char out[5]) { memcpy(out, &c, 4); out[4] = 0; for (int i = 3; i >= 0 && (out[i] == ' ' || !out[i]); i--) out[i] = 0; }
 static int count_units(uint64_t table) {
     int n = 0;
@@ -449,7 +450,7 @@ static void probe_tick(uint8_t *b, uint64_t G, uint64_t player, uint64_t pl, uin
     static probe_t P; int shown = dm_pages_shown();
     for (int place = 0; place < DM_GPG_PLACES; place++) if (st.present & (1u << place)) probe_place(b, G, player, pl, place, shown, &P, 1);
     memset(&P, 0, sizeof P);
-    P.srv0 = count_units(G + 0x2e30); P.cli0 = count_units((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400)); dm_guest_heap_free_bytes(&P.heap0);
+    P.srv0 = count_units(G + 0x2e30); P.cli0 = count_units((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400)); dm_guest_heap_free_bytes(&P.heap0);
     LOG("[gear-pages-probe] start: %d rounds over present %#x, server item units %d, client item units %d, main heap free %llu", rounds, st.present, P.srv0, P.cli0, P.heap0);
     uint64_t t0 = now_ns();
     for (; P.done < rounds; P.done++)
@@ -462,13 +463,13 @@ static void probe_tick(uint8_t *b, uint64_t G, uint64_t player, uint64_t pl, uin
     for (int i = 0; i < nd; i++) { zero += !g_qa_delta[i]; below += g_qa_delta[i] < 0; czero += !g_qa_ctrl[i]; cbelow += g_qa_ctrl[i] < 0; }
     if (nd) { med = g_qa_delta[nd / 2]; cmed = g_qa_ctrl[nd / 2]; }
     unsigned long long heap1 = 0; dm_guest_heap_free_bytes(&heap1);
-    int srv1 = count_units(G + 0x2e30), cli1 = count_units((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400));
+    int srv1 = count_units(G + 0x2e30), cli1 = count_units((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400));
     LOG("[gear-pages-probe] done: rounds %d built %d failed %d profiles same %d differ %d rewritten bitstreams same %d new-item flag only %d differ %d; with socket fillers %d; server item units %d -> %d, client item units %d -> %d, main heap free %llu -> %llu, per build change median %lld, unchanged %d, lower %d of %d, without a build median %lld, unchanged %d, lower %d; per build %.3f ms mean %.3f ms max, %.0f ms in all",
         P.done, P.built, P.failed, P.same, P.differ, P.rewrite_same, P.rewrite_flag, P.rewrite_differ, P.socketed, P.srv0, srv1, P.cli0, cli1, P.heap0, heap1, med, zero, below, nd, cmed, czero, cbelow, P.built ? P.ns / 1e6 / P.built : 0, P.ns_max / 1e6, total / 1e6);
 }
 
 static void item_cells(uint8_t *b, uint64_t it, int *w, int *h) {
-    *w = *h = 1; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    *w = *h = 1; uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     if (t && ci < *(uint32_t *)(t + 0x15c8)) { uint64_t rec = *(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0; *w = *(uint8_t *)(rec + 0x11e); *h = *(uint8_t *)(rec + 0x11f); }
 }
 static void put_tick(uint8_t *b, uint64_t G, uint64_t player, uint32_t tq) {
@@ -513,26 +514,26 @@ static void put_tick(uint8_t *b, uint64_t G, uint64_t player, uint32_t tq) {
             if (q[k].move) {
                 uint64_t d = *(uint64_t *)(it + 0x10), ip = *(uint64_t *)(it + 0x38); int x, y, pg0 = *(uint8_t *)(d + 0x55); item_cell(it, &x, &y);
                 if (!ip) { LOG("[stash-put] %s has no cell", q[k].code); continue; }
-                ((void (*)(uint64_t))(b + 0x55e430))(it);
-                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, it, 0x20, 4, 0, pg0, y, x);
+                ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(it);
+                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, it, 0x20, 4, 0, pg0, y, x);
                 *(uint8_t *)(d + 0x55) = 4; *(int32_t *)(ip + 0x10) = q[k].x; *(int32_t *)(ip + 0x14) = q[k].y; uint64_t one = it, ox = 0;
-                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, pg[q[k].index], &one, &ox);
+                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, pg[q[k].index], &one, &ox);
                 if (*(uint64_t *)(d + 0xa0)) { LOG("[stash-put] tick %u %s moved from inventory %d,%d to shared tab %d cell %d,%d; save requested -> %d", tq, q[k].code, x, y, q[k].index + 1, q[k].x, q[k].y, dm_request_save()); continue; }
                 *(uint8_t *)(d + 0x55) = (uint8_t)pg0; *(int32_t *)(ip + 0x10) = x; *(int32_t *)(ip + 0x14) = y; one = it;
-                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, player, &one, &ox);
-                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + 0x642f70))(G, player, it, 1, 2, 0, pg0, 0, (uint64_t)x | (uint64_t)y << 16);
+                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox);
+                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, it, 1, 2, 0, pg0, 0, (uint64_t)x | (uint64_t)y << 16);
                 LOG("[stash-put] %s could not be moved into shared tab %d, put back into the inventory (%s)", q[k].code, q[k].index + 1, *(uint64_t *)(d + 0xa0) ? "done" : "failed");
                 continue;
             }
             int socks = 0, used = 0; uint64_t nu = dm_item_make_all(b, G, 0, buf, len, &socks, &used), nd = nu ? *(uint64_t *)(nu + 0x10) : 0, ip = nu ? *(uint64_t *)(nu + 0x38) : 0;
             if (nd && ip && used == len) { *(uint8_t *)(nd + 0x55) = 4; *(int32_t *)(ip + 0x10) = q[k].x; *(int32_t *)(ip + 0x14) = q[k].y; uint64_t one = nu, ox = 0;
-                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, pg[q[k].index], &one, &ox); placed = *(uint64_t *)(nd + 0xa0) != 0; }
+                ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, pg[q[k].index], &one, &ox); placed = *(uint64_t *)(nd + 0xa0) != 0; }
             if (!placed && nu) item_free(b, G, nu);
         }
         if (!placed) { LOG("[stash-put] %s could not be put into %s %d, it stays in the inventory", q[k].code, q[k].shared ? "shared tab" : "personal page", q[k].index + 1); continue; }
         uint64_t d = *(uint64_t *)(it + 0x10); int x, y; item_cell(it, &x, &y);
-        ((void (*)(uint64_t))(b + 0x55e430))(it);
-        ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, it, 0x20, 4, 0, *(uint8_t *)(d + 0x55), y, x);
+        ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(it);
+        ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, it, 0x20, 4, 0, *(uint8_t *)(d + 0x55), y, x);
         item_free(b, G, it);
         LOG("[stash-put] tick %u %s from inventory %d,%d to %s %d cell %d,%d (%d bytes); save requested -> %d", tq, q[k].code, x, y, q[k].shared ? "shared tab" : "personal page", q[k].index + 1, q[k].x, q[k].y, len, dm_request_save());
     }

@@ -13,6 +13,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "dm_textbox_core.h"
 #include <stdlib.h>
@@ -46,7 +47,7 @@ static void tb_obs(const uint64_t *regs) {
           if (i == ns && ns < 64) { seen[ns++] = nm; LOG("文字框颜色码：带码的文字框「%s」→ %s", nm ? nm : "?", handles ? "认颜色码，不动" : k ? "按表改写" : "不认颜色码但不在表里（原版自带的串），不动"); } } }
     if (k) { static int lg = -1; if (lg < 0) lg = getenv("DM_TEXTBOX_LOG") != NULL;
         if (lg && g_hits < 200) { const char *nm = *(const char **)(uintptr_t)(w + 8); LOG("文字框颜色码：%s 控件「%s」→「%s」", k == 1 ? "整串" : "子串", nm ? nm : "?", o); }
-        g_hits++; ((void *(*)(uint64_t, const char *, uint64_t))(g_b + 0x136e5c))(w + 0x88, o, on); free(o); }
+        g_hits++; ((void *(*)(uint64_t, const char *, uint64_t))(g_b + GA_TEXT_SET))(w + 0x88, o, on); free(o); }
     uint64_t dt = clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - t0; g_ns += dt; if (dt > g_max_ns) g_max_ns = dt;
     static uint64_t last; static int stat = -1; if (stat < 0) stat = getenv("DM_TEXTBOX_STAT") != NULL;
     if (stat && t0 - last > 10000000000ull) { last = t0; double sec = (t0 - g_t0) / 1e9;

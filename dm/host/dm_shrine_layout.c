@@ -19,6 +19,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "dm_custom.h"
 #include "dm_build.h"
 #include <math.h>
@@ -26,7 +27,7 @@
 #include <time.h>
 
 enum {
-    WORLD = 0x3109fd8, GET_LINK = 0x86b00c, GET_XFORM = 0x3533d4, GET_OVERLAY = 0x94fa10,
+    WORLD = GA_ECS_WORLD, GET_LINK = GA_ECS_LINK_STORE_GET, GET_XFORM = GA_ECS_XFORM_STORE_GET, GET_OVERLAY = GA_ECS_OVERLAY_STORE_GET,
     S_PAGES = 0x08, S_PACKED = 0x20, S_DENSE = 0x38, S_HEAD = 0x48,
     OV_STRIDE = 0x0c, LINK_STRIDE = 0x10, XF_STRIDE = 0xd0,
     LINK_UNIT = 0x08, XF_LOCAL_T = 0x30, XF_WORLD = 0x40, XF_PARENT = 0xc0,

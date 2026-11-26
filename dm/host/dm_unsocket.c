@@ -19,6 +19,7 @@
 
 
 #include <stdatomic.h>
+#include "game_addrs.h"
 #include <string.h>
 #include <unistd.h>
 #include "dm.h"
@@ -27,14 +28,14 @@
 #include "dm_unsocket.h"
 
 enum {
-    TABLES = 0x2d64a18, T_ROWS = 0x1590, T_NROWS = 0x1598, T_ITEMS = 0x15c0, T_NITEMS = 0x15c8, T_CODES = 0x258,
+    TABLES = GA_DATA_TABLES, T_ROWS = 0x1590, T_NROWS = 0x1598, T_ITEMS = 0x15c0, T_NITEMS = 0x15c8, T_CODES = 0x258,
     ITEM_REC = 0x1c0, ITEM_W = 0x11e, ITEM_H = 0x11f, ITEM_NODUR = 0x122,
     G_VER = 0x106, G_ITEMS = 0x2e30, U_NEXT = 0x158, U_DATA = 0x10, U_ID = 8, U_MODE = 0xc, U_INV = 0x90, U_VER = 0x1bd,
     D_FLAGS = 0x18, D_NEXT = 0xb0, D_PAGE = 0x55, INV_SIG = 0x01020304, INV_FIRST = 0x10, INV_GRIDS = 0x20, INV_NGRIDS = 0x28,
     PAGE_INV = 0, PAGE_CUBE = 3, FL_ETHEREAL = 0x400000,
     ST_DUR = 72, ST_MAXDUR = 73, ST_INDESTRUCTIBLE = 152, ST_SOCKETS = 194,
-    FN_TRANSMUTE = 0x6e8740, FN_CODE = 0x570260, FN_STAT = 0x5b9290, FN_BROKE = 0x64f320, FN_FIND = 0x55f620, FN_MODE = 0x5ca8a0, FN_SOCKET = 0x64d080, FN_FREE = 0x658be0,
-    INV_ROWS = 0x1dae684,
+    FN_TRANSMUTE = GA_CUBE_TRANSMUTE, FN_CODE = GA_ITEM_CODE, FN_STAT = GA_STAT_GET, FN_BROKE = GA_ITEM_BREAK, FN_FIND = GA_INV_FIND_FREE, FN_MODE = GA_UNIT_SET_MODE, FN_SOCKET = GA_ITEM_SOCKET_INSERT, FN_FREE = GA_ITEM_FREE,
+    INV_ROWS = GA_CLASS_INV_GRID,
     MAX_FILL = 8, MAX_TABLES = 3,
 };
 
@@ -457,7 +458,7 @@ static void census(uint64_t pl, const char *tag) {
 }
 
 static void client_look(uint8_t *b, uint32_t id) {
-    uint64_t c = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(uintptr_t)(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), id & 0x7f, id, 4);
+    uint64_t c = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(uintptr_t)(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), id & 0x7f, id, 4);
     uint64_t d = c ? item_data(c) : 0;
     LOG("unsocket test: client copy of item %u: %s durability %d of %d, flags %#x", id, c ? "found," : "missing,", c ? gstat(c, ST_DUR) : -1, c ? gstat(c, ST_MAXDUR) : -1, d ? rd32(d + D_FLAGS) : 0);
 }

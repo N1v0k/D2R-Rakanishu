@@ -29,7 +29,7 @@ replaced by stand-ins that read the imported `derived.tsv` at run time, as in th
 iOS shell). You make the game content on a computer from your own game files:
 
 ```sh
-python3 dm/tools/d2rm_android.py <Update directory of the Switch version 3.3.94012> <output directory>
+python3 dm/tools/d2rm_android.py <Update directory of the Switch version 3.4.95035> <output directory>
 ```
 
 It rewrites the game program for Android, translates every shader into a Vulkan

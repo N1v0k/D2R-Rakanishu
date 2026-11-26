@@ -26,8 +26,8 @@
   "tags": ["leveling", "endgame", "budget", "summon", "physical"],
   "difficulty": 1,
   "mode": {"core": "softcore", "ladder": "nonladder"},
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [374, 382, 377],
   "trees": [1],
   "profile": {
@@ -143,5 +143,5 @@
     {"site": "Blizzard Forums", "title": "Blizzard patch 3.3 destroyed bind demon", "url": "https://us.forums.blizzard.com/en/d2r/t/blizzard-patch-33-destroyed-bind-demon/177504", "seen": "2026-11-03", "patch": "3.3", "kind": "forum", "lang": "en",
      "note": {"de": "Ganz gelesen; Spielerberichte zur Schwächung von Dämon binden in 3.3", "en": "Read in full; player reports on Bind Demon's weakening in 3.3"}}
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

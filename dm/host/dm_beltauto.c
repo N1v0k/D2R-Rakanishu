@@ -30,6 +30,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -48,7 +49,7 @@ void dm_beltauto_on_uimsg(const char *cat, const char *act, const char *arg) {
 }
 
 static uint64_t rd(uint64_t a) { return a ? *(uint64_t *)(uintptr_t)a : 0; }
-static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + 0x570260))(it); }
+static uint32_t code_of(uint8_t *b, uint64_t it) { return ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); }
 static int kind_rank(uint32_t c, int *rank) {
     char s[4]; memcpy(s, &c, 4);
     if (s[0] == 'h' && s[1] == 'p' && s[2] >= '1' && s[2] <= '5') { *rank = s[2] - '0'; return RED; }
@@ -75,9 +76,9 @@ static int take_snap(uint8_t *b, uint64_t pl, snap *S) {
     uint64_t inv = rd(pl + 0x90); if (!inv || *(uint32_t *)(uintptr_t)inv != 0x01020304) return 0;
     uint64_t pages = rd(inv + 0x20); if (!pages || rd(inv + 0x28) < 2) return 0;
     uint64_t belt_item = rd(rd(pages + 0x18) + 0x40);
-    int type = belt_item ? ((int (*)(uint64_t))(b + 0x5cc9b0))(belt_item) : 2;
+    int type = belt_item ? ((int (*)(uint64_t))(b + GA_BELT_TYPE))(belt_item) : 2;
     uint8_t ver = *(uint8_t *)(uintptr_t)(pl + 0x1bd); if (ver < 1 || ver > 3) return 0;
-    uint64_t T = rd((uint64_t)(uintptr_t)(b + 0x2d64a18 + ver * 16)), rows = T ? rd(T + 0x1578) : 0; if (!rows) return 0;
+    uint64_t T = rd((uint64_t)(uintptr_t)(b + GA_DATA_TABLES + ver * 16)), rows = T ? rd(T + 0x1578) : 0; if (!rows) return 0;
     S->boxes = *(uint8_t *)(uintptr_t)(rows + (uint64_t)type * 0x120 + 4); if (S->boxes > 16) S->boxes = 16;
     uint64_t bg = rd(pages + 0x20 + 0x18); for (int i = 0; i < S->boxes && bg; i++) { S->belt[i] = rd(bg + 8 * (uint64_t)i); S->nbelt += S->belt[i] != 0; }
     int brank[4] = { -1000, -1000, -1000, -1000 };
@@ -104,9 +105,9 @@ void dm_beltauto_step(uint8_t *b) {
 
     { static int st = -1, at; static char cols[8]; static uint64_t nx; void dm_belt_use(int col, int row);
       if (st < 0) { const char *e = getenv("DM_TEST_BELT_DRINK"); st = e && sscanf(e, "%d:%7s", &at, cols) == 2 ? 0 : 2; }
-      uint64_t f = dm_guest_frame(); if (!st && f >= (uint64_t)at && f >= nx) { nx = f + 15; snap D; uint64_t p = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(uintptr_t)(b + 0x2d20e4c)); int any = 0;
+      uint64_t f = dm_guest_frame(); if (!st && f >= (uint64_t)at && f >= nx) { nx = f + 15; snap D; uint64_t p = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(uintptr_t)(b + GA_LOCAL_PLAYER_SLOT)); int any = 0;
           if (p && take_snap(b, p, &D)) for (const char *q = cols; *q; q++) { int c = *q - '1';
-              if (*q == '0' && (D.best[RED] || D.best[BLUE])) { ((void (*)(uint64_t, int))(b + 0x3c0098))(D.best[RED] ? D.best[RED] : D.best[BLUE], 3); any = 1; break; }
+              if (*q == '0' && (D.best[RED] || D.best[BLUE])) { ((void (*)(uint64_t, int))(b + GA_ITEM_USE))(D.best[RED] ? D.best[RED] : D.best[BLUE], 3); any = 1; break; }
               if (c >= 0 && c < 4 && D.belt[c]) { dm_belt_use(c, 0); any = 1; break; } }
           if (!any) { st = 2; LOG("DM_TEST_BELT_DRINK：第 %s 列喝空了（帧 %llu）", cols, (unsigned long long)f); } } }
     if (atomic_exchange(&g_req, 0)) {
@@ -116,7 +117,7 @@ void dm_beltauto_step(uint8_t *b) {
     }
     if (!active) return;
     uint64_t fr = dm_guest_frame(); if (fr < next) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(uintptr_t)(b + 0x2d20e4c)); snap S; char t[160];
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(uintptr_t)(b + GA_LOCAL_PLAYER_SLOT)); snap S; char t[160];
     if (!pl || !take_snap(b, pl, &S)) { active = 0; LOG("开背包补腰带：读不到玩家 / 物品栏，不动"); return; }
     if (rd(rd(pl + 0x90) + 0x40)) { active = 0; LOG("开背包补腰带：手上拿着东西，停（已放 %d 瓶）", moves); return; }
     int dm_ui_panel_shown(const char *name);
@@ -124,7 +125,7 @@ void dm_beltauto_step(uint8_t *b) {
     if (dm_ui_panel_shown("ImbueItemsPanel") || dm_ui_panel_shown("HoradricCubeLayout")) { active = 0; LOG("开背包补腰带：开着底座 / 方块（物品栏随它一起开），不补（已放 %d 瓶）", moves); return; }
     if (want_slot >= 0 && !S.belt[want_slot]) { if (fr < deadline) return;
         uint64_t dm_diag_srv_item(uint32_t id); char srv[64], now[64]; item_where(dm_diag_srv_item(want_id), srv, sizeof srv);
-        { uint64_t ci = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), want_id & 0x7f, want_id, 4); item_where(ci, now, sizeof now); }
+        { uint64_t ci = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), want_id & 0x7f, want_id, 4); item_where(ci, now, sizeof now); }
         LOG("【红】开背包补腰带：第 %d 瓶放进槽 %d 后 60 帧没见进腰带——物品 id %u，放之前客户端：%s；现在客户端：%s；服务端：%s。本轮跳过它，换下一瓶", moves, want_slot, want_id, want_cli, now, srv);
         if (g_ntried < 8) g_tried[g_ntried++] = want_id; if (!in_list(g_bad, g_nbad, want_id)) { if (g_nbad == 8) g_nbad = 7; g_bad[g_nbad++] = want_id; }
         fails++; want_slot = -1; if (!take_snap(b, pl, &S)) { active = 0; return; } }
@@ -155,19 +156,19 @@ void dm_beltauto_step(uint8_t *b) {
     static const int order[3] = { RED, BLUE, PURPLE };
     for (int oi = 0; oi < 3; oi++) {
         int kd = order[oi]; uint64_t it = S.best[kd]; uint32_t ns = 0; if (!it) continue;
-        if (!((int (*)(uint64_t, uint64_t, uint32_t *, int))(b + 0x561de0))(inv_c, it, &ns, 1) || (int)ns >= S.boxes) continue;
+        if (!((int (*)(uint64_t, uint64_t, uint32_t *, int))(b + GA_BELT_FIND_SLOT))(inv_c, it, &ns, 1) || (int)ns >= S.boxes) continue;
         int c = (int)ns % 4, r = (int)ns / 4;
         if (!r) { int want = c < 2 ? RED : BLUE;
             if (kd != want && S.best[want]) continue;
             if (kd != want && kd != PURPLE && S.best[PURPLE]) continue; }
-        if (!(((int (*)(uint64_t))(b + 0x3c1b28))(it) & 1)) { active = 0; LOG("开背包补腰带：原版此刻不收这瓶进腰带（如开着底座 / 交易面板），停（已放 %d 瓶）", moves - fails); return; }
+        if (!(((int (*)(uint64_t))(b + GA_ITEM_CAN_BELT))(it) & 1)) { active = 0; LOG("开背包补腰带：原版此刻不收这瓶进腰带（如开着底座 / 交易面板），停（已放 %d 瓶）", moves - fails); return; }
         int slot = (int)ns; struct { uint32_t slot; uint8_t fixed; } tgt = { (uint32_t)slot, 1 };
 #ifndef DM_PLAYER_BUILD
         static int t_noput = -1; if (t_noput < 0) t_noput = getenv("DM_TEST_BELT_NOPUT") != NULL;
         if (t_noput == 1) { t_noput = 2; LOG("测试 DM_TEST_BELT_NOPUT：这一瓶不真发"); }
         else
 #endif
-        ((void (*)(uint64_t, uint64_t, uint8_t, int, void *))(b + 0x3c1cd0))(it, pl, *(uint8_t *)(uintptr_t)(rd(it + 0x10) + 0x55), 1, &tgt);
+        ((void (*)(uint64_t, uint64_t, uint8_t, int, void *))(b + GA_ITEM_TO_BELT))(it, pl, *(uint8_t *)(uintptr_t)(rd(it + 0x10) + 0x55), 1, &tgt);
         moves++; want_slot = slot; next = fr + 6; deadline = fr + 60; want_id = *(uint32_t *)(uintptr_t)(it + 8); item_where(it, want_cli, sizeof want_cli);
         LOG("开背包补腰带：背包「%.4s」→ 列 %d 第 %d 格（槽 %d，%s列）；物品 id %u，%s", (char *)&(uint32_t){ code_of(b, it) }, c + 1, r + 1, slot, r ? "同类" : "空", want_id, want_cli);
         return;

@@ -11,6 +11,7 @@
 
 
 #include "../dm_cursor.c"
+#include "../game_addrs.h"
 module_t g_mod[MAX_MOD]; int g_nmod;
 static int busy; static uint64_t frame = 100;
 uint64_t dm_guest_frame(void) { return frame; }
@@ -51,13 +52,13 @@ static void rebuild_in_place(const char *new_name) {
 }
 
 int main(void) {
-    base = calloc(1, 0x2f05460); if (!base) return 2;
+    base = calloc(1, GA_UI_ROOT + 8); if (!base) return 2;
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = base;
-    *(int32_t *)(base + 0x211da38) = 1920; *(int32_t *)(base + 0x211da3c) = 1080;
+    *(int32_t *)(base + GA_UI_WIDTH) = 1920; *(int32_t *)(base + GA_UI_HEIGHT) = 1080;
     vt_btn[0x48 / 8] = P(hit_fn);
     make(&root, "Root", vt_plain); make(&tree, "SkillsTreePanel", vt_plain); make(&other, "SaveIndicatorPanel", vt_plain); make(&other2, "SaveIndicatorPanel", vt_plain);
     root_kids[0] = P(&tree); root_kids[1] = P(&other); *(uint64_t *)(root.b + 0x58) = P(root_kids); *(uint64_t *)(root.b + 0x60) = 2;
-    *(uint64_t *)(base + 0x2f05458) = P(&root);
+    *(uint64_t *)(base + GA_UI_ROOT) = P(&root);
     place_btn(&btn[0], "SkillButton1", 100); place_btn(&btn[1], "SkillButton2", 300); tree_set(&btn[0], &btn[1]);
     next_frame();
 

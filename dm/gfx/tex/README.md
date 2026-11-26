@@ -51,7 +51,7 @@ make -C dm/gfx/tex/tests run       # run t_fmt_mtl and t_tex
 
   The A round trip can only prove "one-to-one and within bounds"; it cannot prove that the layout formula is right. What really backs it up is the hand-computed addresses of group B and the byte-for-byte equality of the same-resolution samples of group C.
 
-**About the real-data samples**: groups C and D need one copy each of the Switch version and the PC version of the same texture. `tests/fetch_samples.py` takes samples from the game files in your workspace: the Switch version is read from `$DM_ROOT/data/switch/3.3.94012/Update/RomFS/data`, the PC version from `$DM_ROOT/data/assets-src/raw`, and the output goes to `$DM_ROOT/build/cache/dm/tex_samples`. When there are no samples, the real-data items of `t_tex` count as failed and are not skipped; groups A, B and E need no game files. The samples do not go into the repository.
+**About the real-data samples**: groups C and D need one copy each of the Switch version and the PC version of the same texture. `tests/fetch_samples.py` takes samples from the game files in your workspace: the Switch version is read from `$DM_ROOT/data/switch/3.4.95035/Update/RomFS/data`, the PC version from `$DM_ROOT/data/assets-src/raw`, and the output goes to `$DM_ROOT/build/cache/dm/tex_samples`. When there are no samples, the real-data items of `t_tex` count as failed and are not skipped; groups A, B and E need no game files. The samples do not go into the repository.
 
 ## Layout-related fields in the texture file header
 

@@ -1,7 +1,7 @@
 # Build guides
 
 Each file `<id>.json` here is one build guide written by us: our own words in German and English, plus keys, ids and
-numbers from the game tables of 3.3.94012. No game text, no names, no pictures: those come from the player's own game
+numbers from the game tables of 3.4.95035. No game text, no names, no pictures: those come from the player's own game
 files when the import pack is made (`dm/android/tools/gen_build_names.py` → `appart/builds/`). The guides go into the APK
 as `assets/builds/` (`copyBuildGuides` in `dm/android/app/build.gradle`); `shell_apk.sh` lets exactly these files into the
 APK and checks that they are byte-identical to this folder and pass the validator.
@@ -24,7 +24,7 @@ APK and checks that they are byte-identical to this folder and pass the validato
 | `merc` | `act`, `difficulty` 1..3, `aura` (skill key in `hireling.txt`), gear like above |
 | `profile` | the build profile of the sim (see the sim docs): damage types, key skills, `itemstatcost` stat weights, caps, breakpoints, requirements, `bestgear` (the item rating goal: `survivalHits` enemy hits to survive, `bossShare` 0..1 of the single target damage in the damage value); a phase may override top-level keys |
 | `sources[]` | site, title, `https` link, `seen` date, patch, kind; at least two, from different sites for "two-sources" |
-| `review` | `checks` (`schema`, `tables-3.3.94012`, `points-budget`, `two-sources`, `review`), `played` |
+| `review` | `checks` (`schema`, `tables-3.4.95035`, `points-budget`, `two-sources`, `review`), `played` |
 
 ### The allocation rule
 
@@ -58,7 +58,7 @@ Without quests it must never hit a dead end; with quests every phase must be com
 
 ```bash
 python3 dm/android/tools/check_builds.py                            # without game files (CI)
-python3 dm/android/tools/check_builds.py --romfs <RomFS> --report   # with the 3.3.94012 tables (local, read only)
+python3 dm/android/tools/check_builds.py --romfs <RomFS> --report   # with the 3.4.95035 tables (local, read only)
 python3 dm/android/tests/test_check_builds.py                       # validator unit tests
 dm/android/tests/run.sh                                             # BuildPlanTest, GearPreviewTest (Java) and RecipeMatchTest
 ```
@@ -79,7 +79,7 @@ cached per language). Names and labels come from the import pack in German or En
 button or Back closes it; a long card turns its page with a tap on it or left / right. Item types (magic boots and the like)
 show the type and quality only, their affixes are random.
 
-"Checked" (shown as "Tables ✓ · Review ✓") means: the validator passes against the 3.3.94012 tables, at least two
+"Checked" (shown as "Tables ✓ · Review ✓") means: the validator passes against the 3.4.95035 tables, at least two
 independent sources were read, and a second review of the guide against those sources found no major problem (check
 `review`). "Play-test" is a separate third mark.
 

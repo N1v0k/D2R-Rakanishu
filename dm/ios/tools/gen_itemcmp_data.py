@@ -144,7 +144,7 @@ def write(romfs, dst):
 
 
 GEAR_TABLES = tuple('global/excel/%s' % f for f in ('itemstatcost.txt', 'properties.txt', 'sets.txt', 'setitems.txt'))
-GEAR_TABLES_SHA = '935c315820cb0abc0e6cf0df7508415e20ccdebed2ae762e7a02f12ff3729c5f'
+GEAR_TABLES_SHA = '25d014c34d2b6b2a6f286aefe1368da17f254dc13e8a9aca906de58d547335eb'
 GEAR_FORMAT = 1
 ROLL_FUNCS = (1, 3, 8)
 

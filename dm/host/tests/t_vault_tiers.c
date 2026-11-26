@@ -13,6 +13,7 @@
 
 
 #include "../dm_vault_ui.c"
+#include "../game_addrs.h"
 #include <stddef.h>
 
 module_t g_mod[MAX_MOD];
@@ -83,7 +84,7 @@ static void build_tree(void) {
     named(&root_w, "Root", 0); named(&bank, "BankExpansionLayout", A(&root_w)); named(&tabs, "BankTabs", A(&bank)); put64(&tabs, 0, A(base) + DM_VT_TABBAR);
     root_kids[0] = A(&bank); put64(&root_w, 0x58, A(root_kids)); put64(&root_w, 0x60, 1);
     bank_kids[0] = A(&tabs); put64(&bank, 0x58, A(bank_kids)); put64(&bank, 0x60, 2);
-    memcpy(base + 0x2f05458, &(uint64_t){ A(&root_w) }, 8);
+    memcpy(base + GA_UI_ROOT, &(uint64_t){ A(&root_w) }, 8);
     put32(&tabs, 0xdc4, 5);
 }
 static int shown(void) { int m = 0; for (int i = 0; i < 3; i++) m |= (cur->box[i].b[0xa88] != 0) << i; return m; }
@@ -99,7 +100,7 @@ static void hidden_frame(int how) {
 static void rebuild_in_place(void) { build_page(cur); generation++; }
 
 int main(void) {
-    base = calloc(1, 0x2f05460); if (!base) return 2;
+    base = calloc(1, GA_UI_ROOT + 8); if (!base) return 2;
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = base;
     vt_table[0x10 / 8] = A(relayout);
     build_tree(); build_page(&mem_a);

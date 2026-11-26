@@ -900,9 +900,10 @@ public class DmActivity extends Activity implements SurfaceHolder.Callback, Disp
                 case -9 -> R.string.dmAndroidMissingOverlay;
                 case -10 -> R.string.dmAndroidInvalidOverlay;
                 case -11 -> R.string.dmAndroidImportArt;
+                case -12 -> R.string.dmAndroidPbVersion;
                 default -> 0;
             };
-            showStartError(resource == 0 ? getString(R.string.dmAndroidStartFailed, result) : getString(resource), phoneBuilt()); return;
+            showStartError(resource == 0 ? getString(R.string.dmAndroidStartFailed, result) : getString(resource), result == -12 ? PACK_BUILD_OFFERED : phoneBuilt()); return;
         }
         started = true;
         hostStarted = true;

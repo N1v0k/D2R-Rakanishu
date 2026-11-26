@@ -26,8 +26,8 @@
   "tags": ["leveling", "endgame", "budget", "fire", "caster"],
   "difficulty": 1,
   "mode": {"core": "softcore", "ladder": "nonladder"},
-  "gameVersion": "3.3.94012",
-  "patch": "3.3",
+  "gameVersion": "3.4.95035",
+  "patch": "3.4",
   "keySkills": [394, 398, 401],
   "trees": [3, 1],
   "profile": {
@@ -146,5 +146,5 @@
     {"site": "Maxroll", "title": "Warlock Class Overview", "url": "https://maxroll.gg/d2/resources/warlock-overview", "seen": "2026-11-03", "patch": "S13", "kind": "database", "lang": "en",
      "note": {"de": "Zauber-Tempo-Stufen (FCR), Hexenmeister-Gegenstände", "en": "Faster cast rate breakpoints, Warlock items"}}
   ],
-  "review": {"checks": ["schema", "tables-3.3.94012", "points-budget", "two-sources", "review"], "played": false}
+  "review": {"checks": ["schema", "tables-3.4.95035", "points-budget", "two-sources", "review"], "played": false}
 }

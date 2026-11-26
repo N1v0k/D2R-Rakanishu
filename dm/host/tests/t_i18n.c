@@ -9,6 +9,7 @@
 
 
 #include "../dm_i18n.h"
+#include "../game_addrs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

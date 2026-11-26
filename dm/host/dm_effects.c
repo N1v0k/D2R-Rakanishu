@@ -28,6 +28,7 @@
 
 
 #include "dm_effects.h"
+#include "game_addrs.h"
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -98,13 +99,13 @@ static entry_t *find(entry_t *t, int *n, int state) {
 static int mana_seconds(const uint8_t *b, uint64_t G, uint64_t player) {
     uint8_t ver = 0; int32_t cls = -1; uint64_t rows = 0, count = 0; uint8_t s = 0;
     if (!rd(G + 0x106, &ver, 1) || ver < 1 || ver > 3 || !rd(player + 4, &cls, 4) || cls < 0) return 0;
-    uint64_t t = *(const uint64_t *)(b + 0x2d64a18 + 16 * (uint64_t)ver);
+    uint64_t t = *(const uint64_t *)(b + GA_DATA_TABLES + 16 * (uint64_t)ver);
     if (!rd(t + 0x1280, &count, 8) || (uint64_t)cls >= count || !rd(t + 0x1278, &rows, 8) || !rd(rows + 0xd4 * (uint64_t)cls + 0x36, &s, 1)) return 0;
     return s ? s : 300;
 }
 
 static void read_mana(const uint8_t *b, uint64_t G, uint64_t player, const uint32_t *bits, int *mana) {
-    int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + 0x5b9290);
+    int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + GA_STAT_GET);
     int sec = mana_seconds(b, G, player), base = sec ? gs(player, 9, 0) / (sec * 25) : 0;
     if (sec && base < 1) base = 1;
     if (bits[85 >> 5] >> (85 & 31) & 1) base = 0;
@@ -191,10 +192,22 @@ static int code_is(uint64_t off, const uint32_t *want, size_t n) { uint32_t got[
 
 
 
+
 static const uint32_t k_stamina_code[] = { 0xb9400e88, 0x51000508, 0x2a0003f7, 0x7100191f, 0x54000082, 0x52800669, 0x1ac82529, 0x370000a9, 0x710f9eff, 0x540003ad, 0x52800118,
-    0x14000004, 0x9000b749, 0x9105c129, 0xb868d938, 0x52800161, 0xaa1403e0, 0x2a1f03e2, 0x97fbc039, 0x6b0002df, 0x5400024a, 0x1ad82808, 0x34000137, 0x1b177d09, 0x5290a3ea,
+    0x14000004, 0, 0, 0xb868d938, 0x52800161, 0xaa1403e0, 0x2a1f03e2, 0, 0x6b0002df, 0x5400024a, 0x1ad82808, 0x34000137, 0x1b177d09, 0x5290a3ea,
     0x72aa3d6a, 0x9b2a7d29, 0xd37ffd2a, 0x9365fd29, 0x0b0a0129, 0x0b080128, 0x0b160108, 0x6b00011f };
-enum { STAMINA_CODE = 0x6c9164, STAMINA_SHIFTS = 0x1db1170, DIFFICULTY = 0x2d20b88, GAME_INFO = 0x2d20b80, SKILL_FN = 0x5b1710, SKILL_PLUS2 = 0x5b19a8 };
+enum { STAMINA_CODE = GA_AT_STAMINA_REGEN, STAMINA_SHIFTS = GA_STAMINA_SHIFTS, DIFFICULTY = GA_DIFFICULTY, GAME_INFO = GA_GAME_INFO, SKILL_FN = GA_SKILL_BONUS_LEVEL, SKILL_PLUS2 = GA_AT_SKILL_SHRINE_PLUS2 };
+static const uint32_t *stamina_code(void) {
+    static uint32_t w[sizeof k_stamina_code / 4];
+    if (!w[0]) {
+        memcpy(w, k_stamina_code, sizeof w);
+        int64_t pages = (int64_t)(((uint64_t)STAMINA_SHIFTS & ~0xfffull) - (((uint64_t)STAMINA_CODE + 48) & ~0xfffull)) >> 12;
+        w[12] = 0x90000009u | (uint32_t)(pages & 3) << 29 | (uint32_t)((pages >> 2) & 0x7ffff) << 5;
+        w[13] = 0x91000129u | (uint32_t)(STAMINA_SHIFTS & 0xfff) << 10;
+        w[18] = 0x94000000u | (uint32_t)((((int64_t)GA_STAT_GET - (int64_t)(STAMINA_CODE + 72)) >> 2) & 0x3ffffff);
+    }
+    return w;
+}
 
 
 static const uint32_t k_skill_fn[] = { 0xf81b0ff9, 0xa9015ff8, 0xa90257f6, 0xa9034ff4, 0xa9047bfd, 0x910103fd, 0xb4000781, 0xf9400037 };
@@ -204,7 +217,7 @@ int dm_build_session(void);
 
 
 static void read_player(const uint8_t *b, uint64_t player, int *p) {
-    int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + 0x5b9290);
+    int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + GA_STAT_GET);
     uint32_t id = 0, cls = 0, mode = 0;
     memset(p, 0, DM_FX_PLAYER_LEN * sizeof *p);
     if (!rd(player + 4, &cls, 4) || !rd(player + 8, &id, 4) || !rd(player + 0xc, &mode, 4)) return;
@@ -213,7 +226,7 @@ static void read_player(const uint8_t *b, uint64_t player, int *p) {
     if (rd_main(DIFFICULTY, &diff, 1) && diff <= 2) { flags |= DM_FXP_DIFF_OK; p[DM_FXP_DIFF] = diff; }
     if (rd_main(GAME_INFO, &info, 8) && info && rd(info + 0x5c, &classic, 1)) { flags |= DM_FXP_CLASSIC_OK; p[DM_FXP_CLASSIC] = classic == 1; }
     int32_t shifts[6];
-    if (code_is(STAMINA_CODE, k_stamina_code, sizeof k_stamina_code / 4) && rd_main(STAMINA_SHIFTS, shifts, sizeof shifts) && shifts[0] >= 0 && shifts[0] < 32 && shifts[1] >= 0 && shifts[1] < 32) {
+    if (code_is(STAMINA_CODE, stamina_code(), sizeof k_stamina_code / 4) && rd_main(STAMINA_SHIFTS, shifts, sizeof shifts) && shifts[0] >= 0 && shifts[0] < 32 && shifts[1] >= 0 && shifts[1] < 32) {
         flags |= DM_FXP_STAMINA_OK; p[DM_FXP_STAM_STAND] = shifts[0]; p[DM_FXP_STAM_WALK] = shifts[1]; p[DM_FXP_STAM_RUN] = 8;
     }
     p[DM_FXP_FLAGS] = flags; p[DM_FXP_SESSION] = dm_build_session(); p[DM_FXP_UNIT] = (int)id; p[DM_FXP_CLASS] = (int)cls; p[DM_FXP_MODE] = (int)mode;
@@ -381,7 +394,7 @@ void dm_effects_pump(uint8_t *b, uint64_t pl) {
 
 
     { static int on = -1, last96 = -1, last28 = -1; if (on < 0) on = getenv("DM_TEST_EFFECT_LOG") != NULL;
-      if (on) { int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + 0x5b9290); int v = gs(pl, 96, 0), s28 = 0, s96 = 0;
+      if (on) { int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + GA_STAT_GET); int v = gs(pl, 96, 0), s28 = 0, s96 = 0;
           client_state_sum(pl, 136, &s28, &s96);
           if (v != last96 || s28 != last28) { last96 = v; last28 = s28; LOG("DM_TEST_EFFECT_LOG 客户端跑走：属性 96 = %d 136 子表 28 = %d 96 = %d", v, s28, s96); } } }
 #endif
@@ -462,11 +475,11 @@ static void test_fake(entry_t *t, int *n, uint32_t tick, int *mana, int *pb) {
 
 
 
-enum { SHRINE_TABLE = 0x20a3708, SHRINE_FIRST = 6, SHRINE_LAST = 15, SHRINE_MAX = 16 };
+enum { SHRINE_TABLE = GA_SHRINE_TABLE, SHRINE_FIRST = 6, SHRINE_LAST = 15, SHRINE_MAX = 16 };
 typedef struct { int code, at, done; } shrine_t;
 
 
-static const uint32_t k_shrine_fn[SHRINE_LAST - SHRINE_FIRST + 1] = { 0x6b16e0, 0x6b17a0, 0x6b16e0, 0x6b16e0, 0x6b16e0, 0x6b16e0, 0x6b1870, 0x6b16e0, 0x6b1910, 0x6b16e0 };
+static const uint32_t k_shrine_fn[SHRINE_LAST - SHRINE_FIRST + 1] = { GA_SHRINE_FN_GENERIC, GA_SHRINE_FN_COMBAT, GA_SHRINE_FN_GENERIC, GA_SHRINE_FN_GENERIC, GA_SHRINE_FN_GENERIC, GA_SHRINE_FN_GENERIC, GA_SHRINE_SKILL_FN, GA_SHRINE_FN_GENERIC, GA_SHRINE_STAMINA_FN, GA_SHRINE_FN_GENERIC };
 static const int k_shrine_state[SHRINE_LAST - SHRINE_FIRST + 1] = { 128, 129, 131, 132, 130, 133, 134, 135, 136, 137 };
 
 
@@ -499,7 +512,7 @@ static void test_shrine(const uint8_t *b, uint64_t G, uint64_t player, uint32_t 
         s[i].done = 1;
         uint8_t ver = 0, pver = 0; uint64_t T = 0, cnt = 0, arr = 0, row = 0;
         int ok = rd(G + 0x106, &ver, 1) && ver >= 1 && ver <= 3 && rd(player + 0x1bd, &pver, 1) && pver == ver;
-        if (ok) { memcpy(&T, b + 0x2d64a18 + 16 * (uint64_t)ver, 8); ok = rd(T + 0x19f0, &cnt, 8) && cnt > (uint64_t)s[i].code && rd(T + 0x19e8, &arr, 8); }
+        if (ok) { memcpy(&T, b + GA_DATA_TABLES + 16 * (uint64_t)ver, 8); ok = rd(T + 0x19f0, &cnt, 8) && cnt > (uint64_t)s[i].code && rd(T + 0x19e8, &arr, 8); }
         uint8_t whole[0x1c];
         if (ok) { ok = arr <= UINT64_MAX - 0x1c * (uint64_t)(SHRINE_LAST + 1); row = arr + 0x1c * (uint64_t)s[i].code; }
         if (ok) ok = rd(row, whole, sizeof whole) && whole[0] == s[i].code;
@@ -559,7 +572,7 @@ static void test_curse(const uint8_t *b, uint64_t G, uint64_t player, uint32_t t
     if (resist >= 0 && !resist_done && tick - start >= (uint32_t)resist_at && rd(player + 0x1bd, &ver, 1) && ver >= 1 && ver <= 3) {
         uint64_t sl = 0;
         if (rd(player + 0x88, &sl, 8) && sl) {
-            ((void (*)(uint32_t, uint64_t, int, int, int))(uintptr_t)(b + 0x5bbe20))(ver, sl, 109, resist, 0);
+            ((void (*)(uint32_t, uint64_t, int, int, int))(uintptr_t)(b + GA_STATLIST_SET))(ver, sl, 109, resist, 0);
             LOG("DM_TEST_CURSE_RESIST：拍 %u 写属性 109 = %d", tick, resist);
             resist_done = 1;
         }
@@ -573,9 +586,9 @@ static void test_curse(const uint8_t *b, uint64_t G, uint64_t player, uint32_t t
             continue;
         }
         struct { uint64_t source, target; uint32_t skill, level, dur, stat, value, state; uint64_t cb; } arg = { player, player, 0, 0, (uint32_t)s[i].dur, 0xffffffffu, 0, (uint32_t)s[i].state, 0 };
-        uint64_t (*apply)(void *) = (uint64_t (*)(void *))(uintptr_t)(b + 0x7b8280);
+        uint64_t (*apply)(void *) = (uint64_t (*)(void *))(uintptr_t)(b + GA_STATE_APPLY_TIMED);
         uint64_t r = apply(&arg);
-        LOG("DM_TEST_CURSE：拍 %u 调 main+0x7b8280 状态 %d %d 拍 → %s", tick, s[i].state, s[i].dur, r ? "挂上" : "被拒");
+        LOG("DM_TEST_CURSE：拍 %u 调 main+%#x 状态 %d %d 拍 → %s", tick, (unsigned)GA_STATE_APPLY_TIMED, s[i].state, s[i].dur, r ? "挂上" : "被拒");
     }
 }
 #endif
@@ -605,7 +618,7 @@ void dm_effects_tick(uint64_t G, uint64_t player) {
     if (read) test_fake(t, &n, now, mana, pb);
     test_log(t, n);
     { static int on = -1; if (on < 0) on = getenv("DM_TEST_EFFECT_RATE") != NULL;
-      if (on && read) { int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + 0x5b9290); LOG("DM_TEST_EFFECT_RATE 拍 %u 生命 %d 法力 %d 上限 %d 基础 %d 加成 %d 恢复 %d 回血 %d", now, gs(player, 6, 0), gs(player, 8, 0), gs(player, 9, 0), mana[0], mana[1], mana[2], mana[3]); } }
+      if (on && read) { int (*gs)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(uintptr_t)(b + GA_STAT_GET); LOG("DM_TEST_EFFECT_RATE 拍 %u 生命 %d 法力 %d 上限 %d 基础 %d 加成 %d 恢复 %d 回血 %d", now, gs(player, 6, 0), gs(player, 8, 0), gs(player, 9, 0), mana[0], mana[1], mana[2], mana[3]); } }
 #endif
     pthread_mutex_lock(&g_mu);
     if (n != g_n || memcmp(g_out, t, (size_t)n * sizeof *t) || memcmp(g_mana, mana, sizeof mana) || memcmp(g_player, pb, sizeof pb)) {

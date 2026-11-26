@@ -15,6 +15,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "dm_cursor.h"
 #include "dm_uiscreen.h"
 #include <math.h>
@@ -133,7 +134,7 @@ static void ahead_vec(int k, float *x, float *z) { float s = ahead_len(), a = (f
 void svc_cam_ahead(uint64_t *regs) {
     static uint8_t *B;
     if (!B) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) B = (uint8_t *)g_mod[i].base;
-    regs[0] = ((uint64_t (*)(uint64_t))(B + 0x1628978))(regs[0]);
+    regs[0] = ((uint64_t (*)(uint64_t))(B + GA_CAM_SECOND_GET))(regs[0]);
     int k = atomic_load(&g_ahead_k);
     uint8_t *ctl = (uint8_t *)(uintptr_t)regs[19], *cam = (uint8_t *)(uintptr_t)regs[20];
     if (k < 0 || !ctl || !cam || dm_cam_mode() <= 0 || (long long)(now_s() * 1000) - atomic_load(&g_ahead_seen_ms) > 500) { atomic_store(&g_ahead_applied, -1); return; }

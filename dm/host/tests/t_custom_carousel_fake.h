@@ -7,6 +7,7 @@
 
 #pragma once
 #include <stdint.h>
+#include "../game_addrs.h"
 #include <string.h>
 static int car_sets, car_steps, car_refreshes;
 static int32_t car_get32(uint64_t w, int at) { int32_t v; memcpy(&v, (const void *)(uintptr_t)(w + at), 4); return v; }

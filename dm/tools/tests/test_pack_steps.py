@@ -130,7 +130,7 @@ for _n in ('gen_recipe_data', 'gen_effect_data', 'gen_build_names', 'gen_glossar
 def tree(root):
 
     dm = Path(root) / 'dm'
-    for rel in ('tools/pack_steps.py', 'tools/d2rm_pack.py', 'tools/winlf/sitecustomize.py', 'tools/winlf/run.py', 'PRODUCT'):
+    for rel in ('tools/pack_steps.py', 'tools/d2rm_pack.py', 'tools/winlf/sitecustomize.py', 'tools/winlf/run.py', 'host/game_addrs.def', 'PRODUCT'):
         (dm / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(DM / rel, dm / rel)
     for rel, text in STUBS.items():
@@ -542,7 +542,7 @@ class PackagedToolsTest(unittest.TestCase):
             r = subprocess.run([sys.executable, '-I', str(t / 'tree' / 'dm' / 'tools' / 'pack_steps.py'), 'step', 'pictures', b.to_json()], cwd=empty,
                                env=b.env(env), capture_output=True, text=True)
             self.assertNotEqual(r.returncode, 0)
-            self.assertIn('not the verified 3.3.94012 build', r.stderr, r.stderr[-3000:])
+            self.assertIn('not the verified 3.4.95035 build', r.stderr, r.stderr[-3000:])
 
 
 class ToolListTest(unittest.TestCase):

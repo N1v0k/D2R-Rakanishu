@@ -48,7 +48,7 @@ dm/verify/regress.sh [--fresh] [--struct-only] [产物目录] [模块…]
 
 - `--struct-only`：只跑结构核对与门功能，不跑 `equiv.py`。
 - `--fresh`：先用本工作树的改写器重出一份到 `$DM_ROOT/run/verify/dm/fresh/` 再验，并与给定目录逐文件比对，用来发现共用的产物是否过期。
-- 环境变量：`DM_PY`、`DM_NSO_DIR`（原版模块所在目录，缺省 `$DM_ROOT/data/switch/3.3.94012/Update/ExeFS`）、`SEED`、`JOBS`、`LLVM_BIN`。
+- 环境变量：`DM_PY`、`DM_NSO_DIR`（原版模块所在目录，缺省 `$DM_ROOT/data/switch/3.4.95035/Update/ExeFS`）、`SEED`、`JOBS`、`LLVM_BIN`。
 - 输出：末尾一张汇总表，每个模块「结构」「等价」各一行，带分母与射程（实际覆盖了多少）；末行 `REGRESS OK|FAIL <产物名>`，任何一项失败退出码 1。日志在 `$DM_ROOT/run/verify/dm/regress_<时刻>.log`。
 
 相关的独立工具：

@@ -33,7 +33,7 @@ try:
    assert hashlib.sha256(rgba.tobytes()).hexdigest()==a['decoded_rgba_sha256'], a['asset']+' RGBA pixels'
   assert a['pixel_format_code']==61 and len(a['official_sprite_md5'])==32 and len(a['official_sprite_sha256'])==64
  import os,sys
- romfs=os.environ.get('DM_ROMFS_SRC') or os.path.join(DM_ROOT, 'data/switch/3.3.94012/Update/RomFS')
+ romfs=os.environ.get('DM_ROMFS_SRC') or os.path.join(DM_ROOT, 'data/switch', open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../PRODUCT'), encoding='utf-8').readline().split('-')[0], 'Update/RomFS')
  if os.path.isfile(os.path.join(romfs,'data','build_manifest.psv')):
   sys.path.insert(0,str(IOS/'tools')); import romfs_art
   for table in manifest['official_tables']:

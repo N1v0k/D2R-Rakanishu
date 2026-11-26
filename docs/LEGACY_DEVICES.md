@@ -32,7 +32,7 @@ Run these from the repository root, inside the Python environment that setup pre
 
 ```bash
 source ~/dm-work/build/cache/dm/venv/bin/activate
-R=~/dm-work/data/switch/3.3.94012/Update/RomFS
+R=~/dm-work/data/switch/3.4.95035/Update/RomFS
 D=~/dm-work/out/legacy_pack
 
 python3 dm/tools/astc_pack.py "$R" "$D/work" --preset thorough     # 1 transcode, about 8 minutes (all cores of a Mac)

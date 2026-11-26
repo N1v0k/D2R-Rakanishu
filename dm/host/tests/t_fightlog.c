@@ -4,6 +4,7 @@
 
 
 
+
 #include "../dm_fightlog_core.c"
 #include "../dm_fightlog_store.c"
 #include "../dm_fightlog_text.c"
@@ -14,6 +15,7 @@
 
 uint64_t now_ns(void) { static uint64_t t; return t += 60ull * 1000000000ull; }
 static int checks, fails;
+static void put16(uint8_t *p, uint16_t v) { memcpy(p, &v, 2); }
 #define CHECK(c, ...) do { checks++; if (!(c)) { fails++; fprintf(stderr, "FAIL line %d: ", __LINE__); fprintf(stderr, __VA_ARGS__); fputc('\n', stderr); } } while (0)
 
 
@@ -485,18 +487,18 @@ int main(void) {
 
 
     fresh(); { static dm_fl_fight gotf, keptf; static uint8_t img[DM_FL_IMAGE_MAX], img2[DM_FL_IMAGE_MAX]; uint32_t gen; char who[64];
-      dm_fl_owner(S, "Hero", NULL, 0);
+      dm_fl_owner(S, "Hero", NULL, 0, NULL);
       enemy *e = spawn(5, 0, 10); ticks(30); hit(e, 10, 0, 0); tick();
       size_t n = dm_fl_image(S, who, img, sizeof img, &gen);
       CHECK(n > DM_FL_IMAGE_HEAD && !dm_fl_count(S), "the image already carries the won fight, the ring not yet (%zu)", n);
       settle(); CHECK(dm_fl_count(S) == 1, "finish keeps it in the ring"); keptf = *newest();
-      CHECK(!dm_fl_owner(S, "Hero", img, n) && dm_fl_count(S) == 1, "the grace image loads as one fight");
+      CHECK(!dm_fl_owner(S, "Hero", img, n, NULL) && dm_fl_count(S) == 1, "the grace image loads as one fight");
       dm_fl_get(S, 0, &gotf); CHECK(!memcmp(&gotf, &keptf, sizeof gotf), "its newest is byte-identical to what finish keeps");
-      dm_fl_owner(S, "Other", NULL, 0);
+      dm_fl_owner(S, "Other", NULL, 0, NULL);
       CHECK(!dm_fl_count(S) && !dm_fl_image(S, who, img2, sizeof img2, &gen), "a new owner starts without it, nothing to save");
-      CHECK(!dm_fl_owner(S, "Hero", img, n) && dm_fl_count(S) == 1, "Hero's saved file still holds the won fight");
+      CHECK(!dm_fl_owner(S, "Hero", img, n, NULL) && dm_fl_count(S) == 1, "Hero's saved file still holds the won fight");
       for (int how = 0; how < 2; how++) {
-        fresh(); dm_fl_owner(S, "Hero", NULL, 0);
+        fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
         enemy *a = spawn(5, 0, 10); ticks(30); hit(a, 10, 0, 0); done();
         enemy *b = spawn(6, 0, 10); ticks(30); hit(b, 10, 0, 0); tick();
         size_t nf = dm_fl_image(S, who, img, sizeof img, &gen); CHECK(nf > DM_FL_IMAGE_HEAD, "way %d: file with the pending fight", how);
@@ -504,26 +506,26 @@ int main(void) {
         if (how) dm_fl_discard(S); else dm_fl_record(S, 0);
         size_t nr = dm_fl_image(S, who, img2, sizeof img2, &gen);
         CHECK(nr && nr < nf, "way %d: the replacement image is shorter (%zu < %zu)", how, nr, nf);
-        CHECK(!dm_fl_owner(S, "Hero", img2, nr) && dm_fl_count(S) == 1, "way %d: reload without the pending fight", how);
+        CHECK(!dm_fl_owner(S, "Hero", img2, nr, NULL) && dm_fl_count(S) == 1, "way %d: reload without the pending fight", how);
         dm_fl_get(S, 0, &gotf); CHECK(gotf.h.end == DM_FL_END_KILL && gotf.g[0].cls == 5, "way %d: the earlier entry stayed", how);
         if (!how) dm_fl_record(S, 1);
       }
-      fresh(); dm_fl_owner(S, "Hero", NULL, 0); dm_fl_record(S, 0);
+      fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL); dm_fl_record(S, 0);
       { enemy *c = spawn(5, 0, 10); ticks(30); hit(c, 10, 0, 0); tick();
         CHECK(!dm_fl_image(S, who, img, sizeof img, &gen), "recording off before the kill: no pending fight in the image"); dm_fl_record(S, 1); settle(); }
-      fresh(); dm_fl_owner(S, "Hero", NULL, 0);
+      fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
       { enemy *a = spawn(5, 0, 10); ticks(30); hit(a, 10, 0, 0); done();
         enemy *b = spawn(6, 0, 10); ticks(30); hit(b, 10, 0, 0); tick(); dm_fl_image(S, who, img, sizeof img, &gen); dm_fl_saved(S, gen);
         pl.dead = 1; tick();
         CHECK(ended == DM_FL_END_DEATH, "death within the grace");
         size_t nd = dm_fl_image(S, who, img2, sizeof img2, &gen);
-        CHECK(!dm_fl_owner(S, "Hero", img2, nd) && dm_fl_count(S) == 2 && newest()->h.end == DM_FL_END_DEATH, "the death replaced the pending fight, never both"); }
-      fresh(); dm_fl_owner(S, "Hero", NULL, 0);
+        CHECK(!dm_fl_owner(S, "Hero", img2, nd, NULL) && dm_fl_count(S) == 2 && newest()->h.end == DM_FL_END_DEATH, "the death replaced the pending fight, never both"); }
+      fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
       for (int i = 0; i < DM_FL_RING; i++) { enemy *e4 = spawn(100 + (uint32_t)i, 0, 10); ticks(5); hit(e4, 10, 0, 0); done(); }
       CHECK(dm_fl_count(S) == DM_FL_RING, "ring full");
       { enemy *f5 = spawn(160, 0, 10); ticks(5); hit(f5, 10, 0, 0); tick(); }
       size_t nn = dm_fl_image(S, who, img, sizeof img, &gen);
-      CHECK(!dm_fl_owner(S, "Hero", img, nn) && dm_fl_count(S) == DM_FL_RING, "a full ring with a pending fight loads (count %d)", dm_fl_count(S));
+      CHECK(!dm_fl_owner(S, "Hero", img, nn, NULL) && dm_fl_count(S) == DM_FL_RING, "a full ring with a pending fight loads (count %d)", dm_fl_count(S));
       dm_fl_get(S, 0, &gotf); dm_fl_get(S, DM_FL_RING - 1, &keptf);
       CHECK(gotf.g[0].cls == 160 && keptf.g[0].cls == 101, "the pending fight is newest, the oldest dropped out (%u, %u)", gotf.g[0].cls, keptf.g[0].cls); }
 
@@ -538,21 +540,27 @@ int main(void) {
       for (int i = 0; i < count; i++) dm_fl_get(S, i, &before[i]);
       CHECK(count == DM_FL_RING && before[10].h.ngroups == DM_FL_GROUPS && (before[10].h.flags & DM_FL_F_MORE_KINDS) && before[10].h.nmarks > 1 && before[9].h.width > 1, "a varied ring (groups %u, width %u)", before[10].h.ngroups, before[9].h.width);
       CHECK(!dm_fl_image(S, who, img, sizeof img, &gen), "no image without an owner");
-      dm_fl_owner(S, "Hero", NULL, 0); CHECK(dm_fl_count(S) == 0 && !dm_fl_image(S, who, img, sizeof img, &gen), "a new owner starts empty and saved");
+      dm_fl_owner(S, "Hero", NULL, 0, NULL); CHECK(dm_fl_count(S) == 0 && !dm_fl_image(S, who, img, sizeof img, &gen), "a new owner starts empty and saved");
       for (int i = count - 1; i >= 0; i--) { pthread_mutex_lock(&S->mu); S->ring[S->head] = before[i]; S->head = (S->head + 1) % DM_FL_RING; S->count++; S->gen++; pthread_mutex_unlock(&S->mu); }
       size_t n = dm_fl_image(S, who, img, sizeof img, &gen);
       CHECK(n > DM_FL_IMAGE_HEAD && n <= DM_FL_IMAGE_MAX && !strcmp(who, "Hero"), "image of %zu bytes", n);
       CHECK(DM_FL_IMAGE_MAX < 300 * 1024 && n < 120 * 1024, "sizes: at most %zu, this ring %zu", (size_t)DM_FL_IMAGE_MAX, n);
-      CHECK(!dm_fl_owner(S, "Hero", img, n) && dm_fl_count(S) == count, "the image loads (%d)", dm_fl_count(S));
+      CHECK(!dm_fl_owner(S, "Hero", img, n, NULL) && dm_fl_count(S) == count, "the image loads (%d)", dm_fl_count(S));
       int same = 1; for (int i = 0; i < count; i++) { dm_fl_get(S, i, &after); same &= !memcmp(&after, &before[i], sizeof after); }
       CHECK(same, "every fight comes back byte for byte, newest first");
       CHECK(!dm_fl_image(S, who, img, sizeof img, &gen), "a loaded ring counts as saved");
 
       #define REJECT(why, edit, crc) do { memcpy(bad, img, n); size_t m = n; edit; if (crc) put32(bad + 12, crc32(bad + DM_FL_IMAGE_HEAD, m - DM_FL_IMAGE_HEAD)); \
-          int r = dm_fl_owner(S, "Hero", bad, m); CHECK(r == (why) && dm_fl_count(S) == 0, "rejected as %d (%d)", why, r); } while (0)
+          int r = dm_fl_owner(S, "Hero", bad, m, NULL); CHECK(r == (why) && dm_fl_count(S) == 0, "rejected as %d (%d)", why, r); } while (0)
+
+      #define CUT(why, keep, edit) do { memcpy(bad, img, n); size_t m = n; edit; put32(bad + 12, crc32(bad + DM_FL_IMAGE_HEAD, m - DM_FL_IMAGE_HEAD)); \
+          int r = dm_fl_owner(S, "Hero", bad, m, NULL); CHECK(r == (why) && dm_fl_count(S) == (keep), "cut as %d (%d), %d fights kept (%d)", why, r, keep, dm_fl_count(S)); } while (0)
+
+      #define SKIP(edit) do { memcpy(bad, img, n); size_t m = n; edit; put32(bad + 12, crc32(bad + DM_FL_IMAGE_HEAD, m - DM_FL_IMAGE_HEAD)); int sk = -1; \
+          int r = dm_fl_owner(S, "Hero", bad, m, &sk); CHECK(!r && sk == 1 && dm_fl_count(S) == count - 1, "one record left out (%d, skipped %d, %d fights)", r, sk, dm_fl_count(S)); } while (0)
       REJECT(DM_FL_BAD_SIZE, m = 10, 0);
-      REJECT(DM_FL_BAD_FIGHT, m = n - 1, 1);
-      REJECT(DM_FL_BAD_SIZE, (bad[n] = 0, m = n + 1), 1);
+      CUT(DM_FL_BAD_FIGHT, count - 1, m = n - 1);
+      CUT(DM_FL_BAD_SIZE, count, (bad[n] = 0, m = n + 1));
       REJECT(DM_FL_BAD_MAGIC, bad[0] ^= 1, 0);
       REJECT(DM_FL_BAD_VERSION, bad[4] = 3, 0);
       REJECT(DM_FL_BAD_CRC, bad[n - 1] ^= 0x40, 0);
@@ -562,18 +570,26 @@ int main(void) {
       REJECT(DM_FL_BAD_COUNT, (put32(bad + 8, 0x80000000u), m = DM_FL_IMAGE_HEAD), 1);
       { now += 1000; dm_fl_game(S, now); enemy *e = spawn(5, 0, 10); ticks(30); hit(e, 10, 0, 0); done();
         CHECK(dm_fl_count(S) == 1 && S->head == 1 && dm_fl_get(S, 0, &after) && after.h.end == DM_FL_END_KILL, "after a rejected count the ring starts at its first slot"); }
-      REJECT(DM_FL_BAD_SIZE, put32(bad + 8, DM_FL_RING - 1), 1);
+      CUT(DM_FL_BAD_SIZE, DM_FL_RING - 1, put32(bad + 8, DM_FL_RING - 1));
       size_t ng = DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, ngroups), nbk = DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, nbuckets), wd = DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, width);
-      REJECT(DM_FL_BAD_FIGHT, bad[ng] = DM_FL_GROUPS + 1, 1);
-      REJECT(DM_FL_BAD_FIGHT, (bad[nbk] = 0, bad[nbk + 1] = 0), 1);
-      REJECT(DM_FL_BAD_FIGHT, (bad[nbk] = 1, bad[nbk + 1] = 1), 1);
-      REJECT(DM_FL_BAD_FIGHT, (bad[wd] = 0, bad[wd + 1] = 0), 1);
-      REJECT(DM_FL_BAD_FIGHT, bad[DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, end)] = 9, 1);
-      REJECT(DM_FL_BAD_FIGHT, bad[DM_FL_IMAGE_HEAD + sizeof(dm_fl_head) + sizeof(dm_fl_split) + offsetof(dm_fl_group, rank)] = 9, 1);
-      REJECT(DM_FL_BAD_FIGHT, bad[DM_FL_IMAGE_HEAD + sizeof(dm_fl_head) + offsetof(dm_fl_split, flags)] = 7, 1);
+      CUT(DM_FL_BAD_FIGHT, 0, bad[ng] = DM_FL_GROUPS + 1);
+      CUT(DM_FL_BAD_FIGHT, 0, (bad[nbk] = 0, bad[nbk + 1] = 0));
+      CUT(DM_FL_BAD_FIGHT, 0, (bad[nbk] = 1, bad[nbk + 1] = 1));
+      SKIP((bad[wd] = 0, bad[wd + 1] = 0));
+      SKIP(bad[DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, end)] = 9);
+      SKIP(bad[DM_FL_IMAGE_HEAD + sizeof(dm_fl_head) + sizeof(dm_fl_split) + offsetof(dm_fl_group, rank)] = 9);
+      SKIP(bad[DM_FL_IMAGE_HEAD + sizeof(dm_fl_head) + offsetof(dm_fl_split, flags)] = 7);
+      SKIP(put16(bad + DM_FL_IMAGE_HEAD + offsetof(dm_fl_head, lead), DM_FL_REACH + 1));
+      {
+        size_t at = DM_FL_IMAGE_HEAD; for (int k = 0; k < 20; k++) { dm_fl_head hh; memcpy(&hh, img + at, sizeof hh); at += fight_size(&hh, DM_FL_VERSION); }
+        SKIP(bad[at + offsetof(dm_fl_head, end)] = 0);
+        int order = 1; for (int i = 0; i < count - 1; i++) { dm_fl_get(S, i, &after); order &= !memcmp(&after, &before[i < count - 1 - 20 ? i : i + 1], sizeof after); }
+        CHECK(order, "the other fights keep their order and bytes"); }
       #undef REJECT
+      #undef CUT
+      #undef SKIP
 
-      dm_fl_owner(S, "Hero", img, n); now += 1000; dm_fl_game(S, now);
+      dm_fl_owner(S, "Hero", img, n, NULL); now += 1000; dm_fl_game(S, now);
       { enemy *e = spawn(5, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); }
       size_t n2 = dm_fl_image(S, who, img, sizeof img, &gen); CHECK(n2 > 0, "a kept fight makes the ring unsaved");
       dm_fl_saved(S, gen); CHECK(!dm_fl_image(S, who, img, sizeof img, &gen), "saved");
@@ -621,7 +637,7 @@ int main(void) {
 
 
       { char old1[420]; snprintf(old1, sizeof old1, "%s/Hero.sw_fights", dir);
-        fresh(); dm_fl_owner(S, "Hero", NULL, 0);
+        fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
         for (int i = 0; i < 3; i++) { enemy *e = spawn(5, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); }
         static uint8_t v2[DM_FL_IMAGE_MAX], v1[DM_FL_IMAGE_MAX]; char w[64]; uint32_t g; size_t n2 = dm_fl_image(S, w, v2, sizeof v2, &g), n1 = DM_FL_IMAGE_HEAD;
         for (int i = 0; i < 3; i++) {
@@ -641,8 +657,80 @@ int main(void) {
         CHECK(unknown == 3 && known == 1, "the old fights stay unknown after saving again, the new one is known (%d, %d)", unknown, known);
         static uint8_t back[DM_FL_IMAGE_MAX]; o = fopen(old1, "rb"); size_t nb = fread(back, 1, sizeof back, o); fclose(o);
         CHECK(nb == n1 && !memcmp(back, v1, n1), "the version 1 file is untouched");
-        fresh(); CHECK(!dm_fl_owner(S, "Hero", back, nb) && dm_fl_count(S) == 3, "and still loads as before");
+        fresh(); CHECK(!dm_fl_owner(S, "Hero", back, nb, NULL) && dm_fl_count(S) == 3, "and still loads as before");
         unlink(old1); unlink(file); }
+
+      { fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL); enemy *e = spawn(5, 0, 10); ticks(10); dm_fl_action(S, now, DM_FL_ME_CAST, 36); ticks(150); hit(e, 10, 0, 0); done();
+        dm_fl_fight lf = *newest(), got;
+        CHECK(dm_fl_count(S) == 1 && lf.h.lead > DM_FL_LEAD && lf.h.lead <= DM_FL_REACH, "a long lead (%u)", lf.h.lead);
+        CHECK(dm_fl_store_commit(S, root, 7) && !stat(file, &st), "the fight with the long lead is written");
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 1 && stat(aside, &st), "it loads, nothing set aside (%d)", dm_fl_count(S));
+        dm_fl_get(S, 0, &got); CHECK(!memcmp(&got, &lf, sizeof got), "byte for byte"); }
+
+      { fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
+        for (int i = 0; i < 3; i++) { enemy *e = spawn(50 + (uint32_t)i, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); }
+        static uint8_t im[DM_FL_IMAGE_MAX]; char w[64]; uint32_t g; size_t ni = dm_fl_image(S, w, im, sizeof im, &g);
+        dm_fl_head hh; memcpy(&hh, im + DM_FL_IMAGE_HEAD, sizeof hh); size_t second = DM_FL_IMAGE_HEAD + fight_size(&hh, DM_FL_VERSION);
+        put16(im + second + offsetof(dm_fl_head, lead), DM_FL_REACH + 1); put32(im + 12, crc32(im + DM_FL_IMAGE_HEAD, ni - DM_FL_IMAGE_HEAD));
+        FILE *o = fopen(file, "wb"); fwrite(im, 1, ni, o); fclose(o);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 2 && stat(aside, &st) && !stat(file, &st), "one broken record: the other two load, nothing set aside (%d)", dm_fl_count(S));
+        dm_fl_fight a, b; dm_fl_get(S, 0, &a); dm_fl_get(S, 1, &b); CHECK(a.g[0].cls == 52 && b.g[0].cls == 50, "the first and the third fight (%u, %u)", a.g[0].cls, b.g[0].cls); }
+
+
+
+      { char merged[440], merged2[450], tmpf[420]; snprintf(merged, sizeof merged, "%s.merged", aside); snprintf(merged2, sizeof merged2, "%s.merged.2", aside);
+        snprintf(tmpf, sizeof tmpf, "%s.tmp", file);
+        static uint8_t old[DM_FL_IMAGE_MAX], cur[DM_FL_IMAGE_MAX]; char w[64]; uint32_t g; dm_fl_fight fa, fb, fc, x;
+        fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL);
+        { enemy *e = spawn(60, 0, 10); ticks(10); dm_fl_action(S, now, DM_FL_ME_CAST, 36); ticks(150); hit(e, 10, 0, 0); done(); fa = *newest(); }
+        { enemy *e = spawn(61, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); fb = *newest(); }
+        CHECK(fa.h.lead > DM_FL_LEAD, "the old file holds a long lead (%u)", fa.h.lead);
+        size_t no = dm_fl_image(S, w, old, sizeof old, &g);
+        dm_fl_owner(S, "Hero", NULL, 0, NULL);
+        pthread_mutex_lock(&S->mu); S->ring[0] = fb; S->head = 1; S->count = 1; S->gen++; pthread_mutex_unlock(&S->mu);
+        { enemy *e = spawn(62, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); fc = *newest(); }
+        size_t nc = dm_fl_image(S, w, cur, sizeof cur, &g);
+        FILE *o = fopen(aside, "wb"); fwrite(old, 1, no, o); fclose(o);
+        o = fopen(file, "wb"); fwrite(cur, 1, nc, o); fclose(o);
+        mkdir(tmpf, 0700);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 3, "the set-aside fights join the current ones (%d)", dm_fl_count(S));
+        int order = dm_fl_get(S, 0, &x) && !memcmp(&x, &fc, sizeof x); order &= dm_fl_get(S, 1, &x) && !memcmp(&x, &fb, sizeof x); order &= dm_fl_get(S, 2, &x) && !memcmp(&x, &fa, sizeof x);
+        CHECK(order, "newest first: the current file's fights, then the older one, the shared fight once");
+        CHECK(!stat(aside, &st) && stat(merged, &st), "the set-aside file keeps its name until a save holds its fights");
+        CHECK(!dm_fl_store_commit(S, root, 8) && !stat(aside, &st) && stat(merged, &st), "a failed write leaves it as it is");
+        rmdir(tmpf);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 3, "so the next load merges it again (%d)", dm_fl_count(S));
+        CHECK(dm_fl_store_commit(S, root, 8) && stat(aside, &st) && !stat(merged, &st) && st.st_size == (off_t)no, "the save that holds its fights renames it to .bad.merged");
+        rename(merged, aside); o = fopen(file, "wb"); fwrite(cur, 1, nc, o); fclose(o);
+        CHECK(dm_fl_store_commit(S, root, 8) && stat(aside, &st) && !stat(merged, &st), "after a refused commit the next save writes and renames again");
+        CHECK(!dm_fl_store_commit(S, root, 9), "then nothing is pending");
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 3 && stat(merged2, &st), "the next load reads the saved list and the .merged file not again (%d)", dm_fl_count(S));
+        o = fopen(aside, "wb"); fwrite(old, 1, no, o); fclose(o);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 3 && !dm_fl_store_commit(S, root, 10), "fights the list holds are not added twice, nothing to save (%d)", dm_fl_count(S));
+        CHECK(!stat(merged, &st) && !stat(merged2, &st) && stat(aside, &st), "with nothing new it is renamed at once, beside the first .merged file, never over it");
+        unlink(merged); unlink(merged2);
+
+
+        char old1[420]; snprintf(old1, sizeof old1, "%s/Hero.sw_fights", dir);
+        static uint8_t two[DM_FL_IMAGE_MAX]; dm_fl_owner(S, "Hero", NULL, 0, NULL);
+        pthread_mutex_lock(&S->mu); S->ring[0] = fa; S->ring[1] = fb; S->head = 2; S->count = 2; S->gen++; pthread_mutex_unlock(&S->mu);
+        size_t n2 = dm_fl_image(S, w, two, sizeof two, &g);
+        o = fopen(old1, "wb"); fwrite(two, 1, n2, o); fclose(o);
+        unlink(file); o = fopen(aside, "wb"); fwrite(cur, 1, nc, o); fclose(o);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 3, "the older file and the set-aside one (%d)", dm_fl_count(S));
+        order = dm_fl_get(S, 0, &x) && !memcmp(&x, &fc, sizeof x); order &= dm_fl_get(S, 1, &x) && !memcmp(&x, &fb, sizeof x); order &= dm_fl_get(S, 2, &x) && !memcmp(&x, &fa, sizeof x);
+        CHECK(order, "the set-aside version 2 fights are the newest");
+        CHECK(dm_fl_store_commit(S, root, 11) && !stat(file, &st) && !stat(merged, &st), "written into the version 2 file, the set-aside one renamed");
+        unlink(merged); unlink(old1);
+
+        char nm[460]; for (int k = 1; k <= 99; k++) { if (k == 1) snprintf(nm, sizeof nm, "%s", aside); else snprintf(nm, sizeof nm, "%s.%d", aside, k); o = fopen(nm, "wb"); fclose(o); }
+        o = fopen(file, "r+b"); fseek(o, 40, SEEK_SET); fputc(0x5b, o); fclose(o); stat(file, &st); off_t damaged = st.st_size;
+        fresh(); CHECK(dm_fl_store_load(S, root, "Hero") == DM_FL_BAD_CRC && dm_fl_count(S) == 0 && !stat(file, &st), "rejected, left in place");
+        { enemy *e = spawn(5, 0, 10); ticks(30); hit(e, 10, 0, 0); done(); }
+        CHECK(!dm_fl_store_commit(S, root, 12) && !stat(file, &st) && st.st_size == damaged, "a new fight does not write over it");
+        for (int k = 1; k <= 99; k++) { if (k == 1) snprintf(nm, sizeof nm, "%s", aside); else snprintf(nm, sizeof nm, "%s.%d", aside, k); unlink(nm); }
+        unlink(merged); unlink(file);
+        fresh(); CHECK(!dm_fl_store_load(S, root, "Hero") && dm_fl_count(S) == 0, "a later load decides again"); }
       rmdir(dir); rmdir(root); }
 
 
@@ -758,7 +846,7 @@ int main(void) {
 
     { static uint8_t fimg[DM_FL_IMAGE_MAX], dimg[DM_DH_IMAGE_MAX]; char who[64]; uint32_t gen; dm_dh *h = dm_dh_core(); static dm_dh_window w; static dm_dh_seg sg[DM_DH_SEGS];
       dm_fl_parts parts = { 1, 2, 3, 24, 0, 0 };
-      fresh(); dm_fl_owner(S, "Hero", NULL, 0); dm_dh_reset(h); dm_dh_owner(h, "Hero", NULL, 0); dm_fl_build(S, 77, 0x5a);
+      fresh(); dm_fl_owner(S, "Hero", NULL, 0, NULL); dm_dh_reset(h); dm_dh_owner(h, "Hero", NULL, 0); dm_fl_build(S, 77, 0x5a);
       { enemy *e = spawn(5, 0, 50); ticks(30); SKILLHIT(e, 20, 36, 0); ticks(30); SKILLHIT(e, 30, 36, 0); done(); dm_dh_add(h, 0x5a, &parts, newest()); }
       { enemy *e = spawn(6, 0, 50); ticks(30); SKILLHIT(e, 20, 36, 0); ticks(30); SKILLHIT(e, 30, 36, 0); tick(); }
       dm_fl_fight pend; CHECK(dm_fl_pending(S, &pend) && pend.g[0].cls == 6, "a fight waits its grace");
@@ -768,7 +856,7 @@ int main(void) {
       CHECK(dm_dh_image(h, &pend, &parts, who, dimg, sizeof dimg, &gen) == nd, "while it waits, every save writes it again");
 
       dm_fl_state keep = *S; dm_fl_reset(S); dm_dh_reset(h);
-      CHECK(!dm_fl_owner(S, "Hero", fimg, nf) && dm_fl_count(S) == 2 && !dm_dh_owner(h, "Hero", dimg, nd) && dm_dh_read(h, 0x5a, &w, sg) == 1 && w.n == 2 && sg[0].fights == 2,
+      CHECK(!dm_fl_owner(S, "Hero", fimg, nf, NULL) && dm_fl_count(S) == 2 && !dm_dh_owner(h, "Hero", dimg, nd) && dm_dh_read(h, 0x5a, &w, sg) == 1 && w.n == 2 && sg[0].fights == 2,
             "restarted: the fight in the list and once in the history (%u, %u)", w.n, sg[0].fights);
 
       *S = keep; pthread_mutex_init(&S->mu, NULL); dm_dh_reset(h); dm_dh_owner(h, "Hero", NULL, 0); dm_dh_add(h, 0x5a, &parts, &keep.ring[(keep.head + DM_FL_RING - 1) % DM_FL_RING]);

@@ -9,7 +9,8 @@
 
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd); export DM_ROOT=${DM_ROOT:-$HOME/dm-work}
-GAME=$DM_ROOT/data/switch/3.3.94012/Update; PY=$DM_ROOT/build/cache/dm/venv/bin/python3
+GV=$(sed -n '1s/-.*//p' "$HERE/dm/PRODUCT")
+GAME=$DM_ROOT/data/switch/$GV/Update; PY=$DM_ROOT/build/cache/dm/venv/bin/python3
 say() { echo "[$(date +%T)] $*"; }
 die() { echo "✗ $*" >&2; exit 1; }
 
@@ -83,10 +84,10 @@ say "$(m "三、游戏文件（${GAME}）" "3. Game files ($GAME)")"
 gf=0
 while read -r want name; do
   if [ ! -f "$GAME/ExeFS/$name" ]; then echo "  ✗ $(m "缺 ExeFS/$name" "ExeFS/$name is missing")"; gf=$((gf+1))
-  elif [ "$(shasum -a 256 "$GAME/ExeFS/$name" | cut -c1-64)" = "$want" ]; then ok "ExeFS/${name}（3.3.94012）"
-  else echo "  ✗ $(m "ExeFS/$name 不是 3.3.94012 这一版的" "ExeFS/$name is not from version 3.3.94012")"; gf=$((gf+1)); fi
+  elif [ "$(shasum -a 256 "$GAME/ExeFS/$name" | cut -c1-64)" = "$want" ]; then ok "ExeFS/${name}（$GV）"
+  else echo "  ✗ $(m "ExeFS/$name 不是 $GV 这一版的" "ExeFS/$name is not from version $GV")"; gf=$((gf+1)); fi
 done <<SUMS
-55fd909bb7230b002357e5b0d8499c11f06888f345c49e69eb4734df44a27d0e main
+bfe6f4d733ca56b9ca52fdda108f33284337b63d8490d166acc06d63aa2b4b5a main
 1c9f198a91c0bcfee5cf8f5b53fb941895e91334dfb766ce79fc68576797f017 sdk
 67a38fcf89cd13e040a021eb3d157072f38ebf6680a907874c35c7b231b5d4e2 subsdk0
 SUMS

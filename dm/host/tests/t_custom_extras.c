@@ -13,6 +13,7 @@
 #define DM_CUSTOM_TEST_PLATFORM 1
 #define DM_CUSTOM_SET_TEXT test_set_text
 #include "t_custom_carousel_fake.h"
+#include "../game_addrs.h"
 #include <stdint.h>
 static void test_set_text(uint64_t w, const char *s);
 #include "../dm_custom.c"
@@ -159,7 +160,7 @@ int main(void) {
     const char *td = getenv("TMPDIR"); char tmpl[1024]; snprintf(tmpl, sizeof tmpl, "%s/t_custom_extras.XXXXXX", td && *td ? td : "/tmp");
     char *d = mkdtemp(tmpl); if (!d) { perror("mkdtemp"); return 1; }
     strlcpy(g_mod[0].name, "main", sizeof g_mod[0].name); g_mod[0].base = main_mem; g_nmod = 1;
-    page_vt[0] = A(main_mem) + 0xae5f28; sel_vt[2] = A(relayout_noop); cont_vt[2] = A(relayout_noop);
+    page_vt[0] = A(main_mem) + GA_OPTIONS_PAGE_UPDATE; sel_vt[2] = A(relayout_noop); cont_vt[2] = A(relayout_noop);
 
 
     { int v; CHECK(parse_val(K_SHL, "9\n", &v) && v == 9, "shoulder_l=9 读成 9（不是「非 0 即 1」）");

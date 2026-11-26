@@ -28,6 +28,7 @@
 import os, re, sys, json, struct, hashlib, shutil, subprocess, tempfile, collections, concurrent.futures as cf
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+GAME_VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../PRODUCT'), encoding='utf-8').readline().split('-')[0]
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 OPT, VAL = (os.environ.get(k, d) for k, d in (('SPIRV_OPT', 'spirv-opt'), ('SPIRV_VAL', 'spirv-val')))
 STAGE_NO = {'vs': 0, 'hs': 1, 'ds': 2, 'gs': 3, 'ps': 4, 'cs': 5}
@@ -226,7 +227,7 @@ def main(argv):
         return 0 if compare(argv[2], argv[3]) else 1
     dm_dir, out = argv[1:3]; want = set(argv[3:])
     XLATE = os.environ.get('XLATE', f'{DM_ROOT}/build/gfx/dmsh_xlate/dmsh_xlate')
-    MAIN = os.environ.get('MAIN', f'{DM_ROOT}/data/switch/3.3.94012/Update/ExeFS/main')
+    MAIN = os.environ.get('MAIN', f'{DM_ROOT}/data/switch/{GAME_VERSION}/Update/ExeFS/main')
     FACTS = dmsh_facts.load()
     if not FACTS: sys.exit('【红】没有作答表 nvn/shader_facts.tsv')
     loc, stage_of = shader_index()

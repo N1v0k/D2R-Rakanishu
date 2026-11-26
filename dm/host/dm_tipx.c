@@ -33,6 +33,7 @@
 
 
 #include "dm_tipx.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "hle.h"
 #include "dm_i18n.h"
@@ -82,12 +83,12 @@ static void comparison_colour_obs(const uint64_t *saved) {
 static struct { int H, W, lang, ok; int line_h, margin, limit, char_w, max_lines; unsigned gen; } M;
 static int rec_box(uint8_t *b, const uint64_t *regs, const char *txt, int *w, int *h) {
     static uint8_t rec[0x2e8]; memset(rec, 0, sizeof rec);
-    ((void (*)(void *, const char *, uint64_t, uint64_t, uint64_t, const char *))(b + 0xb0f998))(rec, txt, regs[2], regs[3], regs[4], "");
+    ((void (*)(void *, const char *, uint64_t, uint64_t, uint64_t, const char *))(b + GA_TOOLTIP_RECORD_BUILD))(rec, txt, regs[2], regs[3], regs[4], "");
     const int32_t *q = (const int32_t *)(rec + 0x60); *w = q[2] + q[6]; *h = q[3] + q[7];
     return *(uint64_t *)rec == (uint64_t)(uintptr_t)(rec + 0x18);
 }
 static int measure(uint8_t *b, const uint64_t *regs) {
-    int H = *(int32_t *)(b + 0x211da3c), W = *(int32_t *)(b + 0x211da38), lang = dm_lang_group();
+    int H = *(int32_t *)(b + GA_UI_HEIGHT), W = *(int32_t *)(b + GA_UI_WIDTH), lang = dm_lang_group();
 
     if (M.ok && M.H == H && M.W == W && M.lang == lang) return M.ok > 0;
     M.H = H; M.W = W; M.lang = lang; M.ok = -1;
@@ -95,8 +96,8 @@ static int measure(uint8_t *b, const uint64_t *regs) {
     if (!rec_box(b, regs, "M", &w1, &h1) || !rec_box(b, regs, "M\nM", &w2, &h2) || !rec_box(b, regs, "Leben +35 (500)", &w15, &h15)) { LOG("【红】物品对比：量说明框时串没放在记录里，不出块"); return 0; }
 
 
-    uint64_t root = *(uint64_t *)(b + 0x2f05458); float sc = root ? ((float (*)(uint64_t))(b + 0x390b38))(root) : 1.0f;
-    int Heff = (root && *(uint8_t *)(root + 0xb9)) || *(float *)(b + 0x2dc0758) > 0 ? H : *(int32_t *)(b + 0x2080c0c);
+    uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); float sc = root ? ((float (*)(uint64_t))(b + GA_UI_SCALE_GET))(root) : 1.0f;
+    int Heff = (root && *(uint8_t *)(root + 0xb9)) || *(float *)(b + GA_PICTURE_TRANSITION) > 0 ? H : *(int32_t *)(b + GA_SCREEN_H);
     int pad = *(int32_t *)(regs[0] + 0xa40); int padpx = (int)(sc * (float)pad);
     M.line_h = h2 - h1; M.margin = h1 - M.line_h; M.limit = Heff - 2 * padpx; M.char_w = (w15 - w1 + 13) / 14;
     M.max_lines = M.line_h > 0 ? (M.limit - M.margin) / M.line_h : 0;
@@ -171,10 +172,10 @@ static int tip_box(uint8_t *b, const uint64_t *regs, const char *text, float box
     int W = width + pad, H = M.margin + dm_tipx_text_lines(text) * M.line_h;
     const uint8_t *style = (const uint8_t *)(uintptr_t)regs[4];
     const char *second = (const char *)(uintptr_t)regs[5];
-    uint64_t root = *(uint64_t *)(b + 0x2f05458); float sc = root ? ((float (*)(uint64_t))(b + 0x390b38))(root) : 1.0f;
-    int ui = (root && *(uint8_t *)(root + 0xb9)) || *(float *)(b + 0x2dc0758) > 0;
+    uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); float sc = root ? ((float (*)(uint64_t))(b + GA_UI_SCALE_GET))(root) : 1.0f;
+    int ui = (root && *(uint8_t *)(root + 0xb9)) || *(float *)(b + GA_PICTURE_TRANSITION) > 0;
     dm_tipx_place_in in = { .tx = tx, .ty = ty, .tw = tw, .th = th, .w = W, .h = H, .scale = sc,
-        .screen_w = ui ? M.W : *(int32_t *)(b + 0x2080c08), .screen_h = ui ? M.H : *(int32_t *)(b + 0x2080c0c) };
+        .screen_w = ui ? M.W : *(int32_t *)(b + GA_SCREEN_W), .screen_h = ui ? M.H : *(int32_t *)(b + GA_SCREEN_H) };
     if (style) { in.centre = style[0xd0]; in.above = style[0x138]; memcpy(&in.ox, style + 0x13c, 4); memcpy(&in.oy, style + 0x140, 4); }
     float edge = sc * (float)*(int32_t *)(regs[0] + 0xa40); in.pad = (int)edge;
     int ux, uy, uw, uh, sw = 0, sh = 0; dm_ui_rect(&ux, &uy, &uw, &uh); dm_screen_real(&sw, &sh);
@@ -199,8 +200,8 @@ static int item_version_ok(uint64_t it) { uint8_t v = *(uint8_t *)(it + 0x1bd); 
 
 
 static void hand_panel(uint8_t *b, uint64_t *regs, uint64_t it) {
-    if (!dm_custom_get("item_cmp") || *(uint8_t *)(b + 0x2d5ff66)) return;
-    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    if (!dm_custom_get("item_cmp") || *(uint8_t *)(b + GA_PANEL_MERC)) return;
+    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     int l1 = -1, l2 = -1;
     if (t && ci < *(uint32_t *)(t + 0x15c8)) { int16_t ty = *(int16_t *)(*(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0 + 0x12e);
         if (ty >= 0 && (uint64_t)ty < *(uint64_t *)(t + 0x1370)) { uint64_t tr = *(uint64_t *)(t + 0x1368) + (uint64_t)ty * 0xe8; l1 = *(uint8_t *)(tr + 0xa); l2 = *(uint8_t *)(tr + 0xb); } }
@@ -218,7 +219,7 @@ static void hand_panel(uint8_t *b, uint64_t *regs, uint64_t it) {
         return;
     }
     if (!*(uint64_t *)(loc1 + 8) || !*(uint64_t *)(loc2 + 8)) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); if (!pl) return;
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); if (!pl) return;
     uint64_t hand[2] = { 0, 0 };
     { uint64_t inv = *(uint64_t *)(pl + 0x90), q = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0;
       for (int k = 0; q && k < 512; k++) { uint64_t qd = *(uint64_t *)(q + 0x10); if (!qd) break;
@@ -231,14 +232,14 @@ static void hand_panel(uint8_t *b, uint64_t *regs, uint64_t it) {
     int hide = dm_ic_panel_memo_get(&memo, key, fr);
     dm_ic_panel_in in = { .loc1 = l1, .loc2 = l2, .pair = -1 };
     if (hide < 0) {
-        if (((int (*)(uint64_t, uint64_t, int *, int, int))(b + 0x583b60))(pl, it, &in.slot, 1, 0) && (in.slot == 4 || in.slot == 5)) {
+        if (((int (*)(uint64_t, uint64_t, int *, int, int))(b + GA_EQUIP_SLOT_PICK))(pl, it, &in.slot, 1, 0) && (in.slot == 4 || in.slot == 5)) {
             int other = dm_ic_other_hand(in.slot);
             in.other_worn = hand[other - 4] != 0;
-            int (*place)(uint64_t, int, uint64_t, int, int) = (int (*)(uint64_t, int, uint64_t, int, int))(b + 0x565950);
+            int (*place)(uint64_t, int, uint64_t, int, int) = (int (*)(uint64_t, int, uint64_t, int, int))(b + GA_ITEM_PLACE_CHECK);
             in.code = place(pl, in.slot, it, 0, 1); in.other_code = place(pl, other, it, 0, 1);
             uint64_t kept = hand[in.slot - 4];
             if (!kept) in.pair = 1;
-            else if (item_version_ok(it) && item_version_ok(kept)) in.pair = ((int (*)(uint64_t, uint64_t, uint64_t, int, int))(b + 0x565370))(pl, it, kept, other, 0xff) != 0;
+            else if (item_version_ok(it) && item_version_ok(kept)) in.pair = ((int (*)(uint64_t, uint64_t, uint64_t, int, int))(b + GA_ITEM_PAIR_ALLOWED))(pl, it, kept, other, 0xff) != 0;
         } else in.slot = 0;
         hide = dm_ic_panel_hide(&in); dm_ic_panel_memo_set(&memo, key, fr, hide);
         static uint32_t last_id; static int lines;
@@ -283,8 +284,8 @@ void dm_tipx_obs(uint64_t *regs) {
         load_comparison_colours(); gate_obs_set(OBS_COMPARE_COLOUR, comparison_colour_obs); colour_ready = 1;
     }
     static int depth; if (depth) return;
-    uint64_t lro = regs[101] - (uint64_t)(uintptr_t)b; int prod = lro == 0x3b28a8 || lro == 0x3b2944 ? DM_TIPX_CELL : lro == 0x3d68e4 ? DM_TIPX_SLOT : 0;
-    if(lro==0xc35fd8) {
+    uint64_t lro = regs[101] - (uint64_t)(uintptr_t)b; int prod = lro == GA_AT_ITEM_TIP_SUBMIT_RET || lro == GA_AT_ITEM_TIP_SUBMIT2_RET ? DM_TIPX_CELL : lro == GA_AT_EQUIP_TIP_SUBMIT_RET ? DM_TIPX_SLOT : 0;
+    if(lro==GA_AT_SKILL_TREE_TOOLTIP_RET) {
         uint64_t container=regs[23],index=(uint32_t)regs[19];
         if(!container)return;
         uint64_t count=*(uint64_t *)(container+0x60),array=*(uint64_t *)(container+0x58);
@@ -302,18 +303,18 @@ void dm_tipx_obs(uint64_t *regs) {
         return;
     }
     if (!prod) return;
-    uint64_t w = regs[19], vt = w ? *(uint64_t *)w - (uint64_t)(uintptr_t)b : 0; if (vt != (prod == DM_TIPX_CELL ? 0x2089ab8u : 0x2089fa0u)) return;
-    uint64_t it = ((uint64_t (*)(uint64_t, void *))(b + 0x3cc87c))(w, NULL); if (!it || *(uint32_t *)it != 4) return;
+    uint64_t w = regs[19], vt = w ? *(uint64_t *)w - (uint64_t)(uintptr_t)b : 0; if (vt != (prod == DM_TIPX_CELL ? (uint32_t)GA_VT_ITEM_GRID : (uint32_t)GA_VT_EQUIP_SLOT)) return;
+    uint64_t it = ((uint64_t (*)(uint64_t, void *))(b + GA_ITEM_CELL_ITEM))(w, NULL); if (!it || *(uint32_t *)it != 4) return;
     look_line(b, regs, it);
     uint64_t t0 = now_ns();
-    if (lro == 0x3b28a8) hand_panel(b, regs, it);
+    if (lro == GA_AT_ITEM_TIP_SUBMIT_RET) hand_panel(b, regs, it);
     depth = 1;
     int dm_padmode_current(void), dm_padmode_busy(void);
 
     const char *orig = (const char *)(uintptr_t)regs[1];
     int measured = measure(b, regs), mc = 0;
     if (measured) { int W = M.W, cw = M.char_w, lo = (int)(0.30f * W) / cw, hi = (int)(0.45f * W) / cw, ow = widest_line(orig); mc = ow > lo ? ow : lo; if (mc > hi) mc = hi; }
-    dm_tipx_ctx c = { .b = b, .widget = w, .item = it, .player = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)), .producer = prod, .pad = dm_padmode_current() || dm_padmode_busy(),
+    dm_tipx_ctx c = { .b = b, .widget = w, .item = it, .player = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)), .producer = prod, .pad = dm_padmode_current() || dm_padmode_busy(),
                       .orig = orig, .max_chars = mc };
     static dm_tipx_line ln[DM_TIPX_MAXL]; uint64_t key = 0; int n = c.player && measured ? dm_itemcmp_block(&c, ln, DM_TIPX_MAXL, &key) : 0;
     uint64_t fr = dm_guest_frame(); static uint64_t fr_last; static int idx; if (fr != fr_last) { fr_last = fr; idx = 0; } else idx++;
@@ -355,7 +356,7 @@ void dm_tipx_obs(uint64_t *regs) {
       if (dots && tip_box(b, regs, (const char *)(uintptr_t)regs[1], box)) {
 
 
-          int sb = lro == 0x3b28a8 ? dm_tipx_side_boxes(regs[29], regs) : lro == 0x3b2944 ? 1 : 0;
+          int sb = lro == GA_AT_ITEM_TIP_SUBMIT_RET ? dm_tipx_side_boxes(regs[29], regs) : lro == GA_AT_ITEM_TIP_SUBMIT2_RET ? 1 : 0;
           if (sb < 0) { static int said; if (!said++) LOG("ASSUME itemcmp.side_boxes: the comparison texts beside the tooltip are not as expected, the boxes are kept"); sb = 1; }
           box[9] = (float)sb;
           dm_gear_dots_set(fr, dots, box);

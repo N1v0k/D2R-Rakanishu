@@ -7,6 +7,7 @@
 
 
 #include <stdatomic.h>
+#include "game_addrs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,9 +60,9 @@ static void read_item(uint8_t *b, uint64_t it, uint64_t d, dm_recipe_item *e) {
     memset(e, 0, sizeof *e);
     e->id = *(uint32_t *)(it + 8);
     { uint64_t pp = *(uint64_t *)(it + 0x38); if (pp) { e->x = (uint8_t)*(int32_t *)(pp + 0x10); e->y = (uint8_t)*(int32_t *)(pp + 0x14); } }
-    e->code = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+    e->code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
     e->qty = 1; e->quality = (uint8_t)*(uint32_t *)d;
-    int s = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(it, 0xc2, 0);
+    int s = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(it, 0xc2, 0);
     e->sockets = (uint8_t)(s < 0 ? 0 : s > 255 ? 255 : s);
     uint64_t c = *(uint64_t *)(it + 0x90); int f = 0;
     for (uint64_t k = c ? *(uint64_t *)(c + 0x10) : 0; k && f < 8; f++) { uint64_t kd = *(uint64_t *)(k + 0x10); k = kd ? *(uint64_t *)(kd + 0xb0) : 0; }
@@ -70,7 +71,7 @@ static void read_item(uint8_t *b, uint64_t it, uint64_t d, dm_recipe_item *e) {
     e->flags = (fl & 0x00400000u ? DM_RECIPE_ETHEREAL : 0) | (fl & 0x04000000u ? DM_RECIPE_RUNEWORD : 0);
     e->level = (uint8_t)*(uint32_t *)(d + 0x38);
     e->row = (uint16_t)(*(uint32_t *)(d + 0x34) & 0xffff);
-    uint8_t v = *(uint8_t *)(it + 0x1bd); uint64_t t = v >= 1 && v <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)v * 16) : 0, ir = t ? *(uint64_t *)(t + 0x15c0) : 0;
+    uint8_t v = *(uint8_t *)(it + 0x1bd); uint64_t t = v >= 1 && v <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)v * 16) : 0, ir = t ? *(uint64_t *)(t + 0x15c0) : 0;
     uint32_t cls = *(uint32_t *)(it + 4), in = t ? *(uint32_t *)(t + 0x15c8) : 0;
     if (ir && cls < in) { if (*(uint8_t *)(ir + (uint64_t)cls * 0x1c0 + 0x13a)) e->flags |= DM_RECIPE_NO_WORD; }
     else e->flags |= DM_RECIPE_UNKNOWN;
@@ -176,7 +177,7 @@ static int same_run(uint64_t pl) {
 }
 static int near_stash(uint8_t *b) {
     uint64_t G = dm_diag_game(), sp = dm_diag_player();
-    return G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, sp, 0x10b, 0x32) & 1 : 0;
+    return G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, sp, 0x10b, 0x32) & 1 : 0;
 }
 static int stack_left(uint64_t it) { uint64_t d = it ? *(uint64_t *)(it + 0x10) : 0; return d ? *(uint8_t *)(d + 0x9c) : 0; }
 static int on_unit(uint8_t *b, uint64_t pl, uint32_t unit) { uint64_t us[3]; dm_rw_owners(b, pl, us); for (int i = 1; i < 3; i++) if (us[i] && *(uint32_t *)(us[i] + 8) == unit) return 1; return 0; }
@@ -184,7 +185,7 @@ static int on_unit(uint8_t *b, uint64_t pl, uint32_t unit) { uint64_t us[3]; dm_
 static int step_ok(uint8_t *b, uint64_t pl, const dm_recipe_step *s, int want) {
     uint64_t it = dm_rw_item(b, s->id), d = it ? *(uint64_t *)(it + 0x10) : 0;
     if (!d || *(uint32_t *)it != 4 || *(uint32_t *)(it + 0xc) != 0) return DM_RECIPE_WHY_GONE;
-    if (((uint32_t (*)(uint64_t))(b + 0x570260))(it) != (uint32_t)s->code || (int)*(uint32_t *)d != s->quality) return DM_RECIPE_WHY_GONE;
+    if (((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) != (uint32_t)s->code || (int)*(uint32_t *)d != s->quality) return DM_RECIPE_WHY_GONE;
     { uint64_t pp = *(uint64_t *)(it + 0x38); if (!pp || *(int32_t *)(pp + 0x10) != s->x || *(int32_t *)(pp + 0x14) != s->y) return DM_RECIPE_WHY_GONE; }
     if ((s->kind == 0 || s->kind == 3) && *(uint8_t *)(d + 0x55) != s->page) return DM_RECIPE_WHY_GONE;
     if ((s->kind == 1 || s->kind == 2) && !on_unit(b, pl, s->unit)) return DM_RECIPE_WHY_GONE;
@@ -195,7 +196,7 @@ static int step_ok(uint8_t *b, uint64_t pl, const dm_recipe_step *s, int want) {
 
 static int cube_ok(uint8_t *b) {
     uint64_t it = dm_rw_item(b, g_job.cube), d = it ? *(uint64_t *)(it + 0x10) : 0;
-    return d && *(uint32_t *)it == 4 && *(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == PG_INV && ((uint32_t (*)(uint64_t))(b + 0x570260))(it) == 0x20786f62;
+    return d && *(uint32_t *)it == 4 && *(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == PG_INV && ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) == 0x20786f62;
 }
 static void pick(uint8_t *b, const dm_recipe_step *s, uint64_t it) {
     if (s->kind == 1) dm_rw_take_stack(b, it);
@@ -228,7 +229,7 @@ static int at_home(uint64_t pl, const dm_recipe_step *s, uint32_t id, int *x, in
 static int hand_is_ours(uint8_t *b, uint64_t h, const dm_recipe_step *s) {
     if (g_job.cur) return *(uint32_t *)(h + 8) == g_job.cur;
     if (s->kind != 1) return *(uint32_t *)(h + 8) == (uint32_t)s->id;
-    return ((uint32_t (*)(uint64_t))(b + 0x570260))(h) == (uint32_t)s->code && stack_left(dm_rw_item(b, (uint32_t)s->id)) == g_job.stack_before - 1;
+    return ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(h) == (uint32_t)s->code && stack_left(dm_rw_item(b, (uint32_t)s->id)) == g_job.stack_before - 1;
 }
 
 
@@ -356,18 +357,18 @@ static void test_move(uint8_t *b, uint64_t pl) {
     const char *f = getenv("DM_TEST_RECIPE_MOVE"); FILE *fp = f ? fopen(f, "r") : NULL; if (!fp) return;
     char code[8]; int from, to, x, y, ok = fscanf(fp, "%7s %d %d %d %d", code, &from, &to, &x, &y) == 5; fclose(fp); unlink(f); if (!ok) return;
     if (!strcmp(code, "dump")) { static dm_recipe_item l[256]; uint64_t k; int n = walk(b, pl, l, 256, &k); uint64_t G = dm_diag_game(), sp = dm_diag_player();
-        { dm_hud_info h; dm_hud_get(&h); uint64_t ob = 0; int sx = 0, sy = 0; for (int k = 0; k < 128 && !ob; k++) for (uint64_t u = *(uint64_t *)(b + 0x2d603a0 + 2 * 0x400 + 8 * (uint64_t)k); u; u = *(uint64_t *)(u + 0x158)) if (*(uint32_t *)(u + 4) == 267) { ob = u; uint64_t pp = *(uint64_t *)(u + 0x38); if (pp) { sx = *(int32_t *)(pp + 0x10); sy = *(int32_t *)(pp + 0x14); } break; }
+        { dm_hud_info h; dm_hud_get(&h); uint64_t ob = 0; int sx = 0, sy = 0; for (int k = 0; k < 128 && !ob; k++) for (uint64_t u = *(uint64_t *)(b + GA_CLIENT_UNIT_TABLE + 2 * 0x400 + 8 * (uint64_t)k); u; u = *(uint64_t *)(u + 0x158)) if (*(uint32_t *)(u + 4) == 267) { ob = u; uint64_t pp = *(uint64_t *)(u + 0x38); if (pp) { sx = *(int32_t *)(pp + 0x10); sy = *(int32_t *)(pp + 0x14); } break; }
           LOG("测试：位置 %d %d 箱 %d %d", h.x, h.y, sx, sy); }
-        LOG("测试：人在箱旁 %d，箱子开着 %d，手上 %d，物品面板 %d", G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, sp, 0x10b, 0x32) & 1 : -1, *(uint8_t *)(b + 0x2d5ff60) != 0, dm_rw_held(b, pl) != 0, dm_rw_panel_open(b));
+        LOG("测试：人在箱旁 %d，箱子开着 %d，手上 %d，物品面板 %d", G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, sp, 0x10b, 0x32) & 1 : -1, *(uint8_t *)(b + GA_STASH_OPEN) != 0, dm_rw_held(b, pl) != 0, dm_rw_panel_open(b));
         for (int i = 0; i < n && i < 256; i++) LOG("测试：%.4s 地方 %d 格 %d,%d id %u 品质 %d 件 %d", (char *)&l[i].code, l[i].place, l[i].x, l[i].y, l[i].id, l[i].quality, l[i].qty);
         return; }
     uint64_t us[3]; dm_rw_owners(b, pl, us); uint64_t c = *(uint64_t *)(pl + 0x90), it = c ? *(uint64_t *)(c + 0x10) : 0;
     char c4[4] = { ' ', ' ', ' ', ' ' }; memcpy(c4, code, strlen(code) > 4 ? 4 : strlen(code)); uint32_t want; memcpy(&want, c4, 4);
-    uint64_t G = dm_diag_game(), sp = dm_diag_player(); int near = G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, sp, 0x10b, 0x32) & 1 : -1;
+    uint64_t G = dm_diag_game(), sp = dm_diag_player(); int near = G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, sp, 0x10b, 0x32) & 1 : -1;
     for (int g = 0; it && g < 4096; g++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
-        if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == from && ((uint32_t (*)(uint64_t))(b + 0x570260))(it) == want) {
+        if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == from && ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) == want) {
             uint64_t pp = *(uint64_t *)(it + 0x38); dm_recipe_step s = { *(uint32_t *)(it + 8), 0, from, pp ? *(int32_t *)(pp + 0x10) : 0, pp ? *(int32_t *)(pp + 0x14) : 0, 0, to, x, y, (int)want, (int)*(uint32_t *)d, 0, 0 };
-            LOG("测试 DM_TEST_RECIPE_MOVE：%s 页 %d → 页 %d (%d,%d)，人在箱旁 %d，箱子开着 %d，物品面板 %d", code, from, to, x, y, near, *(uint8_t *)(b + 0x2d5ff60) != 0, dm_rw_panel_open(b));
+            LOG("测试 DM_TEST_RECIPE_MOVE：%s 页 %d → 页 %d (%d,%d)，人在箱旁 %d，箱子开着 %d，物品面板 %d", code, from, to, x, y, near, *(uint8_t *)(b + GA_STASH_OPEN) != 0, dm_rw_panel_open(b));
             dm_recipes_insert((const int *)&s, 1, 0, 0); return; }
         it = *(uint64_t *)(d + 0xb0); }
     LOG("测试 DM_TEST_RECIPE_MOVE：没有页 %d 的 %s", from, code);
@@ -400,14 +401,18 @@ int dm_recipes_text(int rec, char *out, int bytes) {
     if (!have) atomic_store(&g_tprio, rec + 1);
     return n;
 }
-static void text_path(char *p, size_t n, const char *ext) { pthread_mutex_lock(&g_tmu); snprintf(p, n, "%s/recipe_text_%d_d3_3.3.94012.tsv%s", g_tdir, g_tlang, ext); pthread_mutex_unlock(&g_tmu); }
+
+
+static void text_path(char *p, size_t n, const char *ext) { pthread_mutex_lock(&g_tmu); snprintf(p, n, "%s/recipe_text_%d_d3_%s.tsv%s", g_tdir, g_tlang, GAME_VERSION_main, ext); pthread_mutex_unlock(&g_tmu); }
 static void text_put(int rec, const char *s) { char *c = strdup(s); pthread_mutex_lock(&g_tmu); free(g_text[rec]); g_text[rec] = c; pthread_mutex_unlock(&g_tmu); }
 static void text_clear(void) { pthread_mutex_lock(&g_tmu); for (int i = 0; i < TEXT_RECS; i++) { free(g_text[i]); g_text[i] = NULL; } pthread_mutex_unlock(&g_tmu); g_tnext = 0; g_tcount = 0; g_tdone = 0; }
-#define TEXT_PRE "#recipe text 3.3.94012 "
-#define TEXT_HEAD TEXT_PRE "%d\n"
+#define TEXT_PRE "#recipe text "
+#define TEXT_HEAD TEXT_PRE "%s %d\n"
 
 static int text_want(const char *ln) {
-    size_t k = strlen(TEXT_PRE); if (strncmp(ln, TEXT_PRE, k) || ln[k] < '0' || ln[k] > '9') return 0;
+    size_t k = strlen(TEXT_PRE), g = strlen(GAME_VERSION_main);
+    if (strncmp(ln, TEXT_PRE, k) || strncmp(ln + k, GAME_VERSION_main, g) || ln[k + g] != ' ') return 0;
+    k += g + 1; if (ln[k] < '0' || ln[k] > '9') return 0;
     char *e; long v = strtol(ln + k, &e, 10); return *e == '\n' && !e[1] && v > 0 && v <= TEXT_RECS ? (int)v : 0;
 }
 
@@ -426,7 +431,7 @@ static int text_load(void) {
 
 static void text_save(void) {
     char p[1000], q[1010]; text_path(p, sizeof p, ""); text_path(q, sizeof q, ".part"); FILE *f = fopen(q, "w"); if (!f) return; static char ln[TEXT_MAX];
-    int ok = fprintf(f, TEXT_HEAD, g_tcount) > 0;
+    int ok = fprintf(f, TEXT_HEAD, GAME_VERSION_main, g_tcount) > 0;
     for (int i = 0; i < TEXT_RECS && ok; i++) { pthread_mutex_lock(&g_tmu); if (g_text[i]) strlcpy(ln, g_text[i], sizeof ln); else ln[0] = 0; pthread_mutex_unlock(&g_tmu); if (!ln[0]) continue; for (char *c = ln; *c; c++) if (*c == '\n') *c = 1; ok = fprintf(f, "%d\t%s\n", i, ln) > 0; }
     ok = fflush(f) == 0 && ok; ok = fsync(fileno(f)) == 0 && ok; ok = fclose(f) == 0 && ok;
     if (ok) ok = rename(q, p) == 0;
@@ -552,7 +557,7 @@ void dm_recipes_pump(uint8_t *b, uint64_t pl) {
     if (!pl) return;
     static int tick; uint64_t shared_key = 0;
     int want = atomic_exchange(&g_req, 0), stale = 0;
-    if (!want) { if (++tick % 30 || !*(uint8_t *)(b + 0x2d5ff60)) return; walk(b, pl, g_work, MAX_ITEMS, &shared_key); return; }
+    if (!want) { if (++tick % 30 || !*(uint8_t *)(b + GA_STASH_OPEN)) return; walk(b, pl, g_work, MAX_ITEMS, &shared_key); return; }
     int n = walk(b, pl, g_work, MAX_ITEMS, &shared_key), pcur = dm_pages_cur(), seen = 0;
     int test = test_stock(g_work, MAX_ITEMS);
     if (test >= 0) n = test;
@@ -569,8 +574,8 @@ void dm_recipes_pump(uint8_t *b, uint64_t pl) {
     uint64_t G = dm_diag_game(), sp = dm_diag_player();
     pthread_mutex_lock(&g_mu);
     strlcpy(g_read_who, g_char, sizeof g_read_who); g_read_epoch = dm_diag_epoch();
-    g_head.near = G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, sp, 0x10b, 0x32) & 1 : 0;
-    g_head.stash_open = *(uint8_t *)(b + 0x2d5ff60) != 0; g_head.insert = (uint8_t)atomic_load(&g_result);
+    g_head.near = G && sp ? ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, sp, 0x10b, 0x32) & 1 : 0;
+    g_head.stash_open = *(uint8_t *)(b + GA_STASH_OPEN) != 0; g_head.insert = (uint8_t)atomic_load(&g_result);
     { int dm_unsocket_ready(void); g_head.flags = dm_unsocket_ready() ? DM_RECIPE_UNSOCKET_READY : 0; }
     g_head.n = (uint32_t)(s.n > MAX_ITEMS ? MAX_ITEMS : s.n); memcpy(g_out, g_work, g_head.n * sizeof(dm_recipe_item));
     g_head.truncated = s.n > MAX_ITEMS; g_head.data_version = *(uint8_t *)(pl + 0x1bd);

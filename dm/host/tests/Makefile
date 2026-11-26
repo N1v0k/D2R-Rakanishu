@@ -2,8 +2,10 @@ DM_ROOT ?= $(HOME)/dm-work
 
 
 PY ?= $(DM_ROOT)/build/cache/dm/venv/bin/python
-EXEFS ?= $(DM_ROOT)/data/switch/3.3.94012/Update/ExeFS
-ROMFS ?= $(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/3.3.94012/Update/RomFS)
+
+GAME_VERSION:=$(firstword $(subst -, ,$(shell head -1 $(dir $(lastword $(MAKEFILE_LIST)))../../PRODUCT)))
+EXEFS ?= $(DM_ROOT)/data/switch/$(GAME_VERSION)/Update/ExeFS
+ROMFS ?= $(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/$(GAME_VERSION)/Update/RomFS)
 B = build
 MOVIE_PACKAGES = libavformat libavcodec libavutil libswscale
 MOVIE_TEST_FLAGS ?= -O1
@@ -73,6 +75,8 @@ run: \
 	$(B)/t_recipes_text \
 	$(B)/t_recipe_job \
 	$(B)/t_res_scale \
+	$(B)/t_data_build \
+	$(B)/t_game_fields \
 	$(B)/t_rift_clock \
 	$(B)/t_rift_hud \
 	$(B)/t_rift_next \
@@ -114,6 +118,8 @@ run: \
 	python3 ../../tools/tests/test_patched_ready.py
 	python3 ../../tools/tests/test_pack_steps.py
 	python3 ../../tools/tests/test_pack_shaders.py
+	python3 ../../tools/tests/test_game_addrs.py
+	$(PY) ../../tools/tests/test_gameport.py
 	$(B)/t_thread_leak
 	$(B)/t_loader_weak
 	$(B)/t_mac_overlay
@@ -138,7 +144,7 @@ run: \
 	$(B)/t_oe 2>/dev/null
 	$(B)/t_fs 2>/dev/null
 	TMPDIR="$(abspath $(B))" $(B)/t_fs_case 2>/dev/null
-	DM_ROMFS="$(DM_ROOT)/data/switch/3.3.94012/Update/RomFS" $(B)/t_romfs_validate
+	DM_ROMFS="$(ROMFS)" $(B)/t_romfs_validate
 	$(MAKE) dump-reader
 	$(B)/t_audio
 	$(B)/t_audio_spsc
@@ -179,6 +185,8 @@ run: \
 	TMPDIR="$(abspath $(B))" $(B)/t_custom_video 2>/dev/null
 	TMPDIR="$(abspath $(B))" $(B)/t_custom_video_voice 2>/dev/null
 	$(B)/t_res_scale
+	$(B)/t_data_build
+	$(B)/t_game_fields
 	TMPDIR="$(abspath $(B))" $(B)/t_custom_extras 2>/dev/null
 	$(B)/t_hud_players
 	$(B)/t_doorspot
@@ -271,6 +279,10 @@ $(B)/t_fightlog_sim: t_fightlog_sim.c ../dm_fightlog_core.c ../dm_fightlog_text.
 	clang -O1 -Wall -Werror -Wno-unused-function -I.. -o $@ t_fightlog_sim.c -lpthread
 $(B)/t_effects: t_effects.c ../dm_effects.c ../dm_effects.h ../dm.h | $(B)
 	clang -O1 -Wall -Werror -Wno-unused-function -I.. -o $@ t_effects.c -lpthread
+$(B)/t_game_fields: t_game_fields.c ../game_fields.c ../game_addrs.h ../game_addrs.def ../dm.h | $(B)
+	clang -O1 -Wall -Werror -I.. -o $@ t_game_fields.c ../game_fields.c -lpthread
+$(B)/t_data_build: t_data_build.c ../data_build.c ../data_build.h ../game_addrs.h ../game_addrs.def | $(B)
+	clang -O1 -Wall -Werror -I.. -o $@ t_data_build.c ../data_build.c
 $(B)/t_res_scale: t_res_scale.c ../dm_res_scale.h | $(B)
 	clang -O1 -Wall -Werror -I.. -o $@ t_res_scale.c
 $(B)/t_widget: t_widget.c ../dm_widget.h | $(B)
@@ -634,6 +646,8 @@ combat-log-test: $(B)/t_combat_log
 .PHONY: repo-checks
 repo-checks: $(B)/t_combat_log
 	python3 native_write_scan.py --selftest ..
+	python3 ../../tools/tests/test_game_addrs.py
+	python3 ../../tools/check_game_addrs.py ../../..
 	python3 widget_cache_scan.py --selftest ..
 	python3 mode_scan.py ../..
 	python3 ../../i18n/scan_literals.py

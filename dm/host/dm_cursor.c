@@ -1,4 +1,5 @@
 #include "dm_elysium.h"
+#include "game_addrs.h"
 #include "dm_cursor.h"
 #include "dm_custom.h"
 #include "dm.h"
@@ -32,8 +33,8 @@ int dm_lat_on(void) { static int on = -1; if (on < 0) on = getenv("DM_LAT_LOG") 
 void dm_cursor_set(int x, int y) {
     module_t *m = main_module();
     if (!m) { fprintf(stderr, "dm_cursor_set：没有 main 模块\n"); return; }
-    *(int32_t *)(m->base + 0x2d128f8) = x;
-    *(int32_t *)(m->base + 0x2d128fc) = y;
+    *(int32_t *)(m->base + GA_PAD_CURSOR_X) = x;
+    *(int32_t *)(m->base + GA_PAD_CURSOR_Y) = y;
 }
 
 static _Atomic uint64_t g_req;
@@ -115,7 +116,7 @@ void dm_ui_gen_bump(int why) { uint32_t g = atomic_fetch_add(&g_ui_gen, 1) + 1; 
         case DM_UIGEN_LANG: LOG("界面代号 → %u（切语言）", g); break; case DM_UIGEN_ROOT: LOG("界面代号 → %u（界面根换了）", g); break; default: LOG("界面代号 → %u（有顶层面板被卸掉）", g); } }
 static void ui_gen_scan(void) {
     static uint64_t fr0 = UINT64_MAX, prev[256], root0; static int np; uint64_t fr = dm_guest_frame(); if (fr == fr0) return; fr0 = fr;
-    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
     uint64_t ch = root ? *(uint64_t *)(root + 0x58) : 0, n = root ? *(uint64_t *)(root + 0x60) : 0; if (n > 256) n = 0;
     int gone = root != root0 && root0; for (int i = 0; i < np && !gone; i++) { int k = 0; while (k < (int)n && *(uint64_t *)(ch + 8 * k) != prev[i]) k++; gone = k == (int)n; }
     if (gone) dm_ui_gen_bump(root != root0 ? DM_UIGEN_ROOT : DM_UIGEN_PANEL_GONE);
@@ -123,7 +124,7 @@ static void ui_gen_scan(void) {
 }
 uint32_t dm_ui_gen(void) { ui_gen_scan(); return atomic_load(&g_ui_gen); }
 static int ui_has(uint64_t w, uint64_t want, int dep);
-static int ui_alive(uint64_t w) { module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8); return w && root && ui_has(root, w, 0); }
+static int ui_alive(uint64_t w) { module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8); return w && root && ui_has(root, w, 0); }
 
 
 
@@ -137,7 +138,7 @@ static int free_walk(uint64_t w, int dep, uint64_t base) {
     if (!w || dep > 14 || !*(uint8_t *)(w + 0x50)) return 0;
     const char *nm = (const char *)*(uint64_t *)(w + 8);
     if (dep == 1 && nm && (!strncmp(nm, "HUD", 3) || panel_skip(nm))) return 0;
-    if ((nm && (item_name(nm) || !strncmp(nm, "SkillButton", 11))) || *(uint64_t *)w == base + 0x20c7d68) return 1;
+    if ((nm && (item_name(nm) || !strncmp(nm, "SkillButton", 11))) || *(uint64_t *)w == base + GA_VT_STAT_UP_BUTTON) return 1;
     uint64_t ch = *(uint64_t *)(w + 0x58), n = *(uint64_t *)(w + 0x60); if (!ch || n > 256) return 0;
     for (uint64_t i = 0; i < n; i++) if (free_walk(*(uint64_t *)(ch + 8 * i), dep + 1, base)) return 1;
     return 0;
@@ -168,7 +169,7 @@ static int free_cursor_page(module_t *m) {
 
 
 
-    uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8); int was = yes; at = fr; yes = 0; const char *mn = "";
+    uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8); int was = yes; at = fr; yes = 0; const char *mn = "";
     if (root && free_walk(root, 0, (uint64_t)m->base)) { uint64_t dp;
         if (modal_any(root, 1, &mn)) yes = 0;
         else if ((dp = ui_find(root, "NpcDialogPanel", 0)) && *(uint8_t *)(dp + 0x50) && has_visible_leaf(dp, 1)) { yes = 0; mn = "NpcDialogPanel"; }
@@ -191,7 +192,7 @@ int dm_ui_mouse_hover_now(float nx, float ny) {
     module_t *m = main_module();
     uint64_t waiting = atomic_load(&g_a_wait);
     if (!m || dm_hud_held() || dm_cursor_pending() || (waiting && now_ns() - waiting < 300000000ull) || !free_cursor_page(m)) return 0;
-    int w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c);
+    int w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT);
     if (w <= 0 || h <= 0) return 0;
     int x, y;
     if (!(nx >= 0 && nx <= 1 && ny >= 0 && ny <= 1)) { x = w * 2 / 100; y = h / 2; }
@@ -227,7 +228,7 @@ static int g_pick_beltable = 1;
 static uint64_t ui_find(uint64_t w, const char *name, int deep);
 static int belt_row_block(module_t *m, int x, int y) {
     if (g_pick_beltable) return 0; dm_hud_info hi; dm_hud_get(&hi); if (!hi.valid || !hi.holding) return 0;
-    uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8); uint64_t pn = root ? ui_find(root, "PlayerInventoryExpansionLayout", 1) : 0, b = pn && *(uint8_t *)(pn + 0x50) ? ui_find(pn, "Belt", 1) : 0;
+    uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8); uint64_t pn = root ? ui_find(root, "PlayerInventoryExpansionLayout", 1) : 0, b = pn && *(uint8_t *)(pn + 0x50) ? ui_find(pn, "Belt", 1) : 0;
     if (!b || !*(uint8_t *)(b + 0x50)) return 0;
     uint64_t xy = (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32), ch = *(uint64_t *)(pn + 0x58), n = *(uint64_t *)(pn + 0x60);
 
@@ -241,7 +242,7 @@ static void origin_note(module_t *m, int x, int y) {
     dm_cursor_item_info ci; uint64_t w = dm_wref_get(&g_down); atomic_store(&g_origin_xy, 0);
     if (!w || !dm_cursor_item(&ci)) return;
     g_pick_beltable = ci.beltable || ci.container == DM_ITEM_AT_BELT;
-    int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c);
+    int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT);
     uint64_t fn = *(uint64_t *)(*(uint64_t *)w + 0x48); int x0 = x, x1 = x, y0 = y, y1 = y;
 #define ORG_HIT(px, py) (((int (*)(uint64_t, uint64_t))fn)(w, (uint64_t)(uint32_t)(px) | ((uint64_t)(uint32_t)(py) << 32)) & 1)
     if (!ORG_HIT(x, y)) return;
@@ -254,7 +255,7 @@ static void origin_note(module_t *m, int x, int y) {
     atomic_store(&g_origin_xy, (1ull << 63) | (uint64_t)(uint32_t)ox | ((uint64_t)(uint32_t)oy << 32));
 }
 int dm_ui_origin_point(float *nx, float *ny) {
-    module_t *m = main_module(); if (!m) return 0; int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c); uint64_t v = atomic_load(&g_origin_xy);
+    module_t *m = main_module(); if (!m) return 0; int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT); uint64_t v = atomic_load(&g_origin_xy);
     if (!(v >> 63) || vw <= 0 || vh <= 0) return 0; *nx = (float)(((v & 0xffffffff) + 0.5) / vw); *ny = (float)((((v >> 32) & 0x7fffffff) + 0.5) / vh); return 1;
 }
 
@@ -453,8 +454,8 @@ static void cursor_apply(uint64_t *buttons, int32_t *lx, int32_t *ly) {
     if (!free_cursor_page(m)) { uint64_t mine = (DM_BTN_A | DM_BTN_Y) & ~dm_ui_auto_buttons();
         if (*buttons & mine) { static int lg; if (lg++ < 20) LOG("dm_cursor_apply：这一页没有自由光标，手势层带着光标请求送来的确认 / 丢弃键不放行（防止被模态框吃掉）"); *buttons &= ~mine; }
         g_naq = 0; g_rt.active = g_rt.pending = 0; atomic_store(&g_naq_pub, 0); return; }
-    int32_t width = *(int32_t *)(m->base + 0x211da38);
-    int32_t height = *(int32_t *)(m->base + 0x211da3c);
+    int32_t width = *(int32_t *)(m->base + GA_UI_WIDTH);
+    int32_t height = *(int32_t *)(m->base + GA_UI_HEIGHT);
     if (width <= 0 || height <= 0) { if (!warned++) LOG("【红】dm_cursor_apply：原版视口 %dx%d 无效，跳过", width, height); return; }
     int ix = (int)(((r >> 16) & 0xffff) / 65535.0 * width), iy = (int)((r & 0xffff) / 65535.0 * height);
     if (!(r >> 63)) { ix = g_rt.x; iy = g_rt.y; }
@@ -470,8 +471,8 @@ static void cursor_apply(uint64_t *buttons, int32_t *lx, int32_t *ly) {
     if (sn_on && ix == sn_tx && iy == sn_ty) { ix = sn_x; iy = sn_y; } else sn_on = 0;
     if (ix >= width) ix = width - 1;
     if (iy >= height) iy = height - 1;
-    int32_t cx = *(int32_t *)(m->base + 0x2d128f8);
-    int32_t cy = *(int32_t *)(m->base + 0x2d128fc);
+    int32_t cx = *(int32_t *)(m->base + GA_PAD_CURSOR_X);
+    int32_t cy = *(int32_t *)(m->base + GA_PAD_CURSOR_Y);
     int arrived_now = (int)hypot((double)(ix - cx), (double)(iy - cy)) <= DM_CURSOR_NEAR;
     if (a_edge && (g_naq || !arrived_now)) {
         if (g_naq < AQ_MAX) g_aq[g_naq++] = (aq_entry){ix, iy, now_ns()};
@@ -527,7 +528,7 @@ static void cursor_apply(uint64_t *buttons, int32_t *lx, int32_t *ly) {
     if (distance > DM_CURSOR_JUMP && !sync_left) {
         sync_left = DM_CURSOR_SYNC_POLLS + 1; DM_LAT("jump");
         cx = tx - (int)lround(dx * (double)DM_CURSOR_LAND / distance); cy = ty - (int)lround(dy * (double)DM_CURSOR_LAND / distance);
-        *(int32_t *)(m->base + 0x2d128f8) = cx; *(int32_t *)(m->base + 0x2d128fc) = cy;
+        *(int32_t *)(m->base + GA_PAD_CURSOR_X) = cx; *(int32_t *)(m->base + GA_PAD_CURSOR_Y) = cy;
         dx = tx - cx; dy = ty - cy; distance = (int)hypot((double)dx, (double)dy);
     }
     if (sync_left && --sync_left) {
@@ -650,8 +651,8 @@ static void ui_send_mouse(module_t *m, uint64_t root, uint64_t act, int x, int y
 
 
 void dm_ui_wheel_on(uint64_t w, int notches) {
-    module_t *m = main_module(); uint64_t root = 0; if (!m || !w || !notches) return; memcpy(&root, m->base + 0x2f05458, 8); if (!root) return;
-    int W = *(int32_t *)(m->base + 0x211da38), H = *(int32_t *)(m->base + 0x211da3c), x0 = W, x1 = -1, y0 = H, y1 = -1; if (W <= 0 || H <= 0) return;
+    module_t *m = main_module(); uint64_t root = 0; if (!m || !w || !notches) return; memcpy(&root, m->base + GA_UI_ROOT, 8); if (!root) return;
+    int W = *(int32_t *)(m->base + GA_UI_WIDTH), H = *(int32_t *)(m->base + GA_UI_HEIGHT), x0 = W, x1 = -1, y0 = H, y1 = -1; if (W <= 0 || H <= 0) return;
     uint64_t fn = *(uint64_t *)(*(uint64_t *)w + 0x48);
     for (int y = 8; y < H; y += 16) for (int x = 8; x < W; x += 16) if (((int (*)(uint64_t, uint64_t))fn)(w, (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32)) & 1) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     if (x1 < 0) return; int cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
@@ -713,7 +714,7 @@ static int item_walk(uint64_t w, uint64_t xy, int dep, char *hit, size_t hn) {
     if (dep == 1 && nm && !strncmp((const char *)nm, "HUD", 3)) return 0;
 
 
-    if (nm && (item_name((const char *)nm) || (g_iw_base && (*(uint64_t *)w - g_iw_base == 0x20892f8 || *(uint64_t *)w - g_iw_base == 0x20898e8)))) {                                                                                                                                                                                                                                                                                                                                               uint64_t vt = *(uint64_t *)w, fn = *(uint64_t *)(vt + 0x48);
+    if (nm && (item_name((const char *)nm) || (g_iw_base && (*(uint64_t *)w - g_iw_base == GA_VT_ASTASH_SLOT || *(uint64_t *)w - g_iw_base == GA_VT_IMBUE_SOCKET)))) {                                                                                                                                                                                                                                                                                                                                                                 uint64_t vt = *(uint64_t *)w, fn = *(uint64_t *)(vt + 0x48);
         if (((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1) { strlcpy(hit, (const char *)nm, hn); dm_wref_set(&g_slot, w); return 1; } }
     if (!ch || n > 256) return 0;
     for (uint64_t i = 0; i < n; i++) if (item_walk(*(uint64_t *)(ch + 8 * i), xy, dep + 1, hit, hn)) return 1;
@@ -841,7 +842,7 @@ static uint32_t bd_skill_serial(uint64_t w) {
 
 int dm_ui_skill_spend_ok(void) { int dm_padmode_busy(void); return !dm_padmode_busy() && !dm_ui_reloading() && (!g_bd_inst.w || g_bd_inst.gen == dm_ui_gen()); }
 static void bd_note_skill(module_t *m, uint64_t root, int x, int y) {
-    int32_t w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c); if (w <= 0 || h <= 0) return;
+    int32_t w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT); if (w <= 0 || h <= 0) return;
 
 
 
@@ -861,16 +862,16 @@ static int inside_walk(uint64_t w, uint64_t xy, int dep, uint64_t vt_catch) {
     { const char *nm = (const char *)*(uint64_t *)(w + 8);
       static const char *skip[] = { "PanelBordersPanel", "ControllerCursorBounds", "ShowItemsPanel", "MiniMenuPanel", "TooltipsPanel", "EmoteWheelPanel", "TransparentBG", "SpriteColoringHelper", "LanguageFontRemapper", "ShowItemsParameters", "ControllerCursorParameters", "MoviePlayer", "AutoMap", "TooltipTextBox" };
       if (nm) for (unsigned i = 0; i < sizeof skip / sizeof *skip; i++) if (!strcmp(nm, skip[i])) return 0; }
-    { uint64_t rel = vt - (vt_catch - 0x20c1328);
+    { uint64_t rel = vt - (vt_catch - GA_VT_CLICK_CATCHER);
 
 
 
 
 
 
-      if (rel == 0x20b8650 && n && ch && n <= 256) { for (uint64_t i = 0; i < n; i++) if (inside_walk(*(uint64_t *)(ch + 8 * i), xy, dep + 1, vt_catch)) return 1;
+      if (rel == GA_VT_IMAGE && n && ch && n <= 256) { for (uint64_t i = 0; i < n; i++) if (inside_walk(*(uint64_t *)(ch + 8 * i), xy, dep + 1, vt_catch)) return 1;
           uint64_t fn = *(uint64_t *)(vt + 0x48); if (((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1) { g_inside_name = *(uint64_t *)(w + 8) ? (const char *)*(uint64_t *)(w + 8) : "?"; return 1; } return 0; }
-      if (!n || !ch || rel == 0x20b9580 || rel == 0x20bc048) { uint64_t fn = *(uint64_t *)(vt + 0x48); int h = ((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1; if (h) { g_inside_name = *(uint64_t *)(w + 8) ? (const char *)*(uint64_t *)(w + 8) : "?"; return 1; } if (!n || !ch) return 0; } }
+      if (!n || !ch || rel == GA_VT_NINE_SLICE || rel == GA_VT_DIALOG_FRAME) { uint64_t fn = *(uint64_t *)(vt + 0x48); int h = ((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1; if (h) { g_inside_name = *(uint64_t *)(w + 8) ? (const char *)*(uint64_t *)(w + 8) : "?"; return 1; } if (!n || !ch) return 0; } }
     if (n > 256) return 0;
     for (uint64_t i = 0; i < n; i++) if (inside_walk(*(uint64_t *)(ch + 8 * i), xy, dep + 1, vt_catch)) return 1;
     return 0;
@@ -887,7 +888,7 @@ static int in_item_panel_rect(module_t *m, uint64_t root, uint64_t xy) {
 
 
 
-    int32_t vh = *(int32_t *)(m->base + 0x211da3c); int x = (int)(uint32_t)xy; uint64_t yy = xy >> 32 << 32;
+    int32_t vh = *(int32_t *)(m->base + GA_UI_HEIGHT); int x = (int)(uint32_t)xy; uint64_t yy = xy >> 32 << 32;
     for (uint64_t i = 0; i < n; i++) { uint64_t p = *(uint64_t *)(ch + 8 * i); if (!p || !*(uint8_t *)(p + 0x50)) continue;
         uint64_t fn = *(uint64_t *)(*(uint64_t *)p + 0x48); int dx = (int)(180 * *(float *)(p + 0x80) * vh / 2160.0), xl = x > dx ? x - dx : 0;
         if (((((int (*)(uint64_t, uint64_t))fn)(p, xy) | ((int (*)(uint64_t, uint64_t))fn)(p, yy | (uint32_t)xl) | ((int (*)(uint64_t, uint64_t))fn)(p, yy | (uint32_t)(x + dx))) & 1)
@@ -900,7 +901,7 @@ static int ui_inside_panel(module_t *m, uint64_t root, uint64_t xy) {
         if (nm && !strncmp(nm, "HUD", 3)) continue;
         if (nm && !strcmp(nm, "NotificationPanel")) continue;
         if (nm && !strcmp(nm, "FocusManager")) continue;
-        if (inside_walk(p, xy, 1, (uint64_t)m->base + 0x20c1328)) { g_inside_owner = nm ? nm : "?"; return 1; } }
+        if (inside_walk(p, xy, 1, (uint64_t)m->base + GA_VT_CLICK_CATCHER)) { g_inside_owner = nm ? nm : "?"; return 1; } }
     return 0;
 }
 
@@ -922,7 +923,7 @@ static int click_walk(uint64_t w, uint64_t xy, int dep, uint64_t base) {
 
 
 
-    if (vt == 0x20b7b00 || vt == 0x208a5f8 || vt == 0x20bc110 || vt == 0x20c7d68 || vt == 0x20c80f0 || vt == 0x20c6fb8 || vt == 0x20b84d0 || vt == 0x20b8cd0 || vt == 0x20b97f8 || vt == 0x20b91c0 || vt == 0x20b8718 || vt == 0x20baff8 || (vt == 0x20bad70 && g_click_exact)) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              uint64_t fn = *(uint64_t *)(*(uint64_t *)w + 0x48); if (((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1) { dm_wref_set(&g_click, w); g_click_name = *(uint64_t *)(w + 8) ? (const char *)*(uint64_t *)(w + 8) : "?"; return 1; } }
+    if (vt == GA_VT_BUTTON || vt == GA_VT_SKILL_SELECT_BUTTON || vt == GA_VT_TOGGLE_BUTTON || vt == GA_VT_STAT_UP_BUTTON || vt == GA_VT_QUEST_BUTTON || vt == GA_VT_CHAR_SELECTOR || vt == GA_VT_HOVER_LIST_ITEM || vt == GA_VT_LIST_ITEM || vt == GA_VT_SCROLL_ARROW || vt == GA_VT_NUMERIC_INPUT || vt == GA_VT_INPUT_TEXT || vt == GA_VT_DROPDOWN || (vt == GA_VT_SETTINGS_SLIDER && g_click_exact)) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          uint64_t fn = *(uint64_t *)(*(uint64_t *)w + 0x48); if (((int (*)(uint64_t, uint64_t))fn)(w, xy) & 1) { dm_wref_set(&g_click, w); g_click_name = *(uint64_t *)(w + 8) ? (const char *)*(uint64_t *)(w + 8) : "?"; return 1; } }
     if (!ch || n > 256) return 0;
     for (uint64_t i = 0; i < n; i++) if (click_walk(*(uint64_t *)(ch + 8 * i), xy, dep + 1, base)) return 1;
     return 0;
@@ -972,7 +973,7 @@ static int ui_top_cover(module_t *m, uint64_t root, int x, int y) {
     for (int i = (int)n - 1; i >= 0 && top < 0; i--) { uint64_t p = *(uint64_t *)(ch + 8 * i); if (!p || !*(uint8_t *)(p + 0x50) || panel_skip((const char *)*(uint64_t *)(p + 8))) continue;
         uint64_t pfn = *(uint64_t *)(*(uint64_t *)p + 0x48);
         if (panel_clipped(p, SNAP_XY(x, y))) continue;
-        if ((((int (*)(uint64_t, uint64_t))pfn)(p, SNAP_XY(x, y)) & 1 && !(((int (*)(uint64_t, uint64_t))pfn)(p, SNAP_XY(3, 3)) & 1) && has_visible_leaf(p, 1)) || inside_walk(p, SNAP_XY(x, y), 1, base + 0x20c1328)) top = i; }
+        if ((((int (*)(uint64_t, uint64_t))pfn)(p, SNAP_XY(x, y)) & 1 && !(((int (*)(uint64_t, uint64_t))pfn)(p, SNAP_XY(3, 3)) & 1) && has_visible_leaf(p, 1)) || inside_walk(p, SNAP_XY(x, y), 1, base + GA_VT_CLICK_CATCHER)) top = i; }
     return top;
 }
 
@@ -991,7 +992,7 @@ static void slider_collect(uint64_t w, uint64_t vt, int dep, uint64_t *out, uint
     for (uint64_t i = 0; i < k; i++) slider_collect(*(uint64_t *)(ch + 8 * i), vt, dep + 1, out, clips, clip, n);
 }
 static int slider_arrow(module_t *m, uint64_t root, int *x, int *y, int W, int H) {
-    static uint64_t sl[48], cl[48]; int n = 0; slider_collect(root, (uint64_t)m->base + 0x20bad70, 0, sl, cl, 0, &n); if (!n) return 0;
+    static uint64_t sl[48], cl[48]; int n = 0; slider_collect(root, (uint64_t)m->base + GA_VT_SETTINGS_SLIDER, 0, sl, cl, 0, &n); if (!n) return 0;
     float u = H / 2160.0f; int vt = (int)(106 * u), reach = (int)(212 * u), st = (int)(12 * u) > 1 ? (int)(12 * u) : 1, off = (int)(44 * u);
     for (int d = 0; d <= vt; d += st) for (int sg = 0; sg < (d ? 2 : 1); sg++) { int yy = *y + (sg ? d : -d); if (yy < 0 || yy >= H) continue;
         for (int e = 0; e <= reach + st; e += st) for (int dir = -1; dir <= 1; dir += 2) { int xx = *x + dir * e; if (xx < 0 || xx >= W || (!e && dir > 0)) continue;
@@ -1012,12 +1013,12 @@ static int slider_arrow(module_t *m, uint64_t root, int *x, int *y, int W, int H
 }
 static void slot_center(uint64_t w, int *x, int *y, int vw, int vh, int cells);
 static int ui_snap(module_t *m, uint64_t root, int *x, int *y) {
-    int32_t w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c); if (w <= 0 || h <= 0) return 0;
+    int32_t w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT); if (w <= 0 || h <= 0) return 0;
     uint64_t ch = *(uint64_t *)(root + 0x58), n = *(uint64_t *)(root + 0x60), base = (uint64_t)m->base; if (!ch || n > 256) return 0;
     int top = ui_top_cover(m, root, *x, *y);
     if (getenv("DM_DBG_COVER")) { char b[900]; int k = 0; for (int i = (int)n - 1; i >= 0 && k < 820; i--) { uint64_t p = *(uint64_t *)(ch + 8 * i); if (!p || !*(uint8_t *)(p + 0x50)) continue; const char *nm = (const char *)*(uint64_t *)(p + 8);
             int rh = ((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)p + 0x48))(p, SNAP_XY(*x, *y)) & 1, r0 = ((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)p + 0x48))(p, SNAP_XY(3, 3)) & 1;
-            int lf = inside_walk(p, SNAP_XY(*x, *y), 1, base + 0x20c1328); if (!rh && !lf) continue;
+            int lf = inside_walk(p, SNAP_XY(*x, *y), 1, base + GA_VT_CLICK_CATCHER); if (!rh && !lf) continue;
             k += snprintf(b + k, sizeof b - k, " [%d]%s:根%d角%d叶=%s", i, nm ? nm : "?", rh, r0, lf ? g_inside_name : "-"); } LOG("盖层探查 (%d,%d)：%s", *x, *y, b); }
     int lo = top < 0 ? 0 : top;
 #define SNAP_AT(px, py, from, to) ({ int hit_ = 0; for (int i_ = (to); i_ >= (from) && !hit_; i_--) { uint64_t p_ = *(uint64_t *)(ch + 8 * i_); if (p_ && *(uint8_t *)(p_ + 0x50) && (top < 0 || panel_skip((const char *)*(uint64_t *)(p_ + 8)) != 1) && !panel_clipped(p_, SNAP_XY(px, py))) hit_ = click_walk(p_, SNAP_XY(px, py), 1, base); } hit_; })
@@ -1117,7 +1118,7 @@ static _Atomic int g_menu_want = -1;
 
 static int g_menu_dismiss;
 static int npc_menu_sel(uint64_t pn, uint64_t ct, int *cur) {
-    module_t *m = main_module(); uint64_t ls = pn ? *(uint64_t *)(pn + 0x248) : 0; if (!m || !ls || *(uint64_t *)ls != (uint64_t)m->base + 0x20b8df0 || *(uint64_t *)(ls + 0xd0) != ct) return 0;
+    module_t *m = main_module(); uint64_t ls = pn ? *(uint64_t *)(pn + 0x248) : 0; if (!m || !ls || *(uint64_t *)ls != (uint64_t)m->base + GA_VT_LIST || *(uint64_t *)(ls + 0xd0) != ct) return 0;
     int32_t c = *(int32_t *)(ls + 0x140); uint64_t n = *(uint64_t *)(ct + 0x60); *cur = c >= 0 && (uint64_t)c < n ? c : -1; return 1;
 }
 static int npc_menu(uint64_t root, int x, int y, int vh, int *delta) {
@@ -1261,7 +1262,7 @@ static int ui_classify(module_t *m, uint64_t root, int x, int y, char *hit, size
 
 
       int on_sl = 0; if (cp && *(uint8_t *)(cp + 0x50)) { int ax = x, ay = y; g_click_exact = 1; on_sl = click_walk(cp, xy, 1, (uint64_t)m->base); g_click_exact = 0;
-          if (!on_sl) on_sl = slider_arrow(m, cp, &ax, &ay, *(int32_t *)(m->base + 0x211da38), *(int32_t *)(m->base + 0x211da3c)); }
+          if (!on_sl) on_sl = slider_arrow(m, cp, &ax, &ay, *(int32_t *)(m->base + GA_UI_WIDTH), *(int32_t *)(m->base + GA_UI_HEIGHT)); }
       uint64_t ch = ui_panel(root, "ChroniclePanel");
       int over_set = st && *(uint8_t *)(st + 0x50) && !click_walk(st, xy, 1, (uint64_t)m->base) && !on_sl && !(cp && *(uint8_t *)(cp + 0x50) && click_walk(cp, xy, 1, (uint64_t)m->base));
       int over_chr = !over_set && ch && *(uint8_t *)(ch + 0x50) && !click_walk(ch, xy, 1, (uint64_t)m->base);
@@ -1275,7 +1276,7 @@ static int ui_classify(module_t *m, uint64_t root, int x, int y, char *hit, size
 
 
         int in = ((((int (*)(uint64_t, uint64_t))fn)(mp, xy) & 1) && !(((int (*)(uint64_t, uint64_t))fn)(mp, (uint64_t)3 | ((uint64_t)3 << 32)) & 1))
-              || inside_walk(mp, xy, 1, (uint64_t)m->base + 0x20c1328) || click_walk(mp, xy, 1, (uint64_t)m->base);
+              || inside_walk(mp, xy, 1, (uint64_t)m->base + GA_VT_CLICK_CATCHER) || click_walk(mp, xy, 1, (uint64_t)m->base);
         if (!in) { snprintf(hit, hn, "模态框外 %s", mn); g_modal_name = mn; return 9; } }
 
 
@@ -1306,12 +1307,12 @@ static int ui_classify0(module_t *m, uint64_t root, int x, int y, char *hit, siz
     int lo = ui_top_cover(m, root, x, y); if (lo < 0) lo = 0;
 
 
-    if (dm_shop_open()) { int nd = 0; if (npc_menu(root, x, y, *(int32_t *)(m->base + 0x211da3c), &nd)) {
+    if (dm_shop_open()) { int nd = 0; if (npc_menu(root, x, y, *(int32_t *)(m->base + GA_UI_HEIGHT), &nd)) {
         if (g_menu_dismiss) { atomic_store(&g_tab_top, 4); snprintf(hit, hn, "商人页结果提示（按返回收）"); return 2; }
         atomic_store(&g_tab_delta, nd); atomic_store(&g_tab_top, 3); snprintf(hit, hn, "对话菜单 %+d 行", nd); return 2; } }
     for (int i = (int)rn - 1; i >= lo; i--) { uint64_t pw = *(uint64_t *)(rch + 8 * i); if (item_walk(pw, xy, 1, hit, hn)) { g_slot_panel = pw ? (const char *)*(uint64_t *)(pw + 8) : NULL; return 1; } }
-    { int nd = 0; if (npc_menu(root, x, y, *(int32_t *)(m->base + 0x211da3c), &nd)) { atomic_store(&g_tab_delta, nd); atomic_store(&g_tab_top, 3); snprintf(hit, hn, "对话菜单 %+d 行", nd); return 2; } }
-    int d = 0, top = 0, th = 0; { int32_t vh = *(int32_t *)(m->base + 0x211da3c); static const int off[5] = { 0, 45, -45, 90, -90 };
+    { int nd = 0; if (npc_menu(root, x, y, *(int32_t *)(m->base + GA_UI_HEIGHT), &nd)) { atomic_store(&g_tab_delta, nd); atomic_store(&g_tab_top, 3); snprintf(hit, hn, "对话菜单 %+d 行", nd); return 2; } }
+    int d = 0, top = 0, th = 0; { int32_t vh = *(int32_t *)(m->base + GA_UI_HEIGHT); static const int off[5] = { 0, 45, -45, 90, -90 };
 
 
 
@@ -1319,7 +1320,7 @@ static int ui_classify0(module_t *m, uint64_t root, int x, int y, char *hit, siz
         int on_ctl = -1;
         for (int i = 0; i < 5 && !th; i++) { if (i == 1) { int qx = x, qy = y; if (on_ctl < 0) on_ctl = ui_snap(m, root, &qx, &qy) == 1; if (on_ctl) break; }
             int yy = y + off[i] * vh / 2160; if (yy < 0 || yy >= vh) continue; int tl = ui_top_cover(m, root, x, yy); if (tl < 0) tl = 0;
-            for (int k = (int)rn - 1; k >= tl && !th; k--) th = tab_walk(*(uint64_t *)(rch + 8 * k), (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)yy << 32), 1, (uint64_t)m->base + 0x20ba3a8, &d, &top); } }
+            for (int k = (int)rn - 1; k >= tl && !th; k--) th = tab_walk(*(uint64_t *)(rch + 8 * k), (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)yy << 32), 1, (uint64_t)m->base + GA_VT_TABBAR, &d, &top); } }
     if (th) { atomic_store(&g_tab_delta, d); atomic_store(&g_tab_top, top); snprintf(hit, hn, "页签 %+d%s", d, top ? "（顶部）" : ""); return 2; }
 
 
@@ -1332,7 +1333,7 @@ static int ui_classify0(module_t *m, uint64_t root, int x, int y, char *hit, siz
               snprintf(nm, sizeof nm, "Tab%d", k); uint64_t tb = k < 3 ? ui_find(sp, nm, 0) : 0, bg = tb ? ui_find(tb, "Background", 0) : 0; if (bg && *(uint8_t *)(bg + 0x50)) cur = k; }
           if (tgt >= 0) { dm_wref_set(&g_tab_ref, 0); atomic_store(&g_tab_have, 0); atomic_store(&g_tab_delta, tgt - cur); atomic_store(&g_tab_top, 0); snprintf(hit, hn, "技能树分页 %+d", tgt - cur); return 2; } } }
     { int sx = x, sy = y, sn = ui_snap(m, root, &sx, &sy); if (sn == 6) { snprintf(hit, hn, "盖:%s 不点", g_inside_name); return 6; }
-      if (sn == 1) { if (snap_guarded(root, g_click_name)) snap_guard_near(dm_wref_get(&g_click), g_click_name, x, y, sx, sy, *(int32_t *)(m->base + 0x211da38), *(int32_t *)(m->base + 0x211da3c));
+      if (sn == 1) { if (snap_guarded(root, g_click_name)) snap_guard_near(dm_wref_get(&g_click), g_click_name, x, y, sx, sy, *(int32_t *)(m->base + GA_UI_WIDTH), *(int32_t *)(m->base + GA_UI_HEIGHT));
           snprintf(hit, hn, " 可点控件 %s", g_click_name); bd_note_skill(m, root, sx, sy); return 0; }
 
 
@@ -1340,13 +1341,13 @@ static int ui_classify0(module_t *m, uint64_t root, int x, int y, char *hit, siz
 
       if (sn && (!strcmp(g_click_name, "TouchStashLeft") || !strcmp(g_click_name, "TouchStashRight")) && pg_personal(root)) {
           void dm_pages_request_flip(int); int dir = g_click_name[10] == 'R' ? 1 : -1; dm_pages_request_flip(dir); snprintf(hit, hn, "个人仓库%s一页（点偏，吸附）", dir > 0 ? "下" : "上"); return 6; }
-      if (sn && snap_guarded(root, g_click_name) && !snap_guard_near(dm_wref_get(&g_click), g_click_name, x, y, sx, sy, *(int32_t *)(m->base + 0x211da38), *(int32_t *)(m->base + 0x211da3c))) { snprintf(hit, hn, "吸附到 %s：后果重的按钮只认本体（不足 44 点的外扩到 44 点见方），不点", g_click_name); return 6; }
+      if (sn && snap_guarded(root, g_click_name) && !snap_guard_near(dm_wref_get(&g_click), g_click_name, x, y, sx, sy, *(int32_t *)(m->base + GA_UI_WIDTH), *(int32_t *)(m->base + GA_UI_HEIGHT))) { snprintf(hit, hn, "吸附到 %s：后果重的按钮只认本体（不足 44 点的外扩到 44 点见方），不点", g_click_name); return 6; }
       if (sn) { snprintf(hit, hn, " 吸附 %s (%d,%d)", g_click_name, sx, sy); bd_note_skill(m, root, sx, sy); return 0; }
 
 
 
 
-      { int dir = pg_personal(root) ? pg_near(root, x, y, *(int32_t *)(m->base + 0x211da3c)) : 0;
+      { int dir = pg_personal(root) ? pg_near(root, x, y, *(int32_t *)(m->base + GA_UI_HEIGHT)) : 0;
         if (dir) { void dm_pages_request_flip(int); dm_pages_request_flip(dir); snprintf(hit, hn, "个人仓库%s一页（点偏，外圈）", dir > 0 ? "下" : "上"); return 6; } } }
     if (ui_inside_panel(m, root, xy)) { snprintf(hit, hn, " %s@%s", g_inside_name, g_inside_owner); atomic_store(&g_close_down, !strcmp(g_inside_name, "TouchClose") ? dm_guest_frame() : 0);
         if ((!strcmp(g_inside_name, "TouchClose") || !strcmp(g_inside_name, "close")) && atomic_load(&g_cube_side_on)) {
@@ -1376,7 +1377,7 @@ void dm_ui_tab_go(void) {
 static int imbue_locked(module_t *m, uint64_t root) {
     uint64_t ip = m && root ? ui_find(root, "ImbueItemsPanel", 0) : 0; if (!ip || !*(uint8_t *)(ip + 0x50) || !has_visible_leaf(ip, 1)) return 0;
     dm_hud_info hi; dm_hud_get(&hi); if (!hi.valid || !hi.holding) return 0;
-    return !(dm_wref_get(&g_slot) && *(uint64_t *)dm_wref_get(&g_slot) == (uint64_t)m->base + 0x20898e8);
+    return !(dm_wref_get(&g_slot) && *(uint64_t *)dm_wref_get(&g_slot) == (uint64_t)m->base + GA_VT_IMBUE_SOCKET);
 }
 
 
@@ -1395,7 +1396,7 @@ static int hire_row(uint64_t root, int x, int y) {
     uint64_t xy = (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32);
 
 
-    uint64_t ct = *(uint64_t *)lc == (uint64_t)m->base + 0x20b8df0 ? *(uint64_t *)(lc + 0xd0) : 0, rc = ct ? *(uint64_t *)(ct + 0x58) : 0, rn = ct ? *(uint64_t *)(ct + 0x60) : 0;
+    uint64_t ct = *(uint64_t *)lc == (uint64_t)m->base + GA_VT_LIST ? *(uint64_t *)(lc + 0xd0) : 0, rc = ct ? *(uint64_t *)(ct + 0x58) : 0, rn = ct ? *(uint64_t *)(ct + 0x60) : 0;
     for (uint64_t i = 0; rc && rn <= 64 && i < rn; i++) { uint64_t it = *(uint64_t *)(rc + 8 * i);
         if (!it || !*(uint8_t *)(it + 0x50) || !(((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)it + 0x48))(it, xy) & 1)) continue;
         atomic_store(&g_hire_arm_ns, now_ns()); atomic_store(&g_hire_arm, (1ull << 63) | i);
@@ -1417,17 +1418,17 @@ static int hire_row(uint64_t root, int x, int y) {
 static void ui_hire_focus_pump(void) {
     uint64_t a = atomic_load(&g_hire_arm); if (!a || now_ns() - atomic_load(&g_hire_arm_ns) < 400000000ull) return;
     atomic_store(&g_hire_arm, 0);
-    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
     uint64_t hp = root ? ui_panel(root, "HireMenuPanel") : 0, lc = hp && *(uint8_t *)(hp + 0x50) ? ui_find(hp, "ListContainer", 0) : 0;
-    if (!lc || *(uint64_t *)lc != (uint64_t)m->base + 0x20b8df0) return;
+    if (!lc || *(uint64_t *)lc != (uint64_t)m->base + GA_VT_LIST) return;
     int want = (int)(a & 0xffff), sel = *(int32_t *)(lc + 0x140), d = want - sel;
     if (sel < 0 || !d || atomic_load(&g_tab_left)) { if (d) LOG("雇佣名单：按住第 %d 行，焦点在第 %d 行，这次不挪（%s）", want, sel, sel < 0 ? "没有焦点" : "方向键还在按"); return; }
     atomic_store(&g_tab_top, 0); atomic_store(&g_tab_then, 0); atomic_store(&g_tab_mask, d > 0 ? DM_BTN_DOWN : DM_BTN_UP); atomic_store(&g_tab_left, d > 0 ? d : -d);
     LOG("雇佣名单：按住第 %d 行，焦点在第 %d 行 → 方向键 %+d 行，随后手势层按住 X 看技能", want, sel, d);
 }
 int dm_ui_item_at_now(float nx, float ny) {
-    module_t *m = main_module(); if (!m) return 0; uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
-    int32_t w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c); if (!root || w <= 0 || h <= 0) return 0;
+    module_t *m = main_module(); if (!m) return 0; uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
+    int32_t w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT); if (!root || w <= 0 || h <= 0) return 0;
     { int dm_vault_ui_tip_gate(int, int); if ((dm_ui_panel_state() & DM_PS_VAULT) && dm_vault_ui_tip_gate((int)(nx * w), (int)(ny * h))) return 6; }
     { int dm_pouch_tip_gate(int, int); if (dm_pouch_tip_gate((int)(nx * w), (int)(ny * h))) return 6; }
     char hit[40]; g_cls_out = UI_OUT(nx, ny); int r = ui_classify(m, root, (int)(nx * w), (int)(ny * h), hit, sizeof hit);
@@ -1481,8 +1482,8 @@ int dm_ui_vault_drop(void) { return atomic_load(&g_vault_drop); }
 
 
 int dm_ui_bag_point(int x, int y, int *fx100, int *fy100, int *cols, int *rows) {
-    module_t *m = main_module(); if (!m) return 0; uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
-    int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c); uint64_t pn = root ? ui_panel(root, "PlayerInventoryExpansionLayout") : 0, g = pn ? ui_find(pn, "grid", 0) : 0;
+    module_t *m = main_module(); if (!m) return 0; uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
+    int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT); uint64_t pn = root ? ui_panel(root, "PlayerInventoryExpansionLayout") : 0, g = pn ? ui_find(pn, "grid", 0) : 0;
     if (!g || !*(uint8_t *)(g + 0x50) || vw <= 0 || vh <= 0 || x < 0 || y < 0 || x >= vw || y >= vh) return 0;
     uint64_t fn = *(uint64_t *)(*(uint64_t *)g + 0x48);
 #define BAG_HIT(px, py) (((int (*)(uint64_t, uint64_t))fn)(g, (uint64_t)(uint32_t)(px) | ((uint64_t)(uint32_t)(py) << 32)) & 1)
@@ -1508,7 +1509,7 @@ static int merc_lock_hit(const char *hit) {
 static int ui_drop_kind(module_t *m, uint64_t root, int x, int yl, int yf) {
 
 
-    (void)yf; atomic_store(&g_drop_bag, 0); int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c);
+    (void)yf; atomic_store(&g_drop_bag, 0); int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT);
     char hit[40]; int px = x, py = yl;
     int c = ui_classify(m, root, x, yl, hit, sizeof hit);
     if (c == 9) return 0;
@@ -1530,7 +1531,7 @@ static int ui_drop_kind(module_t *m, uint64_t root, int x, int yl, int yf) {
 
           static const int ox[5] = { 0, -70, 70, 0, 0 }, oy[5] = { 0, 0, 0, -70, 70 };
           for (int k = 0; k < 5 && vh > 0; k++) { int xx = x + ox[k] * vh / 2160, yy = yl + oy[k] * vh / 2160; if (xx < 0 || yy < 0) continue;
-              if (vt_hit_walk(ip, (uint64_t)(uint32_t)xx | ((uint64_t)(uint32_t)yy << 32), 0, (uint64_t)m->base + 0x20898e8)) return 8; }
+              if (vt_hit_walk(ip, (uint64_t)(uint32_t)xx | ((uint64_t)(uint32_t)yy << 32), 0, (uint64_t)m->base + GA_VT_IMBUE_SOCKET)) return 8; }
 
 
           uint64_t bg = ui_find(ip, "Background", 0);
@@ -1564,7 +1565,7 @@ static int ui_drop_kind(module_t *m, uint64_t root, int x, int yl, int yf) {
 
 int dm_ui_drop_last(void) { return atomic_load(&g_drop_last); }
 int dm_ui_drop_point(float *nx, float *ny) {
-    module_t *m = main_module(); if (!m) return 0; int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c); if (vw <= 0 || vh <= 0) return 0;
+    module_t *m = main_module(); if (!m) return 0; int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT); if (vw <= 0 || vh <= 0) return 0;
     uint64_t v = atomic_load(&g_drop_xy); *nx = (float)((v & 0xffffffff) + 0.5) / vw; *ny = (float)((v >> 32) + 0.5) / vh; return 1;
 }
 static _Atomic uint32_t g_iq_y2;
@@ -1573,8 +1574,8 @@ unsigned dm_ui_drop_query(float nx, float ny_lifted, float ny_finger) {
     return dm_ui_item_query(nx, ny_lifted);
 }
 int dm_ui_drop_at_now(float nx, float ny_lifted, float ny_finger) {
-    module_t *m = main_module(); if (!m) return 1; uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
-    int32_t w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c); if (!root || w <= 0 || h <= 0) return 1;
+    module_t *m = main_module(); if (!m) return 1; uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
+    int32_t w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT); if (!root || w <= 0 || h <= 0) return 1;
     g_cls_out = UI_OUT(nx, ny_lifted); return ui_drop_kind(m, root, (int)(nx * w), (int)(ny_lifted * h), (int)(ny_finger * h));
 }
 static _Atomic uint64_t g_buy_at;
@@ -1690,7 +1691,7 @@ static int finger_item(dm_cursor_item_info *ci, const char *who) {
         if (!near) has = 0; LOG("界面%s：光标是吸附到 %s 上的（请求 %d,%d → 落点 %d,%d）；四分之一格内%s", who, ci->code, tx, ty, px, py, near ? "够得着 → 按物品算" : "够不着 → 按空格算"); }
     return has;
 }
-static int belt_widget(uint64_t w) { return w && g_iw_base && *(uint64_t *)(*(uint64_t *)w + 0x28) == g_iw_base + 0x3911d8; }
+static int belt_widget(uint64_t w) { return w && g_iw_base && *(uint64_t *)(*(uint64_t *)w + 0x28) == g_iw_base + GA_BELT_WIDGET_MSG; }
 static void ui_use_pump(void) {
     if (!atomic_exchange(&g_use_req, 0)) return;
     dm_cursor_item_info ci;
@@ -1728,7 +1729,7 @@ static void ui_long_pump(void) {
 
 
         uint64_t gw = dm_wref_get(&g_slot);
-        if (page >= 0 && gw && g_iw_base && *(uint64_t *)gw - g_iw_base == 0x2089ab8) {
+        if (page >= 0 && gw && g_iw_base && *(uint64_t *)gw - g_iw_base == GA_VT_ITEM_GRID) {
             uint32_t oid = *(uint32_t *)(gw + 0x5c4), oty = *(uint32_t *)(gw + 0x5c8); int pg = *(uint8_t *)(gw + 0x630);
             void dm_inv_sort_grid(uint32_t, uint32_t, int); dm_inv_sort_grid(oid, oty, pg);
             LOG("界面长按：物品格自己的属主 %u 类型 %u 页 %d（原先按页 %d、属主玩家）", oid, oty, pg, page);
@@ -1786,7 +1787,7 @@ static void ui_item_pump(uint64_t root, int width, int height) {
     if (r != 1 && r != 7 && dm_item_targeting()) { dm_item_target_cancel(); LOG("界面鉴定：点在物品区之外，退出鉴定态"); }
     if (r == 1) dm_wref_set(&g_down, dm_wref_get(&g_slot));
     { dm_hud_info hh; dm_hud_get(&hh); if (r == 0 && hh.valid && hh.holding && g_inside_owner[0] && !in_item_panel_rect(main_module(), root, (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32))) r = 3; }
-    if (r == 1 && dm_wref_get(&g_slot) && g_iw_base && *(uint64_t *)dm_wref_get(&g_slot) - g_iw_base == 0x20892f8) { r = 8; atomic_store(&g_exact_xy, (uint64_t)(uint32_t)x | (uint64_t)(uint32_t)y << 32); atomic_store(&g_stack_left, -1); atomic_store(&g_stack_want, 1); }
+    if (r == 1 && dm_wref_get(&g_slot) && g_iw_base && *(uint64_t *)dm_wref_get(&g_slot) - g_iw_base == GA_VT_ASTASH_SLOT) { r = 8; atomic_store(&g_exact_xy, (uint64_t)(uint32_t)x | (uint64_t)(uint32_t)y << 32); atomic_store(&g_stack_left, -1); atomic_store(&g_stack_want, 1); }
     g_press_stack = r == 8;
     if (r == 1 && imbue_locked(main_module(), root)) r = 10;
     if (r == 1 && g_slot_panel && !strcmp(g_slot_panel, "VendorPanelLayout") && dm_shop_open()) r = 7;
@@ -1869,7 +1870,7 @@ static void ui_drag_pump(module_t *m, uint64_t root, int W, int H) {
         { int dm_vault_ui_drag(int, int, int), dm_vault_ui_over(int, int); if ((dm_ui_panel_state() & DM_PS_VAULT) && dm_vault_ui_drag(0, ox, oy)) { kind = 3; return; }
           if ((dm_ui_panel_state() & DM_PS_VAULT) && dm_vault_ui_over(ox, oy)) { kind = 0; return; } }
         if (kind == 2) {
-            static uint64_t sl[48], cl[48]; int n = 0; dg_sliders(root, (uint64_t)m->base + 0x20bad70, 0, sl, cl, 0, &n);
+            static uint64_t sl[48], cl[48]; int n = 0; dg_sliders(root, (uint64_t)m->base + GA_VT_SETTINGS_SLIDER, 0, sl, cl, 0, &n);
             int tol = (int)(atomic_load(&g_dg_tol) / 65535.0 * H), q = H / 180 > 1 ? H / 180 : 1; uint64_t w = 0; int hy = oy, hx = ox;
             for (int d = 0; d <= tol && !w; d += q) for (int sg = 0; sg < (d ? 2 : 1) && !w; sg++) { int y = oy + (sg ? d : -d); if (y < 0 || y >= H) continue;
                 for (int e = 0; e < 5 && !w; e++) { int x = ox + (e == 1 ? -tol / 2 : e == 2 ? tol / 2 : e == 3 ? -tol : e == 4 ? tol : 0); if (x < 0 || x >= W) continue;
@@ -1981,8 +1982,8 @@ static void swaptab_pump(uint64_t root) {
 
 
     static uint32_t lastsig; static int had; uint32_t sig = dm_swapskill_itemsig(); if (show && had && sig != lastsig) { module_t *sm = main_module(); uint64_t us = ui_find(root, "UISwitcher", 0);
-        if (sm && us && *(uint8_t *)(us + 0x50) && *(uint64_t *)(*(uint64_t *)us + 0x28) == (uint64_t)sm->base + 0x404fd8) { int cur = *(int32_t *)(us + 0x1b8);
-            ((void (*)(uint64_t, int, int))(sm->base + 0x405898))(us, cur - 1, 0); ((void (*)(uint64_t, int, int))(sm->base + 0x405898))(us, cur, 1);
+        if (sm && us && *(uint8_t *)(us + 0x50) && *(uint64_t *)(*(uint64_t *)us + 0x28) == (uint64_t)sm->base + GA_UISWITCHER_MSG) { int cur = *(int32_t *)(us + 0x1b8);
+            ((void (*)(uint64_t, int, int))(sm->base + GA_UISWITCHER_SET_PAGE))(us, cur - 1, 0); ((void (*)(uint64_t, int, int))(sm->base + GA_UISWITCHER_SET_PAGE))(us, cur, 1);
             fe_send("SkillsTreePanelMessage", "ActivateTab", "3"); LOG("副手组技能：武器组的物品技能变了 → 技能树重开到综合技能页"); } }
     lastsig = sig; had = show; (void)w;
     for (int k = 0; k < 4 && tw; k++) { uint64_t x = swaptab_w(root, k); if (!x) continue; int v = show && (k >= 2 || (w < 0 ? k == 0 : k == w)); ui_show_ours(x, v); }
@@ -2024,7 +2025,7 @@ static int ui_bind_modal_tap(uint64_t root, int x, int y) {
 
 
 
-    if (!slot) { module_t *m = main_module(); int vh = m ? *(int32_t *)(m->base + 0x211da3c) : 0; static const int oy[8] = { -32, 32, -45, 45, 0, 0, -32, 32 }, ox[8] = { 0, 0, 0, 0, -45, 45, -45, 45 };
+    if (!slot) { module_t *m = main_module(); int vh = m ? *(int32_t *)(m->base + GA_UI_HEIGHT) : 0; static const int oy[8] = { -32, 32, -45, 45, 0, 0, -32, 32 }, ox[8] = { 0, 0, 0, 0, -45, 45, -45, 45 };
         for (int k = 0; k < 8 && !slot && vh > 0; k++) { int xx = x + ox[k] * vh / 2160, yy = y + oy[k] * vh / 2160; if (xx < 0 || yy < 0) continue; slot = bd_modal_walk(md, (uint64_t)(uint32_t)xx | ((uint64_t)(uint32_t)yy << 32), 0); } }
     if (!slot) {
         uint64_t bg = ui_find(md, "Background", 0); uint64_t xy = (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32);
@@ -2070,7 +2071,7 @@ static int mv_allowed(int own, uint64_t w) {
 }
 static int mv_count(int own);
 static void mv_prune(void) {
-    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + 0x2f05458, 8); if (!root) return; int n0 = g_nmv;
+    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + GA_UI_ROOT, 8); if (!root) return; int n0 = g_nmv;
     for (int i = g_nmv - 1; i >= 0; i--) if (!ui_has(root, g_mv[i].r.w, 0)) g_mv[i] = g_mv[--g_nmv];
     if (g_nmv != n0) { static int lg; if (lg++ < 20) LOG("位置守卫：%d 条的控件已不在界面树上（界面重建过），忘掉（剩 %d）", n0 - g_nmv, g_nmv); }
 }
@@ -2214,10 +2215,10 @@ int dm_ui_map_is_full(void) { return atomic_load(&g_map_full_now); }
 
 
 static void ui_map_center(module_t *m, uint64_t root, int mini) {
-    static int ours; int32_t *sc = (int32_t *)(m->base + 0x2d5e914); int want = 0;
+    static int ours; int32_t *sc = (int32_t *)(m->base + GA_AUTOMAP_SCROLL_Y); int want = 0;
     int x, y, w, h, rw = 0, rh = 0; dm_ui_rect(&x, &y, &w, &h); uint64_t am = !mini && dm_uiscreen_ingame() && dm_screen_real(&rw, &rh) && h > 0 && h < rh ? ui_panel(root, "AutoMap") : 0;
-    if (am && *(uint64_t *)am == (uint64_t)m->base + 0x20c58a0) { float q = ceilf(((float (*)(uint64_t))(m->base + 0x390b38))(am) * *(float *)(am + 0x15a8) * 8) / 8; if (q < 0.125f) q = 0.125f;
-        float cell = q * *(float *)(m->base + 0x2d5e91c); if (cell > 0.1f) want = (int)lroundf((y - (rh - h) / 2.0f) / cell); }
+    if (am && *(uint64_t *)am == (uint64_t)m->base + GA_VT_AUTOMAP) { float q = ceilf(((float (*)(uint64_t))(m->base + GA_UI_SCALE_GET))(am) * *(float *)(am + 0x15a8) * 8) / 8; if (q < 0.125f) q = 0.125f;
+        float cell = q * *(float *)(m->base + GA_AUTOMAP_CELL_Y); if (cell > 0.1f) want = (int)lroundf((y - (rh - h) / 2.0f) / cell); }
     if (*sc == want || (*sc != ours && *sc != 0)) { if (*sc == want) ours = want; return; }
     { static int lg; if (lg++ < 8) LOG("全屏地图中心：纵向卷动量 %d → %d 格", *sc, want); } *sc = want; ours = want;
 }
@@ -2245,17 +2246,17 @@ static void ui_map_pump(module_t *m, uint64_t root) {
         if (pending >= 0) { static int n; if (n++ < 4) LOG("地图：局外的切换请求已丢掉（局外不调原版地图切换）"); }
         return;
     }
-    int cfg = *(volatile int32_t *)(m->base + 0x2d479f4), mini = *(volatile int32_t *)(m->base + 0x2d5c748);
+    int cfg = *(volatile int32_t *)(m->base + GA_AUTOMAP_MODE_CFG), mini = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI);
 
 
     { static long at = -1; static int tv; uint64_t fr = dm_guest_frame(); if (at < 0) { const char *e = getenv("DM_TEST_AUTOMAP"); at = e ? atol(e) : 0; const char *c = e ? strchr(e, ':') : NULL; tv = c ? atoi(c + 1) : 0; }
-      if (at > 0 && fr >= (uint64_t)at) { at = 0; *(volatile int32_t *)(m->base + 0x2d479f4) = tv; ((void (*)(int))(m->base + 0x40f780))(tv); cfg = tv; mini = *(volatile int32_t *)(m->base + 0x2d5c748); LOG("测试 DM_TEST_AUTOMAP：帧 %llu 把「透视地图尺寸」改成 %d", (unsigned long long)fr, tv); } }
+      if (at > 0 && fr >= (uint64_t)at) { at = 0; *(volatile int32_t *)(m->base + GA_AUTOMAP_MODE_CFG) = tv; ((void (*)(int))(m->base + GA_AUTOMAP_SET_MODE))(tv); cfg = tv; mini = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI); LOG("测试 DM_TEST_AUTOMAP：帧 %llu 把「透视地图尺寸」改成 %d", (unsigned long long)fr, tv); } }
     int dm_padmode_current(void); dm_hud_info hi; dm_hud_get(&hi);
     int r = atomic_exchange(&g_map_req, -1);
     if (dm_padmode_current()) {
         if (r >= 0) {
             if (cfg != 1 && cfg != 2) { static int n; if (n++ < 4) LOG("地图切换：玩家的「透视地图尺寸」是 %d（不是微缩档），不切", cfg); }
-            else if ((mini == 0) != r) { ((void (*)(int))(m->base + 0x40f780))(r ? 0 : cfg); mini = *(volatile int32_t *)(m->base + 0x2d5c748); LOG("地图切换：→ %s（配置值 %d 不动，不落盘）", r ? "全屏" : cfg == 1 ? "微缩放左" : "微缩放右", cfg); }
+            else if ((mini == 0) != r) { ((void (*)(int))(m->base + GA_AUTOMAP_SET_MODE))(r ? 0 : cfg); mini = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI); LOG("地图切换：→ %s（配置值 %d 不动，不落盘）", r ? "全屏" : cfg == 1 ? "微缩放左" : "微缩放右", cfg); }
         }
         atomic_store(&g_map_full_now, mini == 0 && (cfg == 1 || cfg == 2)); return;
     }
@@ -2264,11 +2265,11 @@ static void ui_map_pump(module_t *m, uint64_t root) {
     if (r >= 0 && g_map_want != r) { g_map_want = r; LOG("地图：玩家点了 → 记住%s", r ? "全屏地图" : "小地图"); }
     int small = cfg == 1 ? 1 : 2, hold = atomic_load(&g_map_hold), want = g_map_want == 1 && !hold;
     if (hi.valid && (mini == 0) != want) {
-        ((void (*)(int))(m->base + 0x40f780))(want ? 0 : small); mini = *(volatile int32_t *)(m->base + 0x2d5c748);
+        ((void (*)(int))(m->base + GA_AUTOMAP_SET_MODE))(want ? 0 : small); mini = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI);
         static int n; if (n++ < 40) LOG("地图：→ %s（%s；配置值 %d 不动）", want ? "全屏" : small == 1 ? "微缩放左" : "微缩放右", hold ? "面板开着先让开" : g_map_want ? "玩家要全屏" : "玩家要小地图", cfg); }
     atomic_store(&g_map_full_now, mini == 0);
     { void dm_ui_key_pulse_alone(uint64_t mask, int frames); uint64_t am = ui_panel(root, "AutoMap"); static uint64_t sent;
-      if (am && *(uint64_t *)am == (uint64_t)m->base + 0x20c58a0 && !*(uint8_t *)(am + 0x50) && *(volatile int32_t *)(m->base + 0x2d485b4) && hi.valid && dm_uiscreen_ingame() && !atomic_load(&g_map_movie)) {
+      if (am && *(uint64_t *)am == (uint64_t)m->base + GA_VT_AUTOMAP && !*(uint8_t *)(am + 0x50) && *(volatile int32_t *)(m->base + GA_AUTOMAP_AUTO_OPEN) && hi.valid && dm_uiscreen_ingame() && !atomic_load(&g_map_movie)) {
           uint64_t fr = dm_guest_frame(); if (!sent || fr >= sent + 120) { sent = fr; dm_ui_key_pulse_alone(DM_BTN_MINUS, 4); LOG("地图：局内小地图关着（过场关的）、选项「进局自动开启地图」开着 → 替玩家按一下地图键（−）"); } } }
 }
 
@@ -2382,7 +2383,7 @@ static void ui_note_dock_pump(uint64_t root) {
 
 
 
-    { module_t *mm = main_module(); int UW = mm ? *(int32_t *)(mm->base + 0x211da38) : 0, UH = mm ? *(int32_t *)(mm->base + 0x211da3c) : 0; uint64_t fr = dm_guest_frame(), tf = atomic_load(&g_tip_fr);
+    { module_t *mm = main_module(); int UW = mm ? *(int32_t *)(mm->base + GA_UI_WIDTH) : 0, UH = mm ? *(int32_t *)(mm->base + GA_UI_HEIGHT) : 0; uint64_t fr = dm_guest_frame(), tf = atomic_load(&g_tip_fr);
       static int moved; int32_t rw = *(int32_t *)(w + 0x78);
       if (panel && UH > 0 && h > 0 && rw > 0 && tf && fr - tf <= 2) {
           int cy = UH + (int)lroundf((float)pv * UH / 2160.0f), hh = (int)lroundf((float)h * UH / 4320.0f), hw = (int)lroundf((float)rw * UH / 4320.0f), gap = UH / 90;
@@ -2425,7 +2426,7 @@ static void ui_trove_tabs_pump(module_t *m, uint64_t root, uint64_t fr) {
 
 
     { uint64_t gm = tabs ? ui_find(bk, "advancedstash_gems", 0) : 0; if (!gm || !ui_find(gm, "r01", 0)) tabs = 0; }
-    g_mv_want[MV_TROVE] = tabs != 0; if (!tabs || *(uint64_t *)tabs != (uint64_t)m->base + 0x20ba3a8) { mv_restore(root, MV_TROVE); return; }
+    g_mv_want[MV_TROVE] = tabs != 0; if (!tabs || *(uint64_t *)tabs != (uint64_t)m->base + GA_VT_TABBAR) { mv_restore(root, MV_TROVE); return; }
     uint64_t ch = *(uint64_t *)(tabs + 0x58), n = *(uint64_t *)(tabs + 0x60); int x0 = 0, x1 = 0, have = 0;
     for (uint64_t i = 0; ch && i < n && i < 64; i++) { uint64_t c = *(uint64_t *)(ch + 8 * i); const char *cn = c ? (const char *)*(uint64_t *)(c + 8) : NULL; if (!cn) continue;
         if (!strcmp(cn, "Image0")) { x0 = *(int32_t *)(c + 0x70); have |= 1; } if (!strcmp(cn, "Image1")) { x1 = *(int32_t *)(c + 0x70); have |= 2; } }
@@ -2440,7 +2441,7 @@ static void ui_trove_tabs_pump(module_t *m, uint64_t root, uint64_t fr) {
 
     for (int k = 0; k < 2; k++) { uint64_t t = ui_find(bk, k ? "TouchStashRight" : "TouchStashLeft", 0); static int32_t ox[2] = { INT32_MIN, INT32_MIN }; if (!t) continue;
         int32_t x = *(int32_t *)(t + 0x70); if (x < 50000) ox[k] = x; if (ox[k] != INT32_MIN) ui_move_ours(t, sel >= 2 ? 99999 : ox[k]); }
-    if (sel == 3 || sel == 4) { int to = last >= 5 ? 2 : 5; ((void (*)(uint64_t, int, int))(m->base + 0xad9b80))(tabs, to, 0); LOG("珍宝匣页签：落在第 %d 个（空页，上一个是第 %d 个）→ 改选第 %d 个，现为 %d", sel, last, to, TAB_SEL(tabs)); last = TAB_SEL(tabs); }
+    if (sel == 3 || sel == 4) { int to = last >= 5 ? 2 : 5; ((void (*)(uint64_t, int, int))(m->base + GA_TAB_SELECT))(tabs, to, 0); LOG("珍宝匣页签：落在第 %d 个（空页，上一个是第 %d 个）→ 改选第 %d 个，现为 %d", sel, last, to, TAB_SEL(tabs)); last = TAB_SEL(tabs); }
     else last = sel;
 }
 
@@ -2485,7 +2486,7 @@ static void ui_wtap_pump(module_t *m, uint64_t root, int width, int height) {
     uint64_t v = atomic_exchange(&g_wtap, 0); if (!(v >> 63)) return;
     int x = (int)lround((int16_t)(v >> 46 & 0xffff) / 8192.0 * width), y = (int)lround((int16_t)(v >> 30 & 0xffff) / 8192.0 * height);
     uint64_t p = ui_find(root, "HireablesPanel", 0), hd = p && *(uint8_t *)(p + 0x50) ? *(uint64_t *)(p + 0x1c8) : 0;
-    if (hd && *(int32_t *)(m->base + 0x2d58cb0) != 2 && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)hd + 0x48))(hd, (uint64_t)(uint32_t)x | (uint64_t)(uint32_t)y << 32) & 1)) {
+    if (hd && *(int32_t *)(m->base + GA_PORTRAIT_MODE) != 2 && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)hd + 0x48))(hd, (uint64_t)(uint32_t)x | (uint64_t)(uint32_t)y << 32) & 1)) {
         atomic_store(&g_mercpg, 1); LOG("界面命中：(%d,%d) → 佣兵头像，开佣兵页", x, y); return; }
 
 
@@ -2504,7 +2505,7 @@ static void ui_mercpg_pump(module_t *m, uint64_t root, uint64_t fr) {
     static int on, tries, page; static uint64_t pressed;
     if (atomic_exchange(&g_mercpg, 0) && !on) { on = 1; tries = 0; page = -1; pressed = 0; }
     if (!on) return;
-    if (*(uint8_t *)(m->base + 0x2d5ff66)) { LOG("佣兵页：已开（按键 %d 次）", tries); on = 0; return; }
+    if (*(uint8_t *)(m->base + GA_PANEL_MERC)) { LOG("佣兵页：已开（按键 %d 次）", tries); on = 0; return; }
     if (tries >= 9) { LOG("【红】佣兵页：按了 %d 次键还没翻到，放弃", tries); on = 0; return; }
     int dm = bd_open(root, "UISwitcher"), cur = dm ? bd_top_tab(root) : -1;
     if (tries) { uint64_t dt = fr - pressed; int moved = dm && cur >= 0 && cur != page; if (!((moved && dt >= 7) || dt >= 24)) return; }
@@ -2517,9 +2518,9 @@ static void ui_mercpg_pump(module_t *m, uint64_t root, uint64_t fr) {
 
 
 static void pages_text(uint8_t *b, uint64_t tb, int page, int total) {
-    struct { const char *s; uint64_t n; } key = { "SharedStashPage", 15 }; uint64_t fmt = ((uint64_t (*)(void *))(b + 0x7f5630))(&key);
-    char buf[256]; memset(buf, 0, sizeof buf); ((void (*)(void *, uint64_t, int64_t, int64_t))(b + 0x399130))(buf, fmt, page, total);
-    ((void (*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(tb + 0x88, buf, buf[0] ? strlen(buf) : 0); ((void (*)(uint64_t))(b + 0xadc434))(tb);
+    struct { const char *s; uint64_t n; } key = { "SharedStashPage", 15 }; uint64_t fmt = ((uint64_t (*)(void *))(b + GA_LOC_STRING_GET))(&key);
+    char buf[256]; memset(buf, 0, sizeof buf); ((void (*)(void *, uint64_t, int64_t, int64_t))(b + GA_TEXT_FORMAT))(buf, fmt, page, total);
+    ((void (*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(tb + 0x88, buf, buf[0] ? strlen(buf) : 0); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(tb);
 }
 static int g_bank_tab_keep = -1; static uint64_t g_bank_tab_until;
 static int ui_touch_or_pad_ready(void) { int dm_padmode_busy(void); return !dm_padmode_busy(); }
@@ -2532,7 +2533,7 @@ static void ui_pages_pump(module_t *m, uint64_t root) {
 
 
     if (g_bank_tab_keep >= 0 && tabs && ui_touch_or_pad_ready()) { int keep = g_bank_tab_keep; g_bank_tab_keep = -1;
-        int was = TAB_SEL(tabs); if (dm_guest_frame() <= g_bank_tab_until && was != keep) { ((void (*)(uint64_t, int, int))(m->base + 0xad9b80))(tabs, keep, 0); LOG("储藏箱：切换布局后页签从第 %d 个选回第 %d 个（现为 %d）", was, keep, TAB_SEL(tabs)); } }
+        int was = TAB_SEL(tabs); if (dm_guest_frame() <= g_bank_tab_until && was != keep) { ((void (*)(uint64_t, int, int))(m->base + GA_TAB_SELECT))(tabs, keep, 0); LOG("储藏箱：切换布局后页签从第 %d 个选回第 %d 个（现为 %d）", was, keep, TAB_SEL(tabs)); } }
     if (!tabs || !pg || !tb) return;
     int tab = TAB_SEL(tabs), cur; int dm_pages_cur(void), dm_pages_count(void); cur = dm_pages_cur(); uint8_t *b = (uint8_t *)m->base;
     ui_move_ours(pg, tab == 0 ? 0 : 99999);
@@ -2595,8 +2596,8 @@ static void ui_safe_pump(module_t *m, uint64_t root, uint64_t fr) {
     int ul0 = atomic_load(&g_safe_l); g_mv_want[MV_SAFE] = dm_uiscreen_ingame() && (u || ul0);
     if (!g_mv_want[MV_SAFE]) { mv_restore(root, MV_SAFE); return; }
     uint64_t w = ui_panel(root, "AutoMap");
-    if (w && *(uint64_t *)w == (uint64_t)m->base + 0x20c58a0) {
-        int cfg = *(volatile int32_t *)(m->base + 0x2d479f4), mini = *(volatile int32_t *)(m->base + 0x2d5c748); int32_t *rx = (int32_t *)(w + 0x70), ww = *(int32_t *)(w + 0x78);
+    if (w && *(uint64_t *)w == (uint64_t)m->base + GA_VT_AUTOMAP) {
+        int cfg = *(volatile int32_t *)(m->base + GA_AUTOMAP_MODE_CFG), mini = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI); int32_t *rx = (int32_t *)(w + 0x70), ww = *(int32_t *)(w + 0x78);
         int on = cfg == 2 && mini && ww > 0 && ww < 4000; int32_t x0 = *rx;
 
 
@@ -2642,15 +2643,15 @@ static void ui_safe_pump(module_t *m, uint64_t root, uint64_t fr) {
 static _Atomic uint64_t g_portrait;
 static int portrait_read(module_t *m, uint64_t root, int fake_row) {
     const uint8_t *b = m->base; uint64_t p = ui_panel(root, "HireablesPanel");
-    if (!p || !dm_widget_is(b, p, 0x2089568)) return DM_PT_UNKNOWN;
-    if (!*(uint8_t *)(p + 0x50) || *(volatile int32_t *)(m->base + 0x2d58cb0) == 2) return DM_PT_EMPTY;
+    if (!p || !dm_widget_is(b, p, GA_VT_HIREABLES_PANEL)) return DM_PT_UNKNOWN;
+    if (!*(uint8_t *)(p + 0x50) || *(volatile int32_t *)(m->base + GA_PORTRAIT_MODE) == 2) return DM_PT_EMPTY;
     float pax = *(float *)(p + 0x48), pay = *(float *)(p + 0x4c), ps = *(float *)(p + 0x80); int32_t py = *(int32_t *)(p + 0x74);
     if (pax != 0 || pay != 0 || !dm_pt_finite_in(ps, 0.1f, 10)) return DM_PT_UNKNOWN;
     uint64_t ch = *(uint64_t *)(p + 0x58), n = *(uint64_t *)(p + 0x60); if (n && (!ch || n > 40)) return DM_PT_UNKNOWN;
     float lowest = -INFINITY; int seen = 0;
     for (uint64_t k = 0; k < n; k++) {
         uint64_t c = *(uint64_t *)(ch + 8 * k); if (!c || !(*(uint8_t *)(c + 0x50) || (fake_row && k == 0))) continue;
-        if (!dm_widget_is(b, c, 0x20b73a0) || *(float *)(c + 0x48) != 0 || *(float *)(c + 0x4c) != 0) return DM_PT_UNKNOWN;
+        if (!dm_widget_is(b, c, GA_VT_ICON) || *(float *)(c + 0x48) != 0 || *(float *)(c + 0x4c) != 0) return DM_PT_UNKNOWN;
         dm_pt_icon ic = { *(int32_t *)(c + 0x74), *(int32_t *)(c + 0x7c), *(float *)(c + 0x80), 0, 0, 0, 0, 0 };
         uint64_t cc = *(uint64_t *)(c + 0x58), cn = *(uint64_t *)(c + 0x60); if (cn && (!cc || cn > 8)) return DM_PT_UNKNOWN;
         for (uint64_t j = 0; j < cn; j++) { uint64_t t = *(uint64_t *)(cc + 8 * j); const char *tn = t ? *(const char **)(t + 8) : NULL;
@@ -2696,7 +2697,7 @@ static void ui_level_word_pump(module_t *m, uint64_t fr) {
     static uint64_t next; if (fr < next) return; next = fr + 30;
     char w[48] = "";
     if (m && dm_uiscreen_ingame()) {
-        struct { const char *k; uint64_t n; } key = { "strchrlvl", 9 }; const char *s = ((const char *(*)(void *))(m->base + 0x7f5630))(&key);
+        struct { const char *k; uint64_t n; } key = { "strchrlvl", 9 }; const char *s = ((const char *(*)(void *))(m->base + GA_LOC_STRING_GET))(&key);
         if (s) { s = dm_untag(s); size_t n = strnlen(s, sizeof w); int ok = n > 0 && n < sizeof w && strcmp(s, "strchrlvl");
             for (size_t i = 0; ok && i < n; i++) ok = (uint8_t)s[i] >= 0x20 && (uint8_t)s[i] != 0x7f && !((uint8_t)s[i] == 0xc3 && (uint8_t)s[i + 1] == 0xbf);
             if (ok) memcpy(w, s, n + 1); }
@@ -2718,10 +2719,10 @@ int dm_ui_level_word(char *out, int cap) {
 static _Atomic uint64_t g_mapgeom;
 static void ui_map_geom_pump(module_t *m, uint64_t root) {
     uint64_t am = ui_panel(root, "AutoMap"); int mode = 0; float cell = 0;
-    if (am && *(uint64_t *)am == (uint64_t)m->base + 0x20c58a0 && *(uint8_t *)(am + 0x50)) {
-        mode = *(volatile int32_t *)(m->base + 0x2d5c748) == 0 ? 2 : 1;
-        float q = ceilf(((float (*)(uint64_t))(m->base + 0x390b38))(am) * *(float *)(am + (mode == 2 ? 0x15a8 : 0x15ac)) * 8) / 8; if (q < 0.125f) q = 0.125f;
-        cell = q * *(float *)(m->base + 0x2d5e918); }
+    if (am && *(uint64_t *)am == (uint64_t)m->base + GA_VT_AUTOMAP && *(uint8_t *)(am + 0x50)) {
+        mode = *(volatile int32_t *)(m->base + GA_AUTOMAP_IS_MINI) == 0 ? 2 : 1;
+        float q = ceilf(((float (*)(uint64_t))(m->base + GA_UI_SCALE_GET))(am) * *(float *)(am + (mode == 2 ? 0x15a8 : 0x15ac)) * 8) / 8; if (q < 0.125f) q = 0.125f;
+        cell = q * *(float *)(m->base + GA_AUTOMAP_CELL_X); }
     uint32_t cb; memcpy(&cb, &cell, 4); atomic_store(&g_mapgeom, (uint64_t)mode << 32 | cb);
 }
 int dm_ui_map_geom(float *cell) { uint64_t v = atomic_load(&g_mapgeom); uint32_t cb = (uint32_t)v; memcpy(cell, &cb, 4); return (int)(v >> 32); }
@@ -2734,11 +2735,11 @@ int dm_ui_map_geom(float *cell) { uint64_t v = atomic_load(&g_mapgeom); uint32_t
 static void ui_boss_pct_pump(module_t *m, uint64_t root) {
     uint64_t panel = ui_panel(root, "HUDMonsterHealth"); if (!panel || !*(uint8_t *)(panel + 0x50)) return;
     uint64_t hp = ui_find(panel, "Health", 1), tx = hp ? ui_find(hp, "TouchBossPct", 1) : 0;
-    if (!tx || *(uint64_t *)hp != (uint64_t)m->base + 0x2089650 || *(uint64_t *)tx != (uint64_t)m->base + 0x20ba4c8) return;
+    if (!tx || *(uint64_t *)hp != (uint64_t)m->base + GA_VT_HEALTH_BAR || *(uint64_t *)tx != (uint64_t)m->base + GA_VT_TEXTBOX) return;
     float v = *(float *)(hp + 0x154); if (!(v >= 0 && v <= 1)) return;
     char t[8]; int n = snprintf(t, sizeof t, "%d%%", (int)lroundf(v * 100));
     if (*(uint64_t *)(tx + 0x90) == (uint64_t)n && !memcmp(*(const char **)(tx + 0x88), t, (size_t)n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(m->base + 0x136e5c))(tx + 0x88, t, (uint64_t)n); ((void (*)(uint64_t))(m->base + 0xadc434))(tx);
+    ((void *(*)(uint64_t, const char *, uint64_t))(m->base + GA_TEXT_SET))(tx + 0x88, t, (uint64_t)n); ((void (*)(uint64_t))(m->base + GA_TEXT_LAYOUT))(tx);
 }
 
 
@@ -2749,10 +2750,10 @@ static map_diag_t g_map_diag; static int g_map_diag_have;
 static int ui_map_diag(module_t *m, uint64_t root) {
     map_diag_t d; memset(&d, 0, sizeof d); dm_hud_info hi; dm_hud_get(&hi); d.valid = hi.valid; d.area = hi.area;
     d.ingame = dm_uiscreen_ingame(); d.load = atomic_load(&g_load_up);
-    d.cfg = *(int32_t *)(m->base + 0x2d479f4); d.mini = *(int32_t *)(m->base + 0x2d5c748);
+    d.cfg = *(int32_t *)(m->base + GA_AUTOMAP_MODE_CFG); d.mini = *(int32_t *)(m->base + GA_AUTOMAP_IS_MINI);
     dm_ui_rect(&d.ux, &d.uy, &d.uw, &d.uh); dm_screen_real(&d.rw, &d.rh);
     uint64_t am = ui_panel(root, "AutoMap");
-    if (am && *(uint64_t *)am == (uint64_t)m->base + 0x20c58a0) { d.object = am; d.visible = *(uint8_t *)(am + 0x50);
+    if (am && *(uint64_t *)am == (uint64_t)m->base + GA_VT_AUTOMAP) { d.object = am; d.visible = *(uint8_t *)(am + 0x50);
         d.x = *(int32_t *)(am + 0x70); d.y = *(int32_t *)(am + 0x74); d.w = *(int32_t *)(am + 0x78); d.h = *(int32_t *)(am + 0x7c); }
     if (g_map_diag_have && !memcmp(&d, &g_map_diag, sizeof d)) return 0;
     int rebuilt = !g_map_diag_have || d.object != g_map_diag.object; memcpy(&g_map_diag, &d, sizeof d); g_map_diag_have = 1;
@@ -2762,7 +2763,7 @@ static int ui_map_diag(module_t *m, uint64_t root) {
 static void ui_minimap_pump(module_t *m, uint64_t root, int W, int H, uint64_t fr) {
     static uint64_t next; if (fr < next) return; next = fr + 30;
     ui_map_diag(m, root);
-    uint64_t w = ui_panel(root, "AutoMap"); if (!w || *(uint64_t *)w != (uint64_t)m->base + 0x20c58a0) return;
+    uint64_t w = ui_panel(root, "AutoMap"); if (!w || *(uint64_t *)w != (uint64_t)m->base + GA_VT_AUTOMAP) return;
     int32_t x = *(int32_t *)(w + 0x70), y = *(int32_t *)(w + 0x74), ww = *(int32_t *)(w + 0x78), hh = *(int32_t *)(w + 0x7c); float sc = *(float *)(w + 0x80);
     if (ww <= 0 || hh <= 0 || ww > 4000 || hh > 2160 || !(sc > 0.1f && sc < 10)) return;
     double u = H / 2160.0, x0 = (x < 0 ? W + x * u : x * u), y0 = y * u, x1 = x0 + ww * sc * u, y1 = y0 + hh * sc * u;
@@ -2809,7 +2810,7 @@ static int ui_widget_center(uint64_t t, int w, int h, float *nx, float *ny) {
 static void ui_watch_pump(void) {
     if (!atomic_load(&g_wn_on)) return;
     module_t *m = main_module(); if (!m) return;
-    int32_t w = *(int32_t *)(m->base + 0x211da38), h = *(int32_t *)(m->base + 0x211da3c); uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
+    int32_t w = *(int32_t *)(m->base + GA_UI_WIDTH), h = *(int32_t *)(m->base + GA_UI_HEIGHT); uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
     if (w <= 0 || h <= 0 || !root) return;
     uint64_t p = g_wn[1][0] ? vis_find(root, g_wn[1], 0) : root, t = p ? vis_find(p, g_wn[0], 0) : 0;
     if (!t) { atomic_store(&g_wn_pos, 0); return; }
@@ -3011,7 +3012,7 @@ static int root_panel_shown(uint64_t root, const char *name) {
     return 0;
 }
 int dm_ui_panel_shown(const char *name) {
-    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
     return root && name && name[0] && root_panel_shown(root, name);
 }
 
@@ -3049,7 +3050,7 @@ void dm_ui_sort_page(int page) { if (page == SORT_SHARED) atomic_store(&g_sort_s
 
 static uint64_t stash_grid(uint64_t w, uint64_t base, int dep) {
     if (!w || dep > 6 || !*(uint8_t *)(w + 0x50)) return 0;
-    if (dep && *(uint64_t *)w - base == 0x2089ab8) return w;
+    if (dep && *(uint64_t *)w - base == GA_VT_ITEM_GRID) return w;
     uint64_t ch = *(uint64_t *)(w + 0x58), n = *(uint64_t *)(w + 0x60); if (!ch || n > 256) return 0;
     for (uint64_t i = 0; i < n; i++) { uint64_t r = stash_grid(*(uint64_t *)(ch + 8 * i), base, dep + 1); if (r) return r; }
     return 0;
@@ -3161,7 +3162,7 @@ static int ui_touch_mode(void);
 
 
 static void tip_note(const uint64_t *regs) {
-    module_t *m = main_module(); if (!m) return; int H = *(int32_t *)(m->base + 0x211da3c); const char *txt = (const char *)(uintptr_t)regs[1]; if (H <= 0 || !txt) return;
+    module_t *m = main_module(); if (!m) return; int H = *(int32_t *)(m->base + GA_UI_HEIGHT); const char *txt = (const char *)(uintptr_t)regs[1]; if (H <= 0 || !txt) return;
     int n = 1; for (const char *c = txt; *c && n < 64; c++) n += *c == '\n';
     int tx = (int32_t)regs[2], ty = (int32_t)(regs[2] >> 32), tw = (int32_t)regs[3], th = (int32_t)(regs[3] >> 32), bh = (int)lroundf((0.038f * n + 0.03f) * H), hw = H / 4, cx = tx + tw / 2;
     int below = ty + th + bh <= H, y0 = below ? ty + th : ty - bh;
@@ -3176,11 +3177,11 @@ void dm_ui_tooltip_obs(const uint64_t *regs) { uint64_t *r = (uint64_t *)(uintpt
 static void tip_dock(const uint64_t *regs) {
     static int force = -2; if (force == -2) { const char *e = getenv("DM_TEST_TIPDOCK"); force = e ? atoi(e) : -1; }
     if (force == 0 || (force < 0 && !ui_touch_mode())) return;
-    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + 0x2f05458, 8); if (!root) return;
+    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + GA_UI_ROOT, 8); if (!root) return;
     if (atomic_load(&g_pstate) & (DM_PS_BANK | DM_PS_VENDOR | DM_PS_IMBUE | DM_PS_CUBE | DM_PS_VAULT | DM_PS_DEAD)) return;
     if (!ui_panel(root, "PlayerInventoryExpansionLayout") || ui_panel(root, "HirelingInventoryPanel")) return;
     dm_cursor_item_info ci; if (!dm_cursor_item(&ci)) return;
-    int W = *(int32_t *)(m->base + 0x211da38), H = *(int32_t *)(m->base + 0x211da3c); if (W <= 0 || H <= 0) return;
+    int W = *(int32_t *)(m->base + GA_UI_WIDTH), H = *(int32_t *)(m->base + GA_UI_HEIGHT); if (W <= 0 || H <= 0) return;
     int tx = (int32_t)regs[2], tw = (int32_t)regs[3], off = (int)lroundf(0.617f * H); if (W / 2 - off < H / 10) return;
     int left = tx + tw / 2 >= W / 2, cx = left ? W / 2 - off : W / 2 + off, y = (int)(0.117f * H);
     uint64_t *r = (uint64_t *)(uintptr_t)regs;
@@ -3202,12 +3203,12 @@ void dm_ui_mouse_pump(void) {
     if (fr == last_frame) return;
     (void)dm_ui_gen();
     ui_watch_pump();
-    { module_t *pm0 = main_module(); uint64_t pr = 0; if (pm0) memcpy(&pr, pm0->base + 0x2f05458, 8); if (pr) { ui_panel_heal(pr, fr); ui_panel_state_pump(pr); } }
+    { module_t *pm0 = main_module(); uint64_t pr = 0; if (pm0) memcpy(&pr, pm0->base + GA_UI_ROOT, 8); if (pr) { ui_panel_heal(pr, fr); ui_panel_state_pump(pr); } }
 
 
 
 
-    { static int st; static uint64_t at; uint64_t sb = atomic_load(&g_set_back_at); module_t *sm = main_module(); uint64_t hroot = 0; if (sm) memcpy(&hroot, sm->base + 0x2f05458, 8);
+    { static int st; static uint64_t at; uint64_t sb = atomic_load(&g_set_back_at); module_t *sm = main_module(); uint64_t hroot = 0; if (sm) memcpy(&hroot, sm->base + GA_UI_ROOT, 8);
       if (sb && fr >= sb) { atomic_store(&g_set_back_at, 0); ui_auto_key(DM_BTN_B); }
       { uint64_t qb = atomic_load(&g_speech_back_at); if (qb && fr >= qb) { atomic_store(&g_speech_back_at, 0); uint64_t qp = hroot ? ui_find(hroot, "QuestLogPanelExpansion", 1) : 0; if (qp && *(uint8_t *)(qp + 0x50)) ui_auto_key(DM_BTN_B); } }
       if ((atomic_load(&g_tab_left) > 0 || atomic_load(&g_tab_direct)) && atomic_load(&g_tab_top) == 1) { uint64_t sp = hroot ? ui_find(hroot, "SettingsPanel", 1) : 0; int open = sp && *(uint8_t *)(sp + 0x50);
@@ -3216,15 +3217,15 @@ void dm_ui_mouse_pump(void) {
       else if (!atomic_load(&g_tab_left) && !atomic_load(&g_tab_direct)) st = 0;
       if (atomic_exchange(&g_tab_direct, 0) && sm && hroot) {
           uint64_t gw = dm_wref_get(&g_tab_ref), tw = gw && ui_has(hroot, gw, 0) ? gw : 0, us = ui_find(hroot, "UISwitcher", 0); int d = atomic_load(&g_tab_delta);
-          if (!strcmp(g_tab_name, "UISwitcherTabs") && us && *(uint8_t *)(us + 0x50) && *(uint64_t *)(*(uint64_t *)us + 0x28) == (uint64_t)sm->base + 0x404fd8) {
+          if (!strcmp(g_tab_name, "UISwitcherTabs") && us && *(uint8_t *)(us + 0x50) && *(uint64_t *)(*(uint64_t *)us + 0x28) == (uint64_t)sm->base + GA_UISWITCHER_MSG) {
 
 
 
 
               int cur = *(int32_t *)(us + 0x1b8), n = *(int32_t *)(us + 0x188), to = g_tab_k; if (to < 0) to = 0; if (n > 0 && to >= n) to = n - 1;
-              ((void (*)(uint64_t, int, int))(sm->base + 0x405898))(us, to, d > 0); LOG("界面页签：功能页第 %d → 第 %d 页（直接切，现为 %d）", cur, to, *(int32_t *)(us + 0x1b8)); }
-          else if (tw && *(uint64_t *)tw == (uint64_t)sm->base + 0x20ba3a8 && *(uint8_t *)(tw + 0x50)) { int was = TAB_SEL(tw);
-              ((void (*)(uint64_t, int, int))(sm->base + 0xad9b80))(tw, g_tab_k, 1); LOG("界面页签：「%s」第 %d → 第 %d 个（直接选中，现为 %d）", g_tab_name, was, g_tab_k, TAB_SEL(tw)); }
+              ((void (*)(uint64_t, int, int))(sm->base + GA_UISWITCHER_SET_PAGE))(us, to, d > 0); LOG("界面页签：功能页第 %d → 第 %d 页（直接切，现为 %d）", cur, to, *(int32_t *)(us + 0x1b8)); }
+          else if (tw && *(uint64_t *)tw == (uint64_t)sm->base + GA_VT_TABBAR && *(uint8_t *)(tw + 0x50)) { int was = TAB_SEL(tw);
+              ((void (*)(uint64_t, int, int))(sm->base + GA_TAB_SELECT))(tw, g_tab_k, 1); LOG("界面页签：「%s」第 %d → 第 %d 个（直接选中，现为 %d）", g_tab_name, was, g_tab_k, TAB_SEL(tw)); }
           else LOG("【红】界面页签：页签条「%s」已不在 / 不可见，这次不切", g_tab_name);
           dm_wref_set(&g_tab_ref, 0); atomic_store(&g_tab_have, 0); } }
     ui_hire_focus_pump();
@@ -3232,24 +3233,24 @@ void dm_ui_mouse_pump(void) {
         else { uint64_t th = atomic_exchange(&g_tab_then, 0);
 
 
-            if (th == DM_BTN_A && atomic_load(&g_tab_top) == 3) { static int fix; int want = atomic_load(&g_menu_want), sel = -1; module_t *mm = main_module(); uint64_t rt = 0; if (mm) memcpy(&rt, mm->base + 0x2f05458, 8);
+            if (th == DM_BTN_A && atomic_load(&g_tab_top) == 3) { static int fix; int want = atomic_load(&g_menu_want), sel = -1; module_t *mm = main_module(); uint64_t rt = 0; if (mm) memcpy(&rt, mm->base + GA_UI_ROOT, 8);
                 uint64_t pn = rt ? ui_find(rt, "NpcDialogPanel", 0) : 0, ae = pn ? ui_find(pn, "ActiveElements", 0) : 0, ct = ae ? ui_find(ae, "Container", 0) : 0;
                 if (want >= 0 && ct && npc_menu_sel(pn, ct, &sel) && sel != want) {
                     if (fix < 2) { fix++; int d = want - sel; atomic_store(&g_tab_then, DM_BTN_A); atomic_store(&g_tab_mask, d > 0 ? DM_BTN_DOWN : DM_BTN_UP); atomic_store(&g_tab_left, d > 0 ? d : -d); LOG("界面对话菜单：按确认前选中行是 %d、要的是 %d，补挪 %+d 行", sel, want, d); th = 0; }
                     else { LOG("【红】界面对话菜单：补挪两轮后选中行仍是 %d（要 %d），这一下不按确认", sel, want); th = 0; fix = 0; } }
                 else fix = 0; }
             if (th) { ui_auto_key(th); tnext = fr + 8; } } } }
-    { module_t *pm = main_module(); uint64_t proot = 0; if (pm) { memcpy(&proot, pm->base + 0x2f05458, 8); int32_t pw = *(int32_t *)(pm->base + 0x211da38), phh = *(int32_t *)(pm->base + 0x211da3c);
-        static uint64_t pf = UINT64_MAX; if (proot && pw > 0 && phh > 0 && pf != fr) { pf = fr; { static int dd; const char *dn; if (!dd && (dn = getenv("DM_UI_DUMP")) && atomic_load(&g_taps_base) && fr >= atomic_load(&g_taps_base) + (getenv("DM_UI_DUMP_AT") ? atoi(getenv("DM_UI_DUMP_AT")) : 45)) { dd = 1; ui_dump(proot, 0, dn, 0, pm); } } int tm = ui_touch_mode(); if (tm) ui_wtap_pump(pm, proot, pw, phh); if (tm) ui_long_pump(); ui_target_pump(pm, fr); if (tm) ui_use_pump(); if (tm) ui_buy_pump(pw, phh); ui_item_pump(proot, pw, phh); ui_ptr_pump(pm, proot, pw, phh); if (tm) ui_drag_pump(pm, proot, pw, phh); UI_MOUSE_ITEM_PUMPS(pm, proot, pw, phh); { int lu = atomic_load(&g_load_up); dm_uiscreen_set_ingame(ui_panel(proot, "HUDPanel") && !(lu < 0 ? ui_find(proot, "LoadScreenPanel", 0) != 0 : lu)); } ui_safe_pump(pm, proot, fr); ui_lift_pump(proot, fr); ui_note_dock_pump(proot); ui_trove_tabs_pump(pm, proot, fr); ui_minimap_pump(pm, proot, pw, phh, fr); ui_map_pump(pm, proot); ui_map_geom_pump(pm, proot); ui_boss_pct_pump(pm, proot); ui_npcdlg_pump(proot); ui_map_center(pm, proot, *(volatile int32_t *)(pm->base + 0x2d5c748)); if (tm) ui_bind_pump(proot, fr); if (tm) swaptab_pump(proot); { void dm_build_ui_pump(uint64_t); dm_build_ui_pump(proot); } if (tm) ui_mercpg_pump(pm, proot, fr); ui_widestash_pump(proot); mv_audit_pump(proot, fr); ui_pages_pump(pm, proot); } } }
+    { module_t *pm = main_module(); uint64_t proot = 0; if (pm) { memcpy(&proot, pm->base + GA_UI_ROOT, 8); int32_t pw = *(int32_t *)(pm->base + GA_UI_WIDTH), phh = *(int32_t *)(pm->base + GA_UI_HEIGHT);
+        static uint64_t pf = UINT64_MAX; if (proot && pw > 0 && phh > 0 && pf != fr) { pf = fr; { static int dd; const char *dn; if (!dd && (dn = getenv("DM_UI_DUMP")) && atomic_load(&g_taps_base) && fr >= atomic_load(&g_taps_base) + (getenv("DM_UI_DUMP_AT") ? atoi(getenv("DM_UI_DUMP_AT")) : 45)) { dd = 1; ui_dump(proot, 0, dn, 0, pm); } } int tm = ui_touch_mode(); if (tm) ui_wtap_pump(pm, proot, pw, phh); if (tm) ui_long_pump(); ui_target_pump(pm, fr); if (tm) ui_use_pump(); if (tm) ui_buy_pump(pw, phh); ui_item_pump(proot, pw, phh); ui_ptr_pump(pm, proot, pw, phh); if (tm) ui_drag_pump(pm, proot, pw, phh); UI_MOUSE_ITEM_PUMPS(pm, proot, pw, phh); { int lu = atomic_load(&g_load_up); dm_uiscreen_set_ingame(ui_panel(proot, "HUDPanel") && !(lu < 0 ? ui_find(proot, "LoadScreenPanel", 0) != 0 : lu)); } ui_safe_pump(pm, proot, fr); ui_lift_pump(proot, fr); ui_note_dock_pump(proot); ui_trove_tabs_pump(pm, proot, fr); ui_minimap_pump(pm, proot, pw, phh, fr); ui_map_pump(pm, proot); ui_map_geom_pump(pm, proot); ui_boss_pct_pump(pm, proot); ui_npcdlg_pump(proot); ui_map_center(pm, proot, *(volatile int32_t *)(pm->base + GA_AUTOMAP_IS_MINI)); if (tm) ui_bind_pump(proot, fr); if (tm) swaptab_pump(proot); { void dm_build_ui_pump(uint64_t); dm_build_ui_pump(proot); } if (tm) ui_mercpg_pump(pm, proot, fr); ui_widestash_pump(proot); mv_audit_pump(proot, fr); ui_pages_pump(pm, proot); } } }
     if (atomic_load(&g_fe_name_open) && atomic_load(&g_ut_phase) == 2) {
-        module_t *nm = main_module(); uint64_t nroot = 0; if (nm) memcpy(&nroot, nm->base + 0x2f05458, 8); uint64_t pn = nroot ? ui_find(nroot, "CharacterCreateNamePanel", 0) : 0;
-        if (pn && nm) { int32_t w = *(int32_t *)(nm->base + 0x211da38), h = *(int32_t *)(nm->base + 0x211da3c); uint64_t v = atomic_load(&g_ut_xy);
+        module_t *nm = main_module(); uint64_t nroot = 0; if (nm) memcpy(&nroot, nm->base + GA_UI_ROOT, 8); uint64_t pn = nroot ? ui_find(nroot, "CharacterCreateNamePanel", 0) : 0;
+        if (pn && nm) { int32_t w = *(int32_t *)(nm->base + GA_UI_WIDTH), h = *(int32_t *)(nm->base + GA_UI_HEIGHT); uint64_t v = atomic_load(&g_ut_xy);
             uint64_t xy = (uint64_t)(uint32_t)(int)(((v >> 16) & 0xffff) / 65535.0 * w) | ((uint64_t)(uint32_t)(int)((v & 0xffff) / 65535.0 * h) << 32);
             static const char *box[] = { "InputBackplate", "InputBackground", "InputText" };
             for (int i = 0; i < 3; i++) { uint64_t b = ui_find(pn, box[i], 0); if (b && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)b + 0x48))(b, xy) & 1)) { atomic_store(&g_ut_phase, 0); atomic_store(&g_fe_name_tap, 1); break; } } } }
-    if (atomic_load(&g_del_q) && !atomic_load(&g_del_hold)) { module_t *dm = main_module(); uint64_t droot = 0; if (dm) memcpy(&droot, dm->base + 0x2f05458, 8);
+    if (atomic_load(&g_del_q) && !atomic_load(&g_del_hold)) { module_t *dm = main_module(); uint64_t droot = 0; if (dm) memcpy(&droot, dm->base + GA_UI_ROOT, 8);
         uint64_t modal = droot ? ui_find(droot, "DeleteCharacterModal", 0) : 0, yes = modal ? ui_find(modal, "Confirm", 0) : 0;
-        if (yes && dm) { int32_t w = *(int32_t *)(dm->base + 0x211da38), h = *(int32_t *)(dm->base + 0x211da3c); uint64_t v = atomic_load(&g_ut_xy);
+        if (yes && dm) { int32_t w = *(int32_t *)(dm->base + GA_UI_WIDTH), h = *(int32_t *)(dm->base + GA_UI_HEIGHT); uint64_t v = atomic_load(&g_ut_xy);
             uint64_t xy = (uint64_t)(uint32_t)(int)(((v >> 16) & 0xffff) / 65535.0 * w) | ((uint64_t)(uint32_t)(int)((v & 0xffff) / 65535.0 * h) << 32);
             uint64_t fn = *(uint64_t *)(*(uint64_t *)yes + 0x48);
             if (((int (*)(uint64_t, uint64_t))fn)(yes, xy) & 1) { atomic_store(&g_del_hold, 1); atomic_store(&g_ut_phase, 0); LOG("前端路径：删除角色弹窗按住「是」→ 按住 A 到松手"); }
@@ -3262,18 +3263,18 @@ void dm_ui_mouse_pump(void) {
           if (atomic_load(&g_qt_speech)) { atomic_store(&g_ut_xy, atomic_load(&g_qt_xy)); atomic_store(&g_ut_phase, 2); } } }
 
 
-    { module_t *hm = main_module(); uint64_t hr = 0; if (hm) memcpy(&hr, hm->base + 0x2f05458, 8); ui_portrait_pump(hm, hr, fr); ui_level_word_pump(hm, fr); }
+    { module_t *hm = main_module(); uint64_t hr = 0; if (hm) memcpy(&hr, hm->base + GA_UI_ROOT, 8); ui_portrait_pump(hm, hr, fr); ui_level_word_pump(hm, fr); }
     int ph = atomic_load(&g_ut_phase); if (!ph) return;
     last_frame = fr;
     module_t *m = main_module(); if (!m) return;
-    int32_t width = *(int32_t *)(m->base + 0x211da38), height = *(int32_t *)(m->base + 0x211da3c);
-    uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
+    int32_t width = *(int32_t *)(m->base + GA_UI_WIDTH), height = *(int32_t *)(m->base + GA_UI_HEIGHT);
+    uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
     if (width <= 0 || height <= 0 || !root) return;
     uint64_t r = atomic_load(&g_ut_xy);
     int x = (int)(((r >> 16) & 0xffff) / 65535.0 * width), y = (int)((r & 0xffff) / 65535.0 * height); if (x >= width) x = width - 1; if (y >= height) y = height - 1;
     if (atomic_load(&g_fe_opt_open)) { uint64_t bw = ui_find(root, "TouchBliss", 0);
         if (bw) { int on = *(int32_t *)(bw + 0x6e8) == 4; if (atomic_exchange(&g_fe_bliss, on) != on) { LOG("前端路径：极乐世界 %s", on ? "勾上" : "取消"); dm_elysium_arm(on); }
-            int32_t vw = *(int32_t *)(m->base + 0x211da38), vh = *(int32_t *)(m->base + 0x211da3c);
+            int32_t vw = *(int32_t *)(m->base + GA_UI_WIDTH), vh = *(int32_t *)(m->base + GA_UI_HEIGHT);
             if (ph && vh > 0 && !atomic_load(&g_fe_confirm_open) && y > BLISS_Y0 * vh / 2160 && y < BLISS_Y1 * vh / 2160) { x = vw / 2 + (-1551 + 35) * vh / 2160; y = (1330 + 33) * vh / 2160; } } }
     static uint64_t h_mv, h_dn, h_up; if (!h_mv) { h_mv = ui_hash("MouseMove"); h_dn = ui_hash("LeftMouseButtonDown"); h_up = ui_hash("LeftMouseButtonUp"); }
     static int logged;
@@ -3296,8 +3297,8 @@ void dm_ui_mouse_pump(void) {
         uint64_t pn = ui_find(root, "CharacterCreatePanel", 0), xy = (uint64_t)(uint32_t)x | ((uint64_t)(uint32_t)y << 32), ws[8]; int hit = -1;
         for (int i = 0; pn && i < 8; i++) { ws[i] = ui_find(pn, k_cc_class[i], 0); if (ws[i] && hit < 0 && (((int (*)(uint64_t, uint64_t))*(uint64_t *)(*(uint64_t *)ws[i] + 0x48))(ws[i], xy) & 1)) hit = i; }
         for (int i = 0; pn && hit >= 0 && i < 8; i++) if (i != hit && ws[i] && *(int32_t *)(ws[i] + 0x13f4) == 1) {
-            ((void (*)(uint64_t, int))(m->base + 0xc2cf24))(ws[i], 3); static int lg; if (lg++ < 12) LOG("前端路径：职业选择页改选 %s → 让出列中的 %s 归队", k_cc_class[hit], k_cc_class[i]); }
-        if (pn && hit >= 0 && ws[hit] && *(int32_t *)(ws[hit] + 0x13f4) == 3) ((void (*)(uint64_t, int))(m->base + 0xc2cf24))(ws[hit], 0);
+            ((void (*)(uint64_t, int))(m->base + GA_CHAR_SELECTOR_SET_STATE))(ws[i], 3); static int lg; if (lg++ < 12) LOG("前端路径：职业选择页改选 %s → 让出列中的 %s 归队", k_cc_class[hit], k_cc_class[i]); }
+        if (pn && hit >= 0 && ws[hit] && *(int32_t *)(ws[hit] + 0x13f4) == 3) ((void (*)(uint64_t, int))(m->base + GA_CHAR_SELECTOR_SET_STATE))(ws[hit], 0);
     }
 
 
@@ -3386,7 +3387,7 @@ static void rs_on_uimsg(const char *cat, const char *act, const char *arg);
 
 static char g_sel_name[17]; static uint64_t g_sel_fr;
 static const char *sel_cur(uint8_t *b, const char *want, int64_t *at) {
-    int mode = *(int32_t *)(b + 0x2d7badc) != 1; uint8_t *lv = b + (mode ? 0x2d710f0 : 0x2d71108), *slot = b + (mode ? 0x2d7b950 : 0x2d7b960);
+    int mode = *(int32_t *)(b + GA_ONLINE_MODE) != 1; uint8_t *lv = b + (mode ? GA_CHARLIST_OFFLINE : GA_CHARLIST_ONLINE), *slot = b + (mode ? GA_CHARSEL_SLOT_OFFLINE : GA_CHARSEL_SLOT_ONLINE);
     uint64_t arr = *(uint64_t *)lv, n = *(uint64_t *)(lv + 8), cur = *(uint64_t *)slot; const char *nm = NULL; if (at) *at = -1;
     for (uint64_t i = 0; arr && i < n && i < 256; i++) { uint64_t e = *(uint64_t *)(arr + 8 * i); if (!e) continue;
         if (i == cur && slot[8]) nm = (const char *)(e + 0x10); if (want && at && *at < 0 && !strncmp((const char *)(e + 0x10), want, 16)) *at = (int64_t)i; }
@@ -3400,7 +3401,7 @@ static void sel_keep(const char *cat, const char *act) {
     int64_t at; const char *nm = sel_cur(b, g_sel_name, &at); char want[17]; strlcpy(want, g_sel_name, sizeof want); g_sel_name[0] = 0;
     if (nm && !strncmp(nm, want, 16)) return;
     if (at < 0) { LOG("【红】选角：确认的角色「%s」不在重排后的列表里，当前是「%s」，不动", want, nm ? nm : ""); return; }
-    ((void (*)(int))(b + 0x7fe32c))((int)at); fe_send("MainMenuHD", "UpdateCharacterInfo", "");
+    ((void (*)(int))(b + GA_CHARSEL_SET_CURRENT))((int)at); fe_send("MainMenuHD", "UpdateCharacterInfo", "");
     LOG("选角：确认的是「%s」，原版重排后当前成了「%s」（被选者没排到第一行）→ 已按名字设回第 %lld 行", want, nm ? nm : "", (long long)at);
 }
 void dm_ui_on_uimsg(const char *cat, const char *act, const char *arg) {
@@ -3411,12 +3412,12 @@ void dm_ui_on_uimsg(const char *cat, const char *act, const char *arg) {
     else if (!strcmp(act, "SelectTab") || !strcmp(act, "ActivateTab")) mv_audit_arm("切页签");
     else if (!strcmp(cat, "FrontEndNavigation") && !strcmp(act, "ToFrontEnd")) mv_audit_arm("退出到前端");
     if (!strcmp(cat, "PanelManager") && arg && !strcmp(arg, "LoadScreenPanel") && (!strcmp(act, "OpenPanel") || !strcmp(act, "UnloadPanel"))) { int up = act[0] == 'O'; atomic_store(&g_load_up, up);
-        module_t *pm = main_module(); uint64_t root = 0; if (pm) memcpy(&root, pm->base + 0x2f05458, 8);
+        module_t *pm = main_module(); uint64_t root = 0; if (pm) memcpy(&root, pm->base + GA_UI_ROOT, 8);
         if (root) { dm_uiscreen_set_ingame(!up && ui_find(root, "HUDPanel", 0)); g_lift_next = 0; ui_lift_pump(root, 0); } }
     if (!strcmp(cat, "PausePanelMessage") && !strcmp(act, "ExitGame")) { void dm_resume_exit_game(void); dm_resume_exit_game(); }
     { int ex = (!strcmp(cat, "PausePanelMessage") && !strcmp(act, "ExitGame")) || (!strcmp(cat, "FrontEndNavigation") && !strcmp(act, "ToFrontEnd")),
           ld = !strcmp(cat, "PanelManager") && arg && !strcmp(arg, "LoadScreenPanel") && !strcmp(act, "OpenPanel");
-      if (ex || ld) { module_t *pm = main_module(); uint64_t root = 0; if (pm) memcpy(&root, pm->base + 0x2f05458, 8); if (ex) g_nd_hold = 1;
+      if (ex || ld) { module_t *pm = main_module(); uint64_t root = 0; if (pm) memcpy(&root, pm->base + GA_UI_ROOT, 8); if (ex) g_nd_hold = 1;
           note_dock_restore(root, ex ? (act[0] == 'E' ? "保存并退出" : "回到前端") : "读取画面（切场景）"); } }
     if (!strcmp(cat, "ProgressionMessage") && !strcmp(act, "PlayVideo")) atomic_store(&g_map_movie, 1);
     else if ((!strcmp(cat, "Cinematics") && !strcmp(act, "MovieComplete")) || (!strcmp(cat, "FrontEndNavigation") && !strcmp(act, "ToFrontEnd"))) atomic_store(&g_map_movie, 0);
@@ -3502,7 +3503,7 @@ uint64_t dm_ui_auto_buttons(void) { return (dm_guest_frame() < atomic_load(&g_fe
 static void fe_key(uint64_t mask) { atomic_store(&g_fe_key_mask, mask); atomic_store(&g_fe_key_until, dm_guest_frame() + 3); }
 static void ui_auto_key(uint64_t mask) { fe_key(mask); }
 static void fe_send(const char *cat, const char *act, const char *arg) {
-    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + 0x2f05458, 8); if (!root) return;
+    module_t *m = main_module(); uint64_t root = 0; if (!m) return; memcpy(&root, m->base + GA_UI_ROOT, 8); if (!root) return;
     static char payload[64]; static uint64_t msg[8]; memset(payload, 0, sizeof payload); strlcpy(payload, arg, sizeof payload);
     memset(msg, 0, sizeof msg); msg[0] = ui_hash(cat); msg[1] = ui_hash(act); msg[2] = (uint64_t)payload; msg[3] = 1; msg[4] = 1;
     uint64_t vt = 0, fn = 0; memcpy(&vt, (void *)root, 8); memcpy(&fn, (void *)(vt + 0x28), 8);
@@ -3550,13 +3551,13 @@ static void rs_pump(void) {
       else if (e == 2 && fr - g_rs_ext_f > 30) { atomic_store(&g_rs_ext, 0); g_rs_req = 1; } }
     if (g_rs_req) { g_rs_req = 0; if (atomic_load(&g_rs) != RS_IDLE) return;
         int dm_diag_difficulty(void); module_t *m = main_module(); uint8_t *b = m ? (uint8_t *)m->base : NULL; int d = dm_diag_difficulty();
-        uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)) : 0, pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
+        uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)) : 0, pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
         if (d < 0 || !pd || !*(const char *)pd) { LOG("【红】一键重开：取不到当前角色 / 难度（难度 %d），不动", d); return; }
         strlcpy(g_rs_name, (const char *)pd, sizeof g_rs_name); g_rs_diff = d; g_rs_t0 = fe_ms(); g_rs_f0 = fr; g_rs_resent = 0; rs_set(RS_EXIT);
         LOG("一键重开：「%s」难度 %d → 原版保存并退出", g_rs_name, d); fe_send("PausePanelMessage", "ExitGame", ""); return; }
     int st = atomic_load(&g_rs);
     if (st == RS_IDLE && g_rs_verify) {
-        module_t *m = main_module(); uint8_t *b = m ? (uint8_t *)m->base : NULL; uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)) : 0, pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
+        module_t *m = main_module(); uint8_t *b = m ? (uint8_t *)m->base : NULL; uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)) : 0, pd = pl ? *(uint64_t *)(pl + 0x10) : 0;
         if (pd && *(const char *)pd) { int same = !strcmp((const char *)pd, g_rs_name); g_rs_verify = 0; LOG("%s一键重开：进局后核对，当前角色「%s」，刚退出的是「%s」→ %s", same ? "" : "【红】", (const char *)pd, g_rs_name, same ? "相符" : "不符"); }
         else if (fr - g_rs_f0 > 1800) { g_rs_verify = 0; LOG("【红】一键重开：1800 帧没读到局内角色，核对不了"); } }
     if (st == RS_IDLE) return;
@@ -3574,8 +3575,8 @@ static void rs_pump(void) {
 
 
 
-        { module_t *m = main_module(); uint8_t *b = (uint8_t *)m->base; int mode = *(int32_t *)(b + 0x2d7badc) != 1;
-          uint8_t *lv = b + (mode ? 0x2d710f0 : 0x2d71108), *slot = b + (mode ? 0x2d7b950 : 0x2d7b960); uint64_t arr = *(uint64_t *)lv, n = *(uint64_t *)(lv + 8); int64_t idx = -1;
+        { module_t *m = main_module(); uint8_t *b = (uint8_t *)m->base; int mode = *(int32_t *)(b + GA_ONLINE_MODE) != 1;
+          uint8_t *lv = b + (mode ? GA_CHARLIST_OFFLINE : GA_CHARLIST_ONLINE), *slot = b + (mode ? GA_CHARSEL_SLOT_OFFLINE : GA_CHARSEL_SLOT_ONLINE); uint64_t arr = *(uint64_t *)lv, n = *(uint64_t *)(lv + 8); int64_t idx = -1;
           for (uint64_t i = 0; arr && i < n && i < 256 && idx < 0; i++) { uint64_t e = *(uint64_t *)(arr + 8 * i); if (e && !strncmp((const char *)(e + 0x10), g_rs_name, 16)) idx = (int64_t)i; }
           if (idx < 0) { rs_abort("原版角色列表里没有刚退出的角色"); LOG("一键重开：列表 %llu 项，要的是「%s」", (unsigned long long)n, g_rs_name); return; }
           if (getenv("DM_TEST_RS_WRONGSEL") && n > 1) { *(uint64_t *)slot = (uint64_t)(idx + 1) % n; slot[8] = 1; LOG("DM_TEST_RS_WRONGSEL：先把选中改成第 %llu 项（模拟回前端后第一行不是刚退出的角色）", (unsigned long long)((idx + 1) % n)); }
@@ -3602,7 +3603,7 @@ void dm_ui_frontend_pump(void) {
     rs_pump(); if (atomic_load(&g_rs) != RS_IDLE) return;
     static uint64_t next; uint64_t fr = dm_guest_frame(); if (fr < next) return;
     if (atomic_load(&g_cc_open)) {
-        module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+        module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
         uint64_t pn = root ? ui_find(root, "CharacterCreatePanel", 0) : 0, bk = pn ? ui_find(pn, "TouchBack", 0) : 0;
         if (bk) { const char *sv = getenv("DM_SAVE"); uint8_t want = !sv || has_character(sv, 0);
             ui_show_ours(bk, want); }
@@ -3616,7 +3617,7 @@ void dm_ui_frontend_pump(void) {
 
 
 
-    { int dm_padmode_current(void); uint64_t dm_padmode_page_keys(uint64_t); static int ck; module_t *mm = main_module(); uint64_t root = 0; if (mm) memcpy(&root, mm->base + 0x2f05458, 8);
+    { int dm_padmode_current(void); uint64_t dm_padmode_page_keys(uint64_t); static int ck; module_t *mm = main_module(); uint64_t root = 0; if (mm) memcpy(&root, mm->base + GA_UI_ROOT, 8);
 
 
 
@@ -3643,7 +3644,7 @@ void dm_ui_frontend_pump(void) {
 
           { void dm_padmode_legend_hide(const char *, int); dm_padmode_legend_hide("CharacterOptionsLegend", 2); }
           if ((dm_padmode_page_keys(DM_BTN_Y | DM_BTN_X | (prep == 3 ? DM_BTN_UP | DM_BTN_DOWN : DM_BTN_LEFT | DM_BTN_RIGHT | DM_BTN_A)) & DM_BTN_Y) && !ck) { ck = 1; LOG("前端路径：手柄模式页按 Y → 翻「极乐世界」的勾"); }
-          if (ck) { int32_t vw = *(int32_t *)(mm->base + 0x211da38), vh = *(int32_t *)(mm->base + 0x211da3c); int x = vw / 2 + (-1551 + 35) * vh / 2160, y = (1330 + 33) * vh / 2160;
+          if (ck) { int32_t vw = *(int32_t *)(mm->base + GA_UI_WIDTH), vh = *(int32_t *)(mm->base + GA_UI_HEIGHT); int x = vw / 2 + (-1551 + 35) * vh / 2160, y = (1330 + 33) * vh / 2160;
               ui_send_mouse(mm, root, ui_hash("MouseMove"), x, y);
               if (ck == 2) ui_send_mouse(mm, root, ui_hash("LeftMouseButtonDown"), x, y); else if (ck == 3) ui_send_mouse(mm, root, ui_hash("LeftMouseButtonUp"), x, y);
               if (++ck > 3) ck = 0; return; } }
@@ -3685,12 +3686,12 @@ void dm_ui_frontend_pump(void) {
 
 
 
-    { static int st, tries, ck; static uint64_t at; module_t *mm = main_module(); uint64_t root = 0; if (mm) memcpy(&root, mm->base + 0x2f05458, 8);
+    { static int st, tries, ck; static uint64_t at; module_t *mm = main_module(); uint64_t root = 0; if (mm) memcpy(&root, mm->base + GA_UI_ROOT, 8);
       if (atomic_exchange(&g_fe_options, 0) && !st) { st = 1; tries = 0; ck = 0; at = fr + 4; }
       if (st && fr >= at) { uint64_t pn = root ? ui_find(root, "CharacterOptionsPanel", 0) : 0, hw = pn ? *(uint64_t *)(pn + 0x1e0) : 0;
           if (!pn || !atomic_load(&g_fe_opt_open) || atomic_load(&g_fe_confirm_open)) st = 0;
           else if (ck) {
-              int32_t vw = *(int32_t *)(mm->base + 0x211da38), vh = *(int32_t *)(mm->base + 0x211da3c); int x = vw / 2 + 908 * vh / 2160, y = 1079 * vh / 2160;
+              int32_t vw = *(int32_t *)(mm->base + GA_UI_WIDTH), vh = *(int32_t *)(mm->base + GA_UI_HEIGHT); int x = vw / 2 + 908 * vh / 2160, y = 1079 * vh / 2160;
               ui_send_mouse(mm, root, ui_hash("MouseMove"), x, y);
               if (ck == 2) ui_send_mouse(mm, root, ui_hash("LeftMouseButtonDown"), x, y); else if (ck == 3) ui_send_mouse(mm, root, ui_hash("LeftMouseButtonUp"), x, y);
               if (++ck > 3) { ck = 0; at = fr + 4; } }
@@ -3710,9 +3711,9 @@ void dm_ui_frontend_pump(void) {
 
     { static int seen; if (!atomic_load(&g_fe_name_done)) seen = 0; else if (!seen) { seen = 1; atomic_store(&g_fe_name_ms, fe_ms()); } }
     if (atomic_load(&g_fe_name_done)) {
-        module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+        module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
         uint64_t pn = root ? ui_find(root, "CharacterCreateNamePanel", 0) : 0, it = pn ? ui_find(pn, "InputText", 0) : 0; size_t wl = strlen(g_fe_name_text);
-        int same = 0; if (it && *(uint64_t *)it - (uint64_t)(uintptr_t)m->base == 0x20b8718) { const char *t = *(const char **)(it + 0x558); uint64_t n = *(uint64_t *)(it + 0x560); same = t && n == wl && !memcmp(t, g_fe_name_text, wl); }
+        int same = 0; if (it && *(uint64_t *)it - (uint64_t)(uintptr_t)m->base == GA_VT_INPUT_TEXT) { const char *t = *(const char **)(it + 0x558); uint64_t n = *(uint64_t *)(it + 0x560); same = t && n == wl && !memcmp(t, g_fe_name_text, wl); }
         if (same) { atomic_store(&g_fe_name_done, 0); fe_key(DM_BTN_PLUS); next = fr + 8; LOG("前端路径：名字已进名字框（看到键盘交回后 %llu ms）→ 接受（PLUS）", (unsigned long long)(fe_ms() - atomic_load(&g_fe_name_ms))); }
         else if (fe_ms() - atomic_load(&g_fe_name_ms) > 2000) { atomic_store(&g_fe_name_done, 0); LOG("【红】前端路径：看到键盘交回 2 秒后名字框仍不是「%s」（%s），不自动接受，留给玩家手动确认", g_fe_name_text, it ? "内容不符" : "没找到名字框"); }
         return;
@@ -3726,7 +3727,7 @@ void dm_ui_frontend_pump(void) {
 
 
 
-    int ribbon = atomic_load(&g_fe_ribbon), list_vis = 0; if (ribbon) { module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8); uint64_t w = root ? ui_find(root, "CharacterSelectPanel", 0) : 0; list_vis = w && *(uint8_t *)(w + 0x50); }
+    int ribbon = atomic_load(&g_fe_ribbon), list_vis = 0; if (ribbon) { module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8); uint64_t w = root ? ui_find(root, "CharacterSelectPanel", 0) : 0; list_vis = w && *(uint8_t *)(w + 0x50); }
     static uint64_t bare; if (ribbon && !list_vis && !atomic_load(&g_fe_confirm_open)) { if (!bare) bare = fr; else if (fr - bare >= 20) { bare = 0; const char *sv = getenv("DM_SAVE"); if (!sv || has_character(sv, 0)) { fe_key(DM_BTN_X); next = fr + 30; LOG("前端路径：选角列表被收起 → 重新打开（X）"); }
             else { atomic_store(&g_fe_ribbon, 0); fe_send("FrontEndNavigation", "ToCharacterCreate", "1"); next = fr + 30; LOG("前端路径：已没有角色（删掉了最后一个）→ 直达职业选择"); } } } else bare = 0;
 }
@@ -3745,7 +3746,7 @@ void dm_ui_auto_mode_leave(void) {
 
 
 void dm_ui_cache_mode_leave(void) {
-    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + 0x2f05458, 8);
+    module_t *m = main_module(); uint64_t root = 0; if (m) memcpy(&root, m->base + GA_UI_ROOT, 8);
     { uint64_t bk = root ? ui_panel(root, "BankExpansionLayout") : 0, tabs = bk && *(uint8_t *)(bk + 0x50) ? ui_find(bk, "BankTabs", 0) : 0;
       g_bank_tab_keep = tabs ? TAB_SEL(tabs) : -1; g_bank_tab_until = dm_guest_frame() + 120; }
     for (int o = 0; o < MV_N; o++) mv_restore(root, o);
@@ -3765,7 +3766,7 @@ void dm_ui_cache_mode_leave(void) {
 
 uint32_t dm_rw_shared_unit(uint8_t *b);
 static int stash_page_no(uint8_t *b, uint32_t unit) {
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)), inv = pl ? *(uint64_t *)(pl + 0x90) : 0; int n = 0;
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)), inv = pl ? *(uint64_t *)(pl + 0x90) : 0; int n = 0;
     if (!unit || !inv || *(uint32_t *)inv != 0x01020304) return 0;
     for (uint64_t en = *(uint64_t *)(inv + 0x68); en && n < 16; en = *(uint64_t *)(en + 0x10)) {
         if (!*(uint8_t *)(en + 9) || *(uint8_t *)(en + 0xa)) continue;
@@ -3775,10 +3776,10 @@ static int stash_page_no(uint8_t *b, uint32_t unit) {
 }
 
 static int stash_widgets(module_t *m, uint64_t *bk, uint64_t *tabs) {
-    uint64_t root = 0; memcpy(&root, m->base + 0x2f05458, 8);
+    uint64_t root = 0; memcpy(&root, m->base + GA_UI_ROOT, 8);
     *bk = root ? ui_panel(root, "BankExpansionLayout") : 0; *tabs = *bk && *(uint8_t *)(*bk + 0x50) ? ui_find(*bk, "BankTabs", 0) : 0;
-    if (!*tabs || !*(uint8_t *)(*tabs + 0x50) || *(uint64_t *)*tabs != (uint64_t)m->base + 0x20ba3a8) return 0;
-    if (*(uint64_t *)(*(uint64_t *)*bk + 0x28) != (uint64_t)m->base + 0x399858) {
+    if (!*tabs || !*(uint8_t *)(*tabs + 0x50) || *(uint64_t *)*tabs != (uint64_t)m->base + GA_VT_TABBAR) return 0;
+    if (*(uint64_t *)(*(uint64_t *)*bk + 0x28) != (uint64_t)m->base + GA_STASH_PANEL_MSG) {
         static int said; if (!said++) LOG("stash view: the stash panel's message handler is not the one the page turn belongs to (%#llx)", (unsigned long long)(*(uint64_t *)(*(uint64_t *)*bk + 0x28) - (uint64_t)m->base));
         return 0;
     }
@@ -3794,11 +3795,11 @@ int dm_ui_stash_toward(int tab, uint32_t unit) {
     module_t *m = main_module(); uint64_t bk, tabs;
     if (!m || tab < 0 || (tab == 1) != (unit != 0) || dm_ui_unstable() || !stash_widgets(m, &bk, &tabs)) return -1;
     uint8_t *b = (uint8_t *)m->base; int sel = TAB_SEL(tabs);
-    if (sel != tab) { ((void (*)(uint64_t, int, int))(b + 0xad9b80))(tabs, tab, 0); LOG("stash view: tab %d -> %d (now %d)", sel, tab, TAB_SEL(tabs)); return TAB_SEL(tabs) == tab ? 0 : -1; }
+    if (sel != tab) { ((void (*)(uint64_t, int, int))(b + GA_TAB_SELECT))(tabs, tab, 0); LOG("stash view: tab %d -> %d (now %d)", sel, tab, TAB_SEL(tabs)); return TAB_SEL(tabs) == tab ? 0 : -1; }
     if (tab != 1) return 1;
     uint32_t cur = dm_rw_shared_unit(b); if (cur == unit) return 1;
     int at = stash_page_no(b, cur), to = stash_page_no(b, unit); if (!at || !to) return -1;
-    ((void (*)(uint64_t, int, int))(b + 0x39b9c0))(bk, to > at, 0);
+    ((void (*)(uint64_t, int, int))(b + GA_STASH_PAGE_STEP))(bk, to > at, 0);
     LOG("stash view: shared page %d -> %d (unit %u -> %u, now %u)", at, to, cur, unit, dm_rw_shared_unit(b));
     return 0;
 }

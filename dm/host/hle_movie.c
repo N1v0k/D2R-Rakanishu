@@ -32,6 +32,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <time.h>
 
 #define MV_SKIP_NS   100000000ll

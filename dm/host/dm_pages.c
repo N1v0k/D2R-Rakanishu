@@ -13,6 +13,7 @@
 
 
 #include <time.h>
+#include "game_addrs.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,9 +31,9 @@ int dm_request_save(void);
 static pthread_mutex_t g_pmu = PTHREAD_MUTEX_INITIALIZER;
 
 int dm_item_write(uint8_t *b, uint64_t it, uint8_t *buf) {
-    struct { uint64_t buf, cap, n, bits; uint32_t err, pad; uint8_t rest[0x60]; } w; uint64_t ctx[2] = { *(uint64_t *)(b + 0x211feb8) + 0x10, 0 };
+    struct { uint64_t buf, cap, n, bits; uint32_t err, pad; uint8_t rest[0x60]; } w; uint64_t ctx[2] = { *(uint64_t *)(b + GA_GOT_ITEM_WRITE_CTX) + 0x10, 0 };
     memset(&w, 0, sizeof w); memset(buf, 0, VBYTES); w.buf = (uint64_t)buf; w.cap = VBYTES * 8;
-    ((void (*)(uint64_t, void *, int, int, int, void *))(b + 0x581b60))(it, &w, 1, 1, 0, ctx);
+    ((void (*)(uint64_t, void *, int, int, int, void *))(b + GA_ITEM_WRITE_BITS))(it, &w, 1, 1, 0, ctx);
     int len = w.err ? 0 : (int)w.n + (w.bits != 0); return len > 0 && len <= VBYTES ? len : 0;
 }
 
@@ -46,8 +47,8 @@ uint64_t dm_item_make(uint8_t *b, uint64_t G, uint64_t room, const uint8_t *buf,
 typedef struct { uint8_t *b; uint64_t G, room; int depth; } ib_game;
 static uint64_t ib_build(void *vx, const uint8_t *buf, int len, int *used, int *socks) {
     ib_game *x = vx; uint8_t info[0x100]; memset(info, 0, sizeof info); *used = 0;
-    ((void (*)(int, const void *, int64_t, int, void *, int))(x->b + 0x5793a0))(*(uint8_t *)(x->G + 0x106), buf, len, 1, info, 0x69);
-    uint64_t nu = ((uint64_t (*)(uint64_t, uint64_t, const void *, int, int, void *, int *, int))(x->b + 0x6564e0))(x->G, x->depth++ ? 0 : x->room, buf, len, 1, info, used, 0x69);
+    ((void (*)(int, const void *, int64_t, int, void *, int))(x->b + GA_ITEM_READ_BITS))(*(uint8_t *)(x->G + 0x106), buf, len, 1, info, 0x69);
+    uint64_t nu = ((uint64_t (*)(uint64_t, uint64_t, const void *, int, int, void *, int *, int))(x->b + GA_ITEM_BUILD_FROM_BITS))(x->G, x->depth++ ? 0 : x->room, buf, len, 1, info, used, 0x69);
     if (!nu) { if (x->depth > 1) LOG("【红】建物品：孔里第 %d 件建不出来", x->depth - 1); return 0; }
     { uint64_t nd = *(uint64_t *)(nu + 0x10); if (nd) *(uint32_t *)(nd + 0x18) &= ~0x2000u; }
     *socks = *(int32_t *)(info + 0x14);
@@ -55,13 +56,13 @@ static uint64_t ib_build(void *vx, const uint8_t *buf, int len, int *used, int *
 }
 static int ib_attach(void *vx, uint64_t parent, uint64_t ch) {
     ib_game *x = vx;
-    ((void (*)(uint64_t, int))(x->b + 0x5ca8a0))(ch, 4);
-    if (((int (*)(uint64_t, uint64_t, uint32_t, uint32_t, int))(x->b + 0x64d080))(x->G, parent, *(uint32_t *)(ch + 8), *(uint32_t *)(parent + 8), 2)) return 1;
+    ((void (*)(uint64_t, int))(x->b + GA_UNIT_SET_MODE))(ch, 4);
+    if (((int (*)(uint64_t, uint64_t, uint32_t, uint32_t, int))(x->b + GA_ITEM_SOCKET_INSERT))(x->G, parent, *(uint32_t *)(ch + 8), *(uint32_t *)(parent + 8), 2)) return 1;
     LOG("【红】建物品：孔里第 %d 件镶不回去", x->depth - 1);
     return 0;
 }
 static int ib_loose(void *vx, uint64_t it) { (void)vx; uint64_t d = *(uint64_t *)(it + 0x10); return !d || !*(uint64_t *)(d + 0xa0); }
-static void ib_release(void *vx, uint64_t it) { ib_game *x = vx; ((void (*)(uint64_t, uint64_t))(x->b + 0x658be0))(x->G, it); }
+static void ib_release(void *vx, uint64_t it) { ib_game *x = vx; ((void (*)(uint64_t, uint64_t))(x->b + GA_ITEM_FREE))(x->G, it); }
 static uint64_t item_make(uint8_t *b, uint64_t G, uint64_t room, const uint8_t *buf, int len, int all, int *socks_out, int *bytes_out, dm_ib_result *out) {
     ib_game x = { b, G, room, 0 }; dm_ib_ops o = { ib_build, ib_attach, ib_loose, ib_release, &x }; dm_ib_result r;
     uint64_t nu = dm_ib_make(&o, buf, len, all, &r);
@@ -283,18 +284,18 @@ static void pages_flip(uint8_t *b, uint64_t G, uint64_t player, int dir) {
         if (!len || !(out.it[i].bits = malloc((size_t)len))) { LOG("【红】个人仓库：第 %d 件写不出位流，这次不翻", i + 1); out.n = i; ppage_free(&out); return; }
         memcpy(out.it[i].bits, buf, (size_t)len); out.it[i].len = (uint16_t)len; out.it[i].x = (uint8_t)(pp ? *(int32_t *)(pp + 0x10) : 0); out.it[i].y = (uint8_t)(pp ? *(int32_t *)(pp + 0x14) : 0); out.n = i + 1; }
     for (int i = 0; i < n; i++) { uint64_t x = list[i], d = *(uint64_t *)(x + 0x10);
-        ((void (*)(uint64_t))(b + 0x55e430))(x); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, x, 0x20, 4, 0, *(uint8_t *)(d + 0x55), out.it[i].y, out.it[i].x); ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, x); }
+        ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(x); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, x, 0x20, 4, 0, *(uint8_t *)(d + 0x55), out.it[i].y, out.it[i].x); ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, x); }
     ppage left = { 0, g_pp[tgt].n ? calloc((size_t)g_pp[tgt].n, sizeof(pitem)) : NULL };
     for (int i = 0; i < g_pp[tgt].n; i++) { pitem *pi = &g_pp[tgt].it[i]; uint64_t nu = dm_item_make(b, G, 0, pi->bits, pi->len, NULL), nd = nu ? *(uint64_t *)(nu + 0x10) : 0, ip = nu ? *(uint64_t *)(nu + 0x38) : 0;
-        if (nd && ip) { *(uint8_t *)(nd + 0x55) = 4; *(int32_t *)(ip + 0x10) = pi->x; *(int32_t *)(ip + 0x14) = pi->y; uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, player, &one, &ox); }
-        if (nd && *(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + 0x642f70))(G, player, nu, 1, 2, 0, 4, 0, (uint64_t)pi->x | (uint64_t)pi->y << 16); pitem_dup(&g_pB, pi); free(pi->bits); keep++; }
-        else { if (nu) ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); left.it[left.n++] = *pi; LOG("【红】个人仓库：第 %d 页第 %d 件放不回格 %d,%d，留在侧文件里", tgt + 1, i + 1, pi->x, pi->y); } }
+        if (nd && ip) { *(uint8_t *)(nd + 0x55) = 4; *(int32_t *)(ip + 0x10) = pi->x; *(int32_t *)(ip + 0x14) = pi->y; uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox); }
+        if (nd && *(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, nu, 1, 2, 0, 4, 0, (uint64_t)pi->x | (uint64_t)pi->y << 16); pitem_dup(&g_pB, pi); free(pi->bits); keep++; }
+        else { if (nu) ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); left.it[left.n++] = *pi; LOG("【红】个人仓库：第 %d 页第 %d 件放不回格 %d,%d，留在侧文件里", tgt + 1, i + 1, pi->x, pi->y); } }
     free(g_pp[tgt].it); g_pp[tgt] = left;
     for (int i = 0; i < out.n; i++) pitem_dup(&g_pA, &out.it[i]);
     for (int i = 0; i < g_pp[g_pcur].n; i++) pitem_dup(&g_pS0, &g_pp[g_pcur].it[i]);
     if (g_pp[g_pcur].n) { LOG("【红】个人仓库：第 %d 页槽里有 %d 件放不回的，并进这次搬出的", g_pcur + 1, g_pp[g_pcur].n); pitem *m = realloc(out.it, sizeof(pitem) * (size_t)(out.n + g_pp[g_pcur].n)); if (m) { out.it = m; memcpy(out.it + out.n, g_pp[g_pcur].it, sizeof(pitem) * (size_t)g_pp[g_pcur].n); out.n += g_pp[g_pcur].n; free(g_pp[g_pcur].it); g_pp[g_pcur].it = NULL; g_pp[g_pcur].n = 0; } }
     g_pp[g_pcur] = out; int from = g_pcur; g_pfrom = from; g_pto = tgt; { const char *wd = dm_save_workdir(); size_t dn = 0; uint8_t *d = !dm_ser_state() && wd ? d2s_read(wd, &dn) : NULL; g_pH0 = d ? dm_fnv64(d, dn) : 0; free(d); } g_pcur = tgt; g_ppend = 1; atomic_store(&g_pcur_pub, g_pcur); atomic_fetch_add(&g_pflips, 1);
-    ((void (*)(uint64_t, int))(b + 0x5cadb0))(player, 1);
+    ((void (*)(uint64_t, int))(b + GA_UNIT_SET_UPDATE_FLAG))(player, 1);
     int sv = getenv("DM_TEST_PG_NOSAVE") ? -9 : dm_request_save();
     g_pmade = dm_fs_commit_count(); g_pmore = 0;
     LOG("个人仓库：第 %d → %d 页，搬出 %d 件、放回 %d 件，用时 %.2f 毫秒；请游戏存盘 → %d", from + 1, tgt + 1, n, keep, (pf_now() - t0) / 1e6, sv);
@@ -302,7 +303,7 @@ static void pages_flip(uint8_t *b, uint64_t G, uint64_t player, int dir) {
         uint64_t iv = *(uint64_t *)(player + 0x90), x = iv && *(uint32_t *)iv == 0x01020304 ? *(uint64_t *)(iv + 0x10) : 0, tk[256]; int m = 0;
         for (int k = 0; x && k < 2048 && m < 256; k++) { uint64_t d = *(uint64_t *)(x + 0x10); if (!d) break; if (*(uint32_t *)(x + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 4) tk[m++] = x; x = *(uint64_t *)(d + 0xb0); }
         for (int i = 0; i < m; i++) { uint64_t y = tk[i], d = *(uint64_t *)(y + 0x10), pp = *(uint64_t *)(y + 0x38);
-            ((void (*)(uint64_t))(b + 0x55e430))(y); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, y, 0x20, 4, 0, *(uint8_t *)(d + 0x55), pp ? *(int32_t *)(pp + 0x14) : 0, pp ? *(int32_t *)(pp + 0x10) : 0); ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, y); }
+            ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(y); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, y, 0x20, 4, 0, *(uint8_t *)(d + 0x55), pp ? *(int32_t *)(pp + 0x14) : 0, pp ? *(int32_t *)(pp + 0x10) : 0); ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, y); }
         LOG("测试 DM_TEST_PG_TAKE：翻完当拍从格里拿走 %d 件", m); }
 }
 static void pages_pre_commit(const char *wd) {
@@ -347,20 +348,20 @@ static void pg_sock_test(uint64_t G, uint64_t player, uint8_t *b, uint32_t tq) {
     static uint32_t at; static int got; if (!got) { got = 1; const char *e = getenv("DM_TEST_PG_SOCK"); at = e ? (uint32_t)atoi(e) : 0; }
     if (!at || tq < at) return; at = 0;
     uint64_t inv = *(uint64_t *)(player + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0, gems[64], gear[64]; int ng = 0, nq = 0;
-    for (int k = 0; it && k < 2048; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+    for (int k = 0; it && k < 2048; k++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
         if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 0) { if (((char *)&c)[0] == 'g' && ng < 64) gems[ng++] = it; else if (nq < 64) gear[nq++] = it; } it = *(uint64_t *)(d + 0xb0); }
     for (int q = 0; q < nq && ng; q++) { uint64_t g = gems[ng - 1], gd = *(uint64_t *)(g + 0x10), gp = *(uint64_t *)(g + 0x38); int gx = gp ? *(int32_t *)(gp + 0x10) : 0, gy = gp ? *(int32_t *)(gp + 0x14) : 0;
-        ((void (*)(uint64_t))(b + 0x55e430))(g); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, g, 0x20, 4, 0, *(uint8_t *)(gd + 0x55), gy, gx);
-        ((void (*)(uint64_t, int))(b + 0x5ca8a0))(g, 4);
-        if (((int (*)(uint64_t, uint64_t, uint32_t, uint32_t, int))(b + 0x64d080))(G, gear[q], *(uint32_t *)(g + 8), *(uint32_t *)(gear[q] + 8), 2)) {
-            ng--; uint64_t x = gear[q], pp = *(uint64_t *)(x + 0x38), d = *(uint64_t *)(x + 0x10); static uint8_t buf[VBYTES]; int len = dm_item_write(b, x, buf); uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(x);
+        ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(g); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, g, 0x20, 4, 0, *(uint8_t *)(gd + 0x55), gy, gx);
+        ((void (*)(uint64_t, int))(b + GA_UNIT_SET_MODE))(g, 4);
+        if (((int (*)(uint64_t, uint64_t, uint32_t, uint32_t, int))(b + GA_ITEM_SOCKET_INSERT))(G, gear[q], *(uint32_t *)(g + 8), *(uint32_t *)(gear[q] + 8), 2)) {
+            ng--; uint64_t x = gear[q], pp = *(uint64_t *)(x + 0x38), d = *(uint64_t *)(x + 0x10); static uint8_t buf[VBYTES]; int len = dm_item_write(b, x, buf); uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(x);
             LOG("镶孔测试：%.3s 镶上一颗宝石（孔里现 %d 件），位流 %d 字节，搬进个人仓库 (5,5)", (const char *)&c, item_kids(x), len);
-            ((void (*)(uint64_t))(b + 0x55e430))(x); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, x, 0x20, 4, 0, *(uint8_t *)(d + 0x55), pp ? *(int32_t *)(pp + 0x14) : 0, pp ? *(int32_t *)(pp + 0x10) : 0); ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, x);
+            ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(x); ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, x, 0x20, 4, 0, *(uint8_t *)(d + 0x55), pp ? *(int32_t *)(pp + 0x14) : 0, pp ? *(int32_t *)(pp + 0x10) : 0); ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, x);
             int sk = 0; uint64_t nu = len ? dm_item_make(b, G, 0, buf, len, &sk) : 0, nd = nu ? *(uint64_t *)(nu + 0x10) : 0, ip = nu ? *(uint64_t *)(nu + 0x38) : 0;
-            if (nd && ip) { *(uint8_t *)(nd + 0x55) = 4; *(int32_t *)(ip + 0x10) = 5; *(int32_t *)(ip + 0x14) = 5; uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, player, &one, &ox);
-                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + 0x642f70))(G, player, nu, 1, 2, 0, 4, 0, 5 | 5 << 16); }
+            if (nd && ip) { *(uint8_t *)(nd + 0x55) = 4; *(int32_t *)(ip + 0x10) = 5; *(int32_t *)(ip + 0x14) = 5; uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox);
+                ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, nu, 1, 2, 0, 4, 0, 5 | 5 << 16); }
             LOG("镶孔测试：重建后孔里 %d 件，进个人仓库 %s", nu ? item_kids(nu) : -1, nd && *(uint64_t *)(nd + 0xa0) ? "成" : "没成"); return; }
-        ((void (*)(uint64_t, int))(b + 0x5ca8a0))(g, 0); }
+        ((void (*)(uint64_t, int))(b + GA_UNIT_SET_MODE))(g, 0); }
     LOG("镶孔测试：背包里没有能镶的装备（%d 件装备、%d 颗宝石）", nq, ng);
 }
 void dm_pages_tick(uint64_t G, uint64_t player, uint8_t *b) {
@@ -383,7 +384,7 @@ void dm_pages_tick(uint64_t G, uint64_t player, uint8_t *b) {
     if (lg) { char buf[128]; strlcpy(buf, lg, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t; t = strtok_r(NULL, ",", &sv)) if ((uint32_t)atoi(t) == tq) {
         uint64_t inv = *(uint64_t *)(player + 0x90), it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; int n = 0;
         for (int k = 0; it && k < 2048; k++) { uint64_t d = *(uint64_t *)(it + 0x10), pp = *(uint64_t *)(it + 0x38); if (!d) break;
-            if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 4) { uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); n++; LOG("个人仓库读数：拍 %u %.3s 格 %d,%d 孔里 %d 件", tq, (const char *)&c, pp ? *(int32_t *)(pp + 0x10) : -1, pp ? *(int32_t *)(pp + 0x14) : -1, item_kids(it)); }
+            if (*(uint32_t *)(it + 0xc) == 0 && *(uint8_t *)(d + 0x55) == 4) { uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); n++; LOG("个人仓库读数：拍 %u %.3s 格 %d,%d 孔里 %d 件", tq, (const char *)&c, pp ? *(int32_t *)(pp + 0x10) : -1, pp ? *(int32_t *)(pp + 0x14) : -1, item_kids(it)); }
             it = *(uint64_t *)(d + 0xb0); }
         LOG("个人仓库读数：拍 %u 第 %d 页，格里 %d 件", tq, g_pcur + 1, n); } }
 

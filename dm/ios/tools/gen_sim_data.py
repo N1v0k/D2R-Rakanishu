@@ -926,7 +926,7 @@ def write_data(read, dst):
 
 UI_TABLES = ('global/excel/weapons.txt', 'global/excel/armor.txt', 'hd/global/excel/desecratedzones.json', 'local/lng/strings/monsters.json', 'local/lng/strings/levels.json', 'local/lng/strings/skills.json',
              'local/lng/strings/item-names.json')
-UI_TABLES_SHA = '916daaa5f259d728771047de74d6177593b971a24d1d0b60645f875a19f3d6eb'
+UI_TABLES_SHA = 'a0ed45cb5a0aac561e2bb03da4220157b1821fa819b76b6d07392954fff11919'
 
 POTION_GROUP_NAMES = ('hp3', 'mp3', 'rvs')
 

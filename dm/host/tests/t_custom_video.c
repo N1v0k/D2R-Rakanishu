@@ -22,6 +22,7 @@
 #define DM_CUSTOM_SLIDER_ENABLE test_slider_enable
 #define DM_CUSTOM_NOW_MS test_now
 #include "t_custom_carousel_fake.h"
+#include "../game_addrs.h"
 #include <stdint.h>
 static void test_set_text(uint64_t w, const char *s);
 static void test_slider_set(uint64_t w, int v);
@@ -217,7 +218,7 @@ int main(void) {
     main_mem = calloc(1, DM_VT_SLIDER + 0x100); if (!main_mem) return 1;
     { uint64_t f = A(relayout_noop), g = A(slider_init); memcpy(main_mem + DM_VT_TEXT + 0x10, &f, 8); memcpy(main_mem + DM_VT_SLIDER + 0x10, &g, 8); }
     strlcpy(g_mod[0].name, "main", sizeof g_mod[0].name); g_mod[0].base = main_mem; g_nmod = 1;
-    page_vt[0] = A(main_mem) + 0xae5f28; sel_vt[2] = A(relayout_noop); cont_vt[2] = A(relayout_noop);
+    page_vt[0] = A(main_mem) + GA_OPTIONS_PAGE_UPDATE; sel_vt[2] = A(relayout_noop); cont_vt[2] = A(relayout_noop);
     vid_layout();
 
 

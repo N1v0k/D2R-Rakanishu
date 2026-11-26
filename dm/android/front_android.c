@@ -7,6 +7,7 @@
 
 
 #include "../host/dm.h"
+#include "../host/game_addrs.h"
 #include "../host/front.h"
 #include "../host/dm_input.h"
 #include "touch_android.h"

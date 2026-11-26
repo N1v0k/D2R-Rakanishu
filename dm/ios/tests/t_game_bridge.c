@@ -1,4 +1,5 @@
 #include "dm_touch_game_state.h"
+#include "../../host/game_addrs.h"
 #include "../../host/dm.h"
 #include "../../host/dm_input.h"
 #include <assert.h>
@@ -16,14 +17,14 @@ int dm_touch_game_snapshot(dm_tg_snapshot *out){memset(out,0,sizeof(*out));retur
 #endif
 int main(int argc,char **argv) {
     CHECK(argc==3);dm_tg_snapshot s;CHECK(dm_touch_game_attach()==0);CHECK(!dm_touch_game_snapshot(&s) && !s.supported);
-    size_t size=0x2d5f0c0+32*28;unsigned char *mem=calloc(1,size);CHECK(mem!=NULL);
+    size_t size=GA_SKILL_SLOT_BINDS+32*28;unsigned char *mem=calloc(1,size);CHECK(mem!=NULL);
     g_mod[0].base=mem;g_mod[0].size=size;strcpy(g_mod[0].name,"main");g_nmod=1;present=1;
     CHECK(dm_touch_game_attach()==1);CHECK(hook!=NULL);CHECK(!dm_touch_game_snapshot(&s) && s.supported);
-    FILE *f=fopen(argv[1],"rb");CHECK(f!=NULL);CHECK(fread(mem+0x2d13cbc,1,72,f)==72);fclose(f);
-    f=fopen(argv[2],"rb");CHECK(f!=NULL);CHECK(fread(mem+0x2d5f0c0,1,896,f)==896);fclose(f);
-    uint64_t regs[31]={0};regs[10]=(uint64_t)(mem+0x2d5f0c0);regs[8]=7*28;regs[19]=7;
-    uint64_t saved[31];memcpy(saved,regs,sizeof regs);unsigned char table[896];memcpy(table,mem+0x2d5f0c0,896);
-    hook(regs);CHECK(!memcmp(saved,regs,sizeof regs));CHECK(!memcmp(table,mem+0x2d5f0c0,896));
+    FILE *f=fopen(argv[1],"rb");CHECK(f!=NULL);CHECK(fread(mem+GA_PAD_BUTTON_SLOTS,1,72,f)==72);fclose(f);
+    f=fopen(argv[2],"rb");CHECK(f!=NULL);CHECK(fread(mem+GA_SKILL_SLOT_BINDS,1,896,f)==896);fclose(f);
+    uint64_t regs[31]={0};regs[10]=(uint64_t)(mem+GA_SKILL_SLOT_BINDS);regs[8]=7*28;regs[19]=7;
+    uint64_t saved[31];memcpy(saved,regs,sizeof regs);unsigned char table[896];memcpy(table,mem+GA_SKILL_SLOT_BINDS,896);
+    hook(regs);CHECK(!memcmp(saved,regs,sizeof regs));CHECK(!memcmp(table,mem+GA_SKILL_SLOT_BINDS,896));
     CHECK(!dm_touch_game_snapshot(&s) && !s.valid && !s.ready);
     CHECK(!s.ready && s.identity_scope==DM_TG_IDENTITY_UNCONFIRMED);
     dm_touch_game_set_scene(1,3,1);identity_scope=DM_TG_IDENTITY_SYNTHETIC;

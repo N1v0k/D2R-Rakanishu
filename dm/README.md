@@ -183,7 +183,7 @@ Usage is `dmhost <build output directory> [module…] [-- game arguments…]`. `
 
 **In-game features**
 
-The `dm_*.c` files are features and touch adaptations added on top of the original game; the comment at the top of each file explains what it does and which addresses in the game it relies on. For example `dm_cursor.c`, `dm_world.c`, `dm_actions.c` (touch selection, interacting with the world, buying/selling and spending points), `dm_hud.c` (the numbers on the bottom interface), `dm_vault.c` and `dm_vault_ui.c` (the Chronicle vault), `dm_pouch.c` (the pouch), `dm_rift.c` (the rift), `dm_cloudsync.c` (iCloud save sync), `dm_custom.c` (the switches for these features). The addresses in the files are all offsets into the original 3.3.94012 image.
+The `dm_*.c` files are features and touch adaptations added on top of the original game; the comment at the top of each file explains what it does and which addresses in the game it relies on. For example `dm_cursor.c`, `dm_world.c`, `dm_actions.c` (touch selection, interacting with the world, buying/selling and spending points), `dm_hud.c` (the numbers on the bottom interface), `dm_vault.c` and `dm_vault_ui.c` (the Chronicle vault), `dm_pouch.c` (the pouch), `dm_rift.c` (the rift), `dm_cloudsync.c` (iCloud save sync), `dm_custom.c` (the switches for these features). The addresses are offsets into the original game image: those written by name (`GA_…`) take their values from the address table `host/game_addrs.def`, which holds the supported version 3.4.95035; numeric addresses left in comments document 3.3.94012, the version they were written for.
 
 ## Generating assets from your game files
 
@@ -191,12 +191,12 @@ The repository contains no images, tables or text derived from the original game
 
 **Which files are needed**
 
-- Required: the update package RomFS of the Switch release 1.0.34.0 (corresponding to PC version 3.3.94012) (`Update/RomFS`, which contains `data/build_manifest.psv`). If the version is wrong, the generation scripts report an error based on the registered checksums ("原件和冻结的不一样", i.e. "the original differs from the frozen one"; "原文变了", i.e. "the original text has changed").
+- Required: the update package RomFS of the Switch release 1.0.35 (corresponding to PC version 3.4.95035) (`Update/RomFS`, which contains `data/build_manifest.psv`). If the version is wrong, the generation scripts report an error based on the registered checksums ("原件和冻结的不一样", i.e. "the original differs from the frozen one"; "原文变了", i.e. "the original text has changed").
 - Optional: an unpacked directory of the PC version of D2R (containing `hd/global/ui/...`, the raw `.sprite` files). With it, the bottom UI uses the PC version's 2x original images; without it, the bottom UI uses upscaled Switch assets and will be slightly blurry, and generation prints "没找到 PC 版文件……底栏用 Switch 素材放大，会略糊" ("PC version files not found … the bottom bar uses upscaled Switch assets and will be slightly blurry").
 
 **Where to put them**
 
-- Switch RomFS: default `$DM_ROOT/data/switch/3.3.94012/Update/RomFS`, or use the environment variable `DM_ROMFS_SRC=<your Update/RomFS>`.
+- Switch RomFS: default `$DM_ROOT/data/switch/3.4.95035/Update/RomFS`, or use the environment variable `DM_ROMFS_SRC=<your Update/RomFS>`.
 - PC version unpacked directory: default `$DM_ROOT/data/assets-src/raw`, or `DM_PC_DATA=<directory>`.
 
 **Which command to run**

@@ -8,6 +8,7 @@
 
 
 #include <stdio.h>
+#include "../game_addrs.h"
 #include <stdint.h>
 #include <string.h>
 #include "../hle.h"
@@ -146,7 +147,7 @@ static void reset(void) {
     put64(unit, 0xd8, addr(timer_obj));
     put32(base_list, 0x1c, 0x80000000u);
     for (int i = 0; i < 2; i++) { uint8_t *aa = i ? arg2 : arg; put64(aa, 0x00, addr(unit)); put64(aa, 0x08, addr(unit)); put32(aa, 0x18, 100); put32(aa, 0x1c, 0xffffffffu); }
-    g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = image_win - 0x2d64a18;
+    g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = image_win - GA_DATA_TABLES;
     sw_stack = 1; sw_speed = 1;
     apply_calls = 0; apply_seq = 0; apply_entry = 0; n_unlinks = 0; frees = 0; timers = 0; timer_end = 0; bits = 0;
     stat_calls = 0; stat_list = 0; stat_id = 0; stat_val = 0; stat_ver = 0; reenter = 0; reenter_arg = 0; apply_reenter = 0;
@@ -164,7 +165,7 @@ int main(void) {
     reset(); link_list(0, 128, 5000.0f, 0x22); link_list(1, 60, 4000.0f, 0x22);
     sw_stack = 0; sw_speed = 0; put32(arg, 0x24, 128);
     CHECK(call(top()) == addr(lists[POOL]), "forward returns the body's list");
-    CHECK(apply_calls == 1 && apply_entry == addr(image_win) - 0x2d64a18 + 0x7b8288, "the forward tail-calls just past the cut");
+    CHECK(apply_calls == 1 && apply_entry == addr(image_win) - GA_DATA_TABLES + GA_AT_STATE_APPLY_TIMED_BODY, "the forward tail-calls just past the cut");
     CHECK(n_unlinks == 0 && timers == 0 && stat_calls == 0 && bits == 0, "nothing else runs with both switches off");
     CHECK(get32(lists[0], 0x1c) == 0x22 && get32(lists[1], 0x1c) == 0x22, "no list is masked with both switches off");
 

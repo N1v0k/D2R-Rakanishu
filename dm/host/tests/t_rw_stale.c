@@ -10,6 +10,7 @@
 
 
 #include "../dm_runeword.c"
+#include "../game_addrs.h"
 module_t g_mod[MAX_MOD]; int g_nmod;
 static int checks, fails;
 #define CHECK(c, ...) do { checks++; if (!(c)) { fails++; printf("  FAIL line %d: ", __LINE__); printf(__VA_ARGS__); printf("\n"); } } while (0)
@@ -54,10 +55,10 @@ static int32_t x_of(widget *w) { return *(int32_t *)(w->b + 0x70); }
 static void open_list(void) { ui_cache(base); g_list.open = 1; }
 
 int main(void) {
-    base = calloc(1, 0x2f05460); if (!base) return 2;
+    base = calloc(1, GA_UI_ROOT + 8); if (!base) return 2;
     g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = base;
     vt[0x10 / 8] = P(relayout);
-    make(&root, "Root", 0); *(uint64_t *)(root.b + 0x58) = P(root_kids); *(uint64_t *)(root.b + 0x60) = 1; *(uint64_t *)(base + 0x2f05458) = P(&root);
+    make(&root, "Root", 0); *(uint64_t *)(root.b + 0x58) = P(root_kids); *(uint64_t *)(root.b + 0x60) = 1; *(uint64_t *)(base + GA_UI_ROOT) = P(&root);
     build(&inv); g_inv_open = 1;
 
 

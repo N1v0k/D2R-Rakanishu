@@ -8,6 +8,7 @@
 
 #define DM_EFFECT_TESTS 1
 #include "../dm_effects.c"
+#include "../game_addrs.h"
 #include <assert.h>
 
 module_t g_mod[MAX_MOD];
@@ -43,7 +44,7 @@ static uint64_t fake_clock(void) { return clock_ms; }
 static int skill_bonus(uint64_t pl, uint64_t node, int flag) { (void)pl; (void)flag; calls++; int32_t base; memcpy(&base, (const void *)(uintptr_t)(node + 0x38), 4); return base + 1; }
 
 
-static uint8_t image[0x2d20c00];
+static uint8_t image[GA_GAME_INFO + 0x80];
 
 static void put32(void *p, size_t at, uint32_t v) { memcpy((uint8_t *)p + at, &v, 4); }
 static void put64(void *p, size_t at, uint64_t v) { memcpy((uint8_t *)p + at, &v, 8); }
@@ -72,7 +73,7 @@ enum { E_LISTS = 4, E_N = 5, E_STAT = 6 };
 
 int main(void) {
     setenv("DM_TEST_EFFECT_FAKE", "9:50:31=-50:L3:S66,10:-1,999:5,x", 1);
-    g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = (uint8_t *)(uintptr_t)getstat - 0x5b9290;
+    g_nmod = 1; strcpy(g_mod[0].name, "main"); g_mod[0].base = (uint8_t *)(uintptr_t)getstat - GA_STAT_GET;
     statv[27] = 400; statv[9] = 100 << 8;
     g_now_ms = fake_clock;
     reset();
@@ -150,9 +151,9 @@ int main(void) {
     static uint8_t table[16 * 16]; uint64_t base = 0x7100000000ull;
     for (int c = SHRINE_FIRST; c <= SHRINE_LAST; c++) { put64(table, 16 * c, base + k_shrine_fn[c - SHRINE_FIRST]); put32(table, 16 * c + 8, 39); put32(table, 16 * c + 12, (uint32_t)k_shrine_state[c - SHRINE_FIRST]); }
     CHECK(shrine_entry_ok(table, base, 12) && shrine_entry_ok(table, base, 6) && shrine_entry_ok(table, base, 15), "the expected entries pass");
-    CHECK(k_shrine_state[12 - SHRINE_FIRST] == 134 && k_shrine_fn[12 - SHRINE_FIRST] == 0x6b1870 && k_shrine_state[10 - SHRINE_FIRST] == 130, "code 12 is the skill shrine (134), code 10 lightning (130)");
-    put64(table, 16 * 12, base + 0x6b16e0); CHECK(!shrine_entry_ok(table, base, 12), "a different handler fails");
-    put64(table, 16 * 12, base + 0x6b1870); put32(table, 16 * 12 + 12, 135); CHECK(!shrine_entry_ok(table, base, 12), "a different state fails");
+    CHECK(k_shrine_state[12 - SHRINE_FIRST] == 134 && k_shrine_fn[12 - SHRINE_FIRST] == GA_SHRINE_SKILL_FN && k_shrine_state[10 - SHRINE_FIRST] == 130, "code 12 is the skill shrine (134), code 10 lightning (130)");
+    put64(table, 16 * 12, base + GA_SHRINE_FN_GENERIC); CHECK(!shrine_entry_ok(table, base, 12), "a different handler fails");
+    put64(table, 16 * 12, base + GA_SHRINE_SKILL_FN); put32(table, 16 * 12 + 12, 135); CHECK(!shrine_entry_ok(table, base, 12), "a different state fails");
     CHECK(!shrine_entry_ok(table, base, 5) && !shrine_entry_ok(table, base, 16), "codes outside 6-15 fail");
 
     reset();
@@ -170,7 +171,7 @@ int main(void) {
     CHECK(out[P + DM_FXP_AGE] == 1500, "the age counts at copy time");
     g_img_test = image; g_img_test_len = sizeof image;
     image[DIFFICULTY] = 1; put64(image, GAME_INFO, addr(ginfo)); ginfo[0x5c] = 1;
-    memcpy(image + STAMINA_CODE, k_stamina_code, sizeof k_stamina_code);
+    memcpy(image + STAMINA_CODE, stamina_code(), sizeof k_stamina_code);
     { static const int32_t shifts[6] = { 8, 9, 8, 8, 8, 9 }; memcpy(image + STAMINA_SHIFTS, shifts, sizeof shifts); }
     run(EVERY);
     CHECK(out[P + DM_FXP_FLAGS] == (DM_FXP_VALID | DM_FXP_DIFF_OK | DM_FXP_CLASSIC_OK | DM_FXP_STAMINA_OK), "with the image: difficulty, classic and stamina flags");

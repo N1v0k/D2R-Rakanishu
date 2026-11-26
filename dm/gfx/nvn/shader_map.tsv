@@ -10848,9 +10848,9 @@ vs_ui_v.bin	0	顶点	f88d27f131d71049	73a8a1eab2fd786e	1	-1	-1	0	-	-	-	15
 vs_ui_video_v.bin	0	顶点	f88d27f131d71049	73a8a1eab2fd786e	1	-1	-1	0	-	-	-	15
 vs_unlit.bin	0	顶点	5b39fba13f4ce7d5	25829c75eaea9588	1	-1	-1	0	-	-	-	15
 vs_water_v.bin	0	顶点	a9a839a220417792	d189aecafe708b4d	1	-1	-1	0,3,4,10	10,11	0,3	-	15
-main.rodata@1db3884	0	顶点	96757bb36a024b91	3d25ce9c4aadb5d3	1	-1	-1	0	-	-	-	15
-main.rodata@1db4418	1	像素	a7672f1d3bfeb7d0	8e457987964f6229	1	-1	-1	0	10	0	-	15
-main.rodata@1db4eac	2	顶点	8ac93c54cfb3cbe3	0cc4ea1847f7ca19	1	-1	-1	0	-	-	-	15
-main.rodata@1db5840	3	像素	0d721a0acc36c0bf	1ecdeb6ed5284249	1	-1	-1	-	-	-	-	15
-main.rodata@1db63d4	4	顶点	96757bb36a024b91	3d25ce9c4aadb5d3	1	-1	-1	0	-	-	-	15
-main.rodata@1db7468	5	像素	7c603a02d455070a	f57261680b186227	1	-1	-1	0	10,11	-	-	15
+main.rodata@1dbabe4	0	顶点	96757bb36a024b91	3d25ce9c4aadb5d3	1	-1	-1	0	-	-	-	15
+main.rodata@1dbb778	1	像素	a7672f1d3bfeb7d0	8e457987964f6229	1	-1	-1	0	10	0	-	15
+main.rodata@1dbc20c	2	顶点	8ac93c54cfb3cbe3	0cc4ea1847f7ca19	1	-1	-1	0	-	-	-	15
+main.rodata@1dbcba0	3	像素	0d721a0acc36c0bf	1ecdeb6ed5284249	1	-1	-1	-	-	-	-	15
+main.rodata@1dbd734	4	顶点	96757bb36a024b91	3d25ce9c4aadb5d3	1	-1	-1	0	-	-	-	15
+main.rodata@1dbe7c8	5	像素	7c603a02d455070a	f57261680b186227	1	-1	-1	0	10,11	-	-	15

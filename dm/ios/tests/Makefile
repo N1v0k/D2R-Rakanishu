@@ -31,7 +31,9 @@ t_native_hud_bridge: t_native_hud_bridge.c ../Sources/dm_touch_game_bridge.c ../
 	$(CC) $(CFLAGS) -I../Sources t_native_hud_bridge.c ../Sources/dm_touch_game_bridge.c ../Sources/dm_touch_game_identity.c ../Sources/dm_touch_game_state.c -lpthread -o $@
 
 
-ROMFS?=$(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/3.3.94012/Update/RomFS)
+
+GAME_VERSION:=$(firstword $(subst -, ,$(shell head -1 $(dir $(lastword $(MAKEFILE_LIST)))../../PRODUCT)))
+ROMFS?=$(or $(DM_ROMFS_SRC),$(DM_ROOT)/data/switch/$(GAME_VERSION)/Update/RomFS)
 ../Sources/dm_touch_native_art.c: ../tools/native_art/generate.py ../tools/native_art/implementation.c.inc ../Sources/TouchArt/native_art_manifest.json
 	python3 ../tools/native_art/generate.py "$(ROMFS)"
 t_native_art: t_native_art.c ../Sources/dm_touch_native_art.c ../Sources/dm_touch_native_art.h

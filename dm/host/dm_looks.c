@@ -15,6 +15,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_looks.h"
 #include <stdatomic.h>
@@ -22,9 +23,9 @@
 #include <string.h>
 
 enum {
-    TABLES = 0x2d64a18, RESMGR = 0x2e30b48, CL_PLAYER_ID = 0x2d20e4c, NPC_QUEST = 0x2d5ec18,
-    FN_MODEL = 0xa14dc4, FN_ICON = 0x45b460, FN_OWN = 0xa14bb4, FN_PAY = 0x7eab30, FN_STAT = 0x5b9290, FN_SEND = 0x642f70, FN_CL_UNIT = 0x45f9d0,
-    FN_COLOUR = 0x576f70, FN_UNLINK = 0x55e430, FN_FREE = 0x658be0, COLOUR_TAB = 0x2d20fd4,
+    TABLES = GA_DATA_TABLES, RESMGR = GA_RESOURCE_MGR, CL_PLAYER_ID = GA_LOCAL_PLAYER_SLOT, NPC_QUEST = GA_CLIENT_QUEST_FLAGS,
+    FN_MODEL = GA_UNIT_MODEL_PATH, FN_ICON = GA_ITEM_ICON, FN_OWN = GA_ITEM_OWN_LOOK, FN_PAY = GA_GOLD_PAY, FN_STAT = GA_STAT_GET, FN_SEND = GA_ITEM_NOTIFY_CLIENT, FN_CL_UNIT = GA_CLIENT_PLAYER_GET,
+    FN_COLOUR = GA_ITEM_COLOUR, FN_UNLINK = GA_INV_UNLINK_ITEM, FN_FREE = GA_ITEM_FREE, COLOUR_TAB = GA_ITEM_COLOUR_TABLE,
     B_GROUP_FIG = 0x151, B_GROUP_INV = 0x152, B_GEM_ROW = 0xf8, T_GEMS = 0x1678, T_NGEMS = 0x1680, GEM_STRIDE = 0xc0, GEM_COLOUR = 0x2f,
     U_CLASS = DM_LOOK_U_CLASS, U_ID = 8, U_MODE = 0xc, U_DATA = DM_LOOK_U_DATA, U_IDENT = 0x28, U_PATH = 0x38, U_INV = 0x90, U_VER = 0x1bd,
     D_QUALITY = DM_LOOK_D_QUALITY, D_FLAGS = DM_LOOK_D_FLAGS, D_ROW = DM_LOOK_D_ROW, D_LEVEL = 0x38, D_BODY = 0x54, D_PAGE = 0x55, D_NEXT = 0xb0,
@@ -202,7 +203,7 @@ static int dressed(uint64_t u, uint8_t *fu, size_t nu, uint8_t *fd, size_t nd, i
 
 
 
-enum { SEL_MODEL_RET = 0x803bf8, SEL_COLOUR_RET = 0x803b8c, SEL_UNIT = 0x3c8, SEL_DATA = 0x2f0, SEL_SAVED_X19 = 0x5f8, SEL_NU = 0x1c0, SEL_ND = 0xd8,
+enum { SEL_MODEL_RET = GA_AT_SELECT_MODEL_RET, SEL_COLOUR_RET = GA_AT_SELECT_COLOUR_RET, SEL_UNIT = 0x3c8, SEL_DATA = 0x2f0, SEL_SAVED_X19 = 0x5f8, SEL_NU = 0x1c0, SEL_ND = 0xd8,
        SEL_HDR = 0x30, GATE_SP = 816, GATE_LR = 101 };
 static uint32_t select_base(dm_look l, void *ver) { return base_of_ver(l, *(const unsigned *)ver); }
 
@@ -309,7 +310,7 @@ const char *dm_str(uint8_t *b, const char *key);
 static const char *game_name(uint8_t *b, uint32_t code) {
     char key[5] = { 0 }; memcpy(key, &code, 4); for (int i = 3; i >= 0 && key[i] == ' '; i--) key[i] = 0;
     struct { const char *k; uint64_t n; } s = { key, strlen(key) };
-    const char *r = dm_untag(((const char *(*)(void *))(uintptr_t)(b + 0x7f5630))(&s));
+    const char *r = dm_untag(((const char *(*)(void *))(uintptr_t)(b + GA_LOC_STRING_GET))(&s));
     return r && *r && strcmp(r, key) ? r : NULL;
 }
 

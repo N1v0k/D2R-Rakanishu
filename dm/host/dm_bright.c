@@ -26,6 +26,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include "dm_hud.h"
 #include "dm_uiscreen.h"
@@ -41,7 +42,7 @@ static const struct { uint16_t lv; uint8_t act, drlg; int8_t varies; } k_lv[] = 
 
 static int rd(uint64_t a, void *buf, size_t n) { vm_size_t got = 0; return a && !vm_read_overwrite(mach_task_self(), a, n, (vm_address_t)buf, &got) && got == n; }
 static uint64_t main_base(void) { static uint64_t b; if (!b) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint64_t)g_mod[i].base; return b; }
-static uint64_t env_ptr(void) { uint64_t act = 0, env = 0, mb = main_base(); return mb && rd(mb + 0x2d20bd0, &act, 8) && rd(act + 8, &env, 8) ? env : 0; }
+static uint64_t env_ptr(void) { uint64_t act = 0, env = 0, mb = main_base(); return mb && rd(mb + GA_CLIENT_ACT, &act, 8) && rd(act + 8, &env, 8) ? env : 0; }
 
 
 
@@ -94,7 +95,7 @@ void dm_bright_server_tick(uint64_t G) {
 
 
     int idx = -1, kind = 0; uint64_t mb = main_base(); int32_t tbl[18];
-    if (mb && rd(mb + 0x1dab370, tbl, sizeof tbl)) { int best = -1; for (int i = 0; i < 6; i++) if (tbl[3 * i] <= ta && tbl[3 * i] > best) { best = tbl[3 * i]; idx = i; kind = tbl[3 * i + 1]; } }
+    if (mb && rd(mb + GA_DAYLIGHT_PERIODS, tbl, sizeof tbl)) { int best = -1; for (int i = 0; i < 6; i++) if (tbl[3 * i] <= ta && tbl[3 * i] > best) { best = tbl[3 * i]; idx = i; kind = tbl[3 * i + 1]; } }
     uint64_t envs[6]; int ne = 0;
     for (int i = 0; acts && i < 5; i++) { uint64_t act = 0, env = 0; if (rd(acts + 8 * i, &act, 8) && rd(act + 8, &env, 8)) envs[ne++] = env; }
     uint64_t ce = env_ptr(); if (ce) envs[ne++] = ce;

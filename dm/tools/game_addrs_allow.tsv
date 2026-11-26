@@ -1,0 +1,33 @@
+# Hex literals in the game address range that are not game addresses (dm/tools/check_game_addrs.py).
+# value (or * for every value)	path pattern (fnmatch on the repository path)	reason
+*	dm/gfx/vulkan/*	graphics engine: no game addresses
+*	dm/android/compat/*	platform compatibility layer: no game addresses
+*	dm/android/tools/monpic/*	picture tool: no game addresses
+*	dm/tools/guest_dylib.py	file-format constants of the Apple guest library
+*	dm/ios/tools/shell_build.sh	offsets into the Apple guest library
+0x200000	dm/android/tests/EffectFormatTest.java	fixed-point value
+0x200000	dm/verify/equiv.py	size bound
+0x200004	dm/host/tests/t_shrine_layout.c	test symbol id
+0x200010	dm/host/tests/t_shrine_layout.c	test symbol id
+0x400000	*	flag bit
+0x4fc238	dm/host/dm_looks_ui.c	colour
+0x600000	dm/host/tests/run_rule.py	size bound
+0x616f74	dm/host/dm_elysium.c	item code
+0x800000	dm/verify/equiv.py	stack size
+0xfac688	dm/host/hle_granny.c	decoder magic
+0x1000000	*	flag bit
+0x1020304	*	inventory magic
+0x2000000	*	sign bit and bound
+0x2200000	dm/host/tests/t_cloudmerge.c	test map size
+0x3220000	dm/tools/sweep.py	start of the rewriter patch area
+*	dm/tools/tests/test_game_addrs.py	synthetic tables of the address tool tests
+*	ops/plans/*	dated plans, spikes and results: they document the game version they were written for
+*	ops/public/WORKLOG.md	dated public work log
+0x3ffc00	dm/tools/game_addrs.py	instruction field mask of a witness (insn_shape), not an address
+0x3f8000	dm/tools/game_addrs.py	instruction field mask of a witness (insn_shape), not an address
+0x1ff000	dm/tools/game_addrs.py	instruction field mask of a witness (insn_shape), not an address
+0x7ffc00	dm/tools/game_addrs.py	instruction field mask of a witness (insn_shape), not an address
+0x7fffe0	dm/tools/game_addrs.py	instruction field mask of a witness (insn_shape), not an address
+0x1b786a0	dm/tools/x18.py	historic analysis tool: the text end of the 3.3.94012 program it was written for
+0x64e620	dm/host/dm_elysium.c	a comment documenting the 3.3.94012 program (another function there)
+0x64e620	dm/host/dm_unsocket.c	a comment documenting the 3.3.94012 program (another function there)

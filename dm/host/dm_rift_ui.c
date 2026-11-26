@@ -9,6 +9,7 @@
 
 
 #include <stdatomic.h>
+#include "game_addrs.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@ static uint64_t find(uint64_t w, const char *name, int dep) {
     for (uint64_t i = 0; i < n; i++) { uint64_t r = find(*(uint64_t *)(ch + 8 * i), name, dep + 1); if (r) return r; }
     return 0;
 }
-static uint64_t panel_named(const char *nm) { uint8_t *b = rb(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0; return root ? dm_ui_top(root, nm) : 0; }
+static uint64_t panel_named(const char *nm) { uint8_t *b = rb(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0; return root ? dm_ui_top(root, nm) : 0; }
 static uint64_t panel(void) { return panel_named("MessageLogPanel"); }
 static int panel_up(void) { uint64_t p = panel(); return p && *(uint8_t *)(uintptr_t)(p + 0x51); }
 static uint64_t body(void) { uint64_t cp = panel(), bd = cp ? find(cp, "TouchRift", 1) : 0; return bd ? find(bd, "TouchRF_Body", 0) : 0; }
@@ -42,8 +43,8 @@ static uint64_t body(void) { uint64_t cp = panel(), bd = cp ? find(cp, "TouchRif
 
 
 
-static void pause_set(int on) { static int mine; uint8_t *b = rb(); if (!b) return; volatile uint8_t *f = b + 0x2d5ff51;
-    if (on && !mine && *(uint32_t *)(b + 0x2d20b8c) == 0 && !*f) { *f = 1; mine = 1; LOG("大秘境面板：开着，走原版单机暂停（界面状态 +9 置 1）"); }
+static void pause_set(int on) { static int mine; uint8_t *b = rb(); if (!b) return; volatile uint8_t *f = b + GA_PANEL_PAUSE_MENU;
+    if (on && !mine && *(uint32_t *)(b + GA_GAME_TYPE) == 0 && !*f) { *f = 1; mine = 1; LOG("大秘境面板：开着，走原版单机暂停（界面状态 +9 置 1）"); }
     else if (!on && mine) { mine = 0; *f = 0; LOG("大秘境面板：已关，放开暂停"); } }
 
 
@@ -51,14 +52,14 @@ static void pause_set(int on) { static int mine; uint8_t *b = rb(); if (!b) retu
 
 
 
-static void plate_hide(int on) { static int mine; uint8_t *b = rb(); if (!b) return; volatile int32_t *c = (volatile int32_t *)(b + 0x2d12740);
-    if (on && !mine) { mine = 1; LOG("大秘境面板：模态面板计数 %d → %d，清目标槽（名牌不画）", *c, *c + 1); *c += 1; ((void (*)(uint32_t, uint64_t))(b + 0x2f3e40))(*(uint32_t *)(b + 0x2d20e4c), 0); }
+static void plate_hide(int on) { static int mine; uint8_t *b = rb(); if (!b) return; volatile int32_t *c = (volatile int32_t *)(b + GA_MODAL_PANEL_COUNT);
+    if (on && !mine) { mine = 1; LOG("大秘境面板：模态面板计数 %d → %d，清目标槽（名牌不画）", *c, *c + 1); *c += 1; ((void (*)(uint32_t, uint64_t))(b + GA_TARGET_SLOT_CLEAR))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT), 0); }
     else if (!on && mine) { mine = 0; *c -= 1; LOG("大秘境面板：模态面板计数放回 %d", *c); } }
 static void rect(uint64_t w, int x, int y) { if (!w) return; int32_t *r = (int32_t *)(w + 0x70); if (r[0] == x && r[1] == y) return; r[0] = x; r[1] = y; ((void (*)(uint64_t))*(uint64_t *)(*(uint64_t *)w + 0x10))(w); }
 static void text(uint64_t w, const char *s) {
-    uint8_t *b = rb(); if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    uint8_t *b = rb(); if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 
 
@@ -92,7 +93,7 @@ static void merc_lock_pump(void) {
 
 
 
-    if (lock) { static dm_wref last; uint8_t *b = rb(); uint64_t pm = b ? *(uint64_t *)(b + 0x2f05458) : 0, fm = pm ? *(uint64_t *)(uintptr_t)(pm + 0xd0) : 0, cur = 0;
+    if (lock) { static dm_wref last; uint8_t *b = rb(); uint64_t pm = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, fm = pm ? *(uint64_t *)(uintptr_t)(pm + 0xd0) : 0, cur = 0;
         for (int c = 0; fm && c < 2 && !cur; c++) { uint64_t w = *(uint64_t *)(uintptr_t)(fm + (c ? 0x178 : 0x190)); const char *nm = w ? *(const char **)(uintptr_t)(w + 8) : NULL;
             if (!nm || strncmp(nm, "slot_", 5) || !dm_widget_is_slot(b, w) || *(uint32_t *)(uintptr_t)(w + 0x5c8) != 1) continue;
             for (unsigned i = 0; i < sizeof k / sizeof *k; i++) if (!strcmp(nm + 5, k[i].n + 14)) cur = w; }
@@ -102,7 +103,7 @@ static void merc_lock_pump(void) {
 
 
     { static const struct { const char *n; uint32_t loc; } sl[] = { { "slot_neck", 2 }, { "slot_right_hand", 6 }, { "slot_left_hand", 7 }, { "slot_belt", 8 }, { "slot_feet", 9 }, { "slot_gloves", 10 } };
-      for (unsigned i = 0; i < sizeof sl / sizeof *sl; i++) { uint64_t w = find(p, sl[i].n, 0); if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)rb() != 0x2089fa0 || *(uint32_t *)(uintptr_t)(w + 0x5d8) == sl[i].loc) continue;
+      for (unsigned i = 0; i < sizeof sl / sizeof *sl; i++) { uint64_t w = find(p, sl[i].n, 0); if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)rb() != GA_VT_EQUIP_SLOT || *(uint32_t *)(uintptr_t)(w + 0x5d8) == sl[i].loc) continue;
           *(uint32_t *)(uintptr_t)(w + 0x5d8) = sl[i].loc; *(uint64_t *)(uintptr_t)(w + 0x5b8) = 0x6200000062ull; LOG("佣兵装备位：面板里的 %s 补上部位号 %u", sl[i].n, sl[i].loc); } }
 }
 void dm_rift_ui_pump(void) {

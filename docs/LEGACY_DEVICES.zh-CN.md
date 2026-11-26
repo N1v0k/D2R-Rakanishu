@@ -32,7 +32,7 @@ iPhone 14 系列、iPhone 15 / 15 Plus 以及更早的机型可以玩，只是�
 
 ```bash
 source ~/dm-work/build/cache/dm/venv/bin/activate
-R=~/dm-work/data/switch/3.3.94012/Update/RomFS
+R=~/dm-work/data/switch/3.4.95035/Update/RomFS
 D=~/dm-work/out/legacy_pack
 
 python3 dm/tools/astc_pack.py "$R" "$D/work" --preset thorough     # 1 转码，约 8 分钟（Mac 全核）

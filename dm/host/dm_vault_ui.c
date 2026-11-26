@@ -17,6 +17,7 @@
 
 
 #include <ctype.h>
+#include "game_addrs.h"
 #include <stdatomic.h>
 #include <time.h>
 #include <stdint.h>
@@ -68,22 +69,22 @@ static void vu_move(uint64_t w, int x, int y) { if (!vu_guard(w, "挪位置")) r
 static void vu_image(uint8_t *b, uint64_t w, const char *path) {
     if (!vu_guard(w, "换图")) return; struct { char *p; uint64_t n, cap; char buf[0xa0]; } s; size_t n = strlen(path); if (n >= sizeof s.buf) return;
     memcpy(s.buf, path, n + 1); s.p = s.buf; s.n = n; s.cap = (sizeof s.buf - 1) | 1ull << 63;
-    ((void (*)(uint64_t, void *))(b + 0xac1704))(w, &s);
+    ((void (*)(uint64_t, void *))(b + GA_IMAGE_SET_PATH))(w, &s);
 }
 static void vu_text(uint8_t *b, uint64_t w, const char *s) {
-    if (!vu_guard(w, "改字") || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    if (!vu_guard(w, "改字") || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 static int vu_is(uint64_t w, uint64_t vt);
 static void vu_frame(uint64_t w, int f) {
     if (!w || !vu_guard(w, "换帧") || !vu_is(w, DM_VT_IMAGE) || *(int32_t *)(w + 0x90) == f) return; *(int32_t *)(w + 0x90) = f;
 }
 static void vu_color(uint8_t *b, uint64_t w, int r, int g, int bl) {
-    if (!vu_guard(w, "改字色") || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return; int32_t *c = (int32_t *)(w + 0xbc); if (c[0] == r && c[1] == g && c[2] == bl) return;
-    c[0] = r; c[1] = g; c[2] = bl; ((void (*)(uint64_t))(b + 0xadc434))(w);
+    if (!vu_guard(w, "改字色") || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return; int32_t *c = (int32_t *)(w + 0xbc); if (c[0] == r && c[1] == g && c[2] == bl) return;
+    c[0] = r; c[1] = g; c[2] = bl; ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
-static const char *vu_str(uint8_t *b, const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = dm_untag(((const char *(*)(void *))(b + 0x7f5630))(&s)); return r && *r ? r : key; }
+static const char *vu_str(uint8_t *b, const char *key) { struct { const char *k; uint64_t n; } s = { key, strlen(key) }; const char *r = dm_untag(((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&s)); return r && *r ? r : key; }
 
 
 
@@ -111,7 +112,7 @@ static void vu_toggle(uint64_t w, int on) {
 
 
 static int vu_seen(uint8_t *b, int kind, int row) {
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)), pd = pl ? *(uint64_t *)(pl + 0x10) : 0; if (!pd) return 0;
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)), pd = pl ? *(uint64_t *)(pl + 0x10) : 0; if (!pd) return 0;
     uint64_t t = pd + 0x220 + (kind == 1 ? 0x20 : 0), nb = *(uint64_t *)t, bk = *(uint64_t *)(t + 8); if (!bk || !nb || (nb & (nb - 1))) return 0;
     uint64_t h = (uint64_t)(uint16_t)row * 0xff51afd7ed558ccdull; h ^= h >> 33; h *= 0xc4ceb9fe1a85ec53ull; h ^= h >> 33;
     for (uint64_t n = *(uint64_t *)(bk + 8 * (h & (nb - 1))), k = 0; n && k < 4096; n = *(uint64_t *)n, k++) if (*(uint32_t *)(n + 8) == (uint32_t)row) return 1;
@@ -179,7 +180,7 @@ static void vu_sets(uint8_t *b, uint64_t vt) {
 
 typedef struct { char *p; uint64_t len, cap; } gstr_t;
 typedef struct { uint64_t d[5]; uint64_t item; } preview_t;
-static void vu_gfree(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + 0x3211700) & 1)) return; uint64_t a = *(uint64_t *)(b + 0x32116f8); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
+static void vu_gfree(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + GA_GAME_ALLOC_READY) & 1)) return; uint64_t a = *(uint64_t *)(b + GA_GAME_ALLOC); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
 static void vu_preview_drop(uint8_t *b, preview_t *h) {
     uint64_t *obj = (h->d[0] & 1) ? (uint64_t *)(h->d[0] & ~1ull) : (uint64_t *)h;
     if (h->item) { uint64_t it = h->item; ((void (*)(void *, uint64_t *))(*(uint64_t *)(*obj + 0x10)))(obj, &it); h->item = 0; }
@@ -188,15 +189,15 @@ static void vu_preview_drop(uint8_t *b, preview_t *h) {
     h->d[0] = 1;
 }
 static int vu_desc(uint8_t *b, const vt_row *e, char *out, size_t n) {
-    out[0] = 0; uint8_t ver = *(uint8_t *)(b + 0x2127c48); if (ver < 1 || ver > 3) return 0;
-    uint64_t t = *(uint64_t *)(b + 0x2d64a18 + ver * 16), pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); if (!t || !pl) return 0;
+    out[0] = 0; uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); if (ver < 1 || ver > 3) return 0;
+    uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + ver * 16), pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); if (!t || !pl) return 0;
     uint64_t rr = *(uint64_t *)(t + (e->kind ? 0x13e8 : 0x13c8)), rn = *(uint64_t *)(t + (e->kind ? 0x13f0 : 0x13d0)); if (!rr || e->row >= rn) return 0;
     const uint8_t *rec = (const uint8_t *)(rr + (uint64_t)e->row * (e->kind ? 0x15c : 0x1cc));
-    preview_t h = ((preview_t (*)(int, int, int, int))(b + 0x367890))(e->kind ? 1 : 0, e->row, 1, 1);
+    preview_t h = ((preview_t (*)(int, int, int, int))(b + GA_PREVIEW_ITEM_MAKE))(e->kind ? 1 : 0, e->row, 1, 1);
     if (!h.item) { vu_preview_drop(b, &h); return 0; }
     uint8_t props[16 * 12]; uint64_t np = 0; for (int k = 0; k < (e->kind ? 12 : 9) && *(int32_t *)(rec + 0x98 + 16 * k) >= 0; k++) memcpy(props + 16 * np++, rec + 0x98 + 16 * k, 16);
     struct { uint64_t n; uint8_t has; } cnt = { np, 1 };
-    gstr_t r = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(pl, pl, h.item, 0, 1, 0, props, &cnt);
+    gstr_t r = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(pl, pl, h.item, 0, 1, 0, props, &cnt);
     size_t k = r.p && r.len < n ? r.len : (r.p ? n - 1 : 0); if (k) memcpy(out, r.p, k); out[k] = 0;
     if (r.p && !(r.cap >> 63)) vu_gfree(b, r.p);
     vu_preview_drop(b, &h);
@@ -240,13 +241,13 @@ static int vu_cell_at(uint64_t vt, int x, int y, int *cell) {
 
 int dm_vault_ui_blocks(int x, int y) {
     if (!dm_vault_ui_over(x, y)) return 0;
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) return 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) return 0;
     static const char *const ours[] = { "TouchV_T0", "TouchV_T1", "TouchV_T2", "TouchV_SearchBg" };
     for (unsigned i = 0; i < sizeof ours / sizeof ours[0]; i++) if (vu_hit(vu_find(vt, ours[i], 1), x, y)) return 0;
     return 1;
 }
 int dm_vault_ui_tap(int x, int y) {
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) return 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) return 0;
     { uint64_t dl = vu_find(root, "DropdownListContents", 1); if (dl && *(uint8_t *)(dl + 0x50)) return 0; }
 
 
@@ -276,13 +277,13 @@ int dm_vault_ui_tap(int x, int y) {
     return 1;
 }
 uint32_t dm_vault_ui_held(void) {
-    uint8_t *b = vu_base(); uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)) : 0, inv = pl ? *(uint64_t *)(pl + 0x90) : 0, cur = inv ? *(uint64_t *)(inv + 0x40) : 0;
+    uint8_t *b = vu_base(); uint64_t pl = b ? ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)) : 0, inv = pl ? *(uint64_t *)(pl + 0x90) : 0, cur = inv ? *(uint64_t *)(inv + 0x40) : 0;
     return cur && *(uint32_t *)cur == 4 ? *(uint32_t *)(cur + 8) : 0;
 }
 
 
 int dm_vault_ui_over(int x, int y) {
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
     if (!vt || *(int32_t *)(vt + 0x70) != 0) return 0;
     uint64_t dl = vu_find(root, "DropdownListContents", 1); if (dl && *(uint8_t *)(dl + 0x50)) return 0;
     return vu_hit(vu_find(vt, "TouchV_Back", 0), x, y) || vu_hit(vu_find(vt, "TouchV_Cover", 0), x, y);
@@ -293,7 +294,7 @@ int dm_vault_ui_over(int x, int y) {
 
 int dm_vault_ui_tip_gate(int x, int y) {
     if (!g_tip_on) return 0;
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
     if (!vt || *(int32_t *)(vt + 0x70) != 0) return 0;
     { uint64_t dl = vu_find(root, "DropdownListContents", 1); if (dl && *(uint8_t *)(dl + 0x50)) return 0; }
     int cell = -1; if (vu_cell_at(vt, x, y, &cell) >= 0 && cell + 1 == g_tip_on) return 0;
@@ -347,10 +348,10 @@ static void vu_drag_place(uint64_t vt, int x, int y) {
     vu_move(im, ux - (w > 0 ? w / 2 : 49), uy - (h > 0 ? h / 2 : 49));
 }
 int dm_vault_ui_drag(int phase, int x, int y) {
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) { g_dg.on = 0; return 0; }
-    float dm_ui_drag_lift_get(void); int vh = *(int32_t *)(b + 0x211da3c), lift = (int)(vh * dm_ui_drag_lift_get());
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0; if (!vt) { g_dg.on = 0; return 0; }
+    float dm_ui_drag_lift_get(void); int vh = *(int32_t *)(b + GA_UI_HEIGHT), lift = (int)(vh * dm_ui_drag_lift_get());
     if (phase == 0) { int cell; int row = vu_cell_at(vt, x, y, &cell); if (row < 0 || !dm_vault_has(vt_rows[row].kind, vt_rows[row].row)) return 0;
-        uint64_t bg = vu_find(vt, "TouchV_Back", 0); if (!bg) return 0; int a, c, x0, x1, y0, y1, vw = *(int32_t *)(b + 0x211da38);
+        uint64_t bg = vu_find(vt, "TouchV_Back", 0); if (!bg) return 0; int a, c, x0, x1, y0, y1, vw = *(int32_t *)(b + GA_UI_WIDTH);
         for (a = 0, c = x; a < c;) { int mid = (a + c) / 2; if (vu_hit(bg, mid, y)) c = mid; else a = mid + 1; } x0 = a;
         for (a = x, c = vw - 1; a < c;) { int mid = (a + c + 1) / 2; if (vu_hit(bg, mid, y)) a = mid; else c = mid - 1; } x1 = a;
         for (a = 0, c = y; a < c;) { int mid = (a + c) / 2; if (vu_hit(bg, x, mid)) c = mid; else a = mid + 1; } y0 = a;
@@ -366,7 +367,7 @@ int dm_vault_ui_drag(int phase, int x, int y) {
     const vt_row *e = &vt_rows[g_dg.row]; int fx, fy, cols, rows, dm_ui_bag_point(int, int, int *, int *, int *, int *);
     if (dm_ui_bag_point(x, y - lift, &fx, &fy, &cols, &rows)) { void dm_vault_request_withdraw_at(int, int, int, int, int, int); dm_vault_request_withdraw_at(e->kind, e->row, fx, fy, cols, rows);
         LOG("编年史仓库：%s 拖到背包格 (%.2f, %.2f)（背包 %d×%d）→ 取出", e->key, fx / 100.0, fy / 100.0, cols, rows); }
-    else { ((void (*)(int, uint64_t, int, int, int))(b + 0x35f120))(3, 0, 0, 0, 0); LOG("编年史仓库：%s 没拖到背包格上 → 不取（原版错误音）", e->key); }
+    else { ((void (*)(int, uint64_t, int, int, int))(b + GA_SOUND_PLAY))(3, 0, 0, 0, 0); LOG("编年史仓库：%s 没拖到背包格上 → 不取（原版错误音）", e->key); }
     return 1;
 }
 
@@ -374,7 +375,7 @@ int dm_vault_ui_drag(int phase, int x, int y) {
 
 
 int dm_vault_ui_pager_hit(int x, int y) {
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0, vt = bk ? vu_find(bk, "TouchVault", 1) : 0;
     if (!vt || *(int32_t *)(vt + 0x70) != 0) return 0;
     return vu_hit(vu_find(vt, "TouchV_PgLHit", 0), x, y) ? -1 : vu_hit(vu_find(vt, "TouchV_PgRHit", 0), x, y) ? 1 : 0;
 }
@@ -417,7 +418,7 @@ static void vu_tiers_pump(uint64_t vt) {
     if (tm != g_tiers) { g_tiers = tm; atomic_store(&g_dirty, 1); }
 }
 void dm_vault_ui_pump(void) {
-    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + 0x2f05458) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0;
+    uint8_t *b = vu_base(); uint64_t root = b ? *(uint64_t *)(b + GA_UI_ROOT) : 0, bk = root ? dm_ui_top(root, "BankExpansionLayout") : 0;
     static int was; if (!bk || !*(uint8_t *)(bk + 0x50)) { was = 0; g_vt_fresh = 1; return; }
     uint64_t tabs = vu_find(bk, "BankTabs", 0), vt = vu_find(bk, "TouchVault", 1); if (!tabs || !vt || !vu_is(tabs, VT_TABBAR)) { was = 0; g_vt_fresh = 1; return; }
     int on = *(int32_t *)(tabs + 0xdc4) == 5;
@@ -434,7 +435,7 @@ void dm_vault_ui_pump(void) {
     { int dm_padmode_current(void); uint64_t dm_padmode_page_keys(uint64_t); void dm_ui_touch(int, float, float); unsigned long long dm_guest_frame(void);
       static unsigned long long up_at; static float ux, uy; unsigned long long fr = dm_guest_frame();
       if (up_at && fr >= up_at) { up_at = 0; dm_ui_touch(2, ux, uy); }
-      if (dm_padmode_current()) { int cx = *(int32_t *)(b + 0x2d128f8), cy = *(int32_t *)(b + 0x2d128fc), w = *(int32_t *)(b + 0x211da38), h = *(int32_t *)(b + 0x211da3c), over = w > 0 && h > 0 && dm_vault_ui_over(cx, cy);
+      if (dm_padmode_current()) { int cx = *(int32_t *)(b + GA_PAD_CURSOR_X), cy = *(int32_t *)(b + GA_PAD_CURSOR_Y), w = *(int32_t *)(b + GA_UI_WIDTH), h = *(int32_t *)(b + GA_UI_HEIGHT), over = w > 0 && h > 0 && dm_vault_ui_over(cx, cy);
 
 
 
@@ -465,7 +466,7 @@ void dm_vault_ui_pump(void) {
     { int dm_ui_vault_drop(void); static uint32_t held; static int wait;
       uint32_t h = dm_vault_ui_held(); if (held && !h && (uint32_t)dm_ui_vault_drop() == held) { wait = 8; g_drop_id = (int)held; } held = h;
       if (wait && !--wait) { void dm_vault_request_deposit(uint32_t); dm_vault_request_deposit((uint32_t)g_drop_id); LOG("编年史仓库：拖进来的物品 id %u → 存入", (unsigned)g_drop_id); } }
-    { int dm_vault_take_full_sound(void); if (dm_vault_take_full_sound()) ((void (*)(int, uint64_t, int, int, int))(b + 0x35f120))(3, 0, 0, 0, 0); }
+    { int dm_vault_take_full_sound(void); if (dm_vault_take_full_sound()) ((void (*)(int, uint64_t, int, int, int))(b + GA_SOUND_PLAY))(3, 0, 0, 0, 0); }
 
 
 
@@ -474,7 +475,7 @@ void dm_vault_ui_pump(void) {
 
 
 
-    { uint64_t in = vu_find(vt, "TouchV_Search", 1); if (in && *(uint64_t *)in - (uint64_t)(uintptr_t)b != 0x20b8718) in = 0;
+    { uint64_t in = vu_find(vt, "TouchV_Search", 1); if (in && *(uint64_t *)in - (uint64_t)(uintptr_t)b != GA_VT_INPUT_TEXT) in = 0;
       const char *q = in ? *(const char **)(in + 0x558) : NULL; uint64_t qn = in ? *(uint64_t *)(in + 0x560) : 0; char nq[sizeof g_query] = "";
       if (q && qn && qn < sizeof nq) { memcpy(nq, q, qn); nq[qn] = 0; } if (strcmp(nq, g_query)) { strlcpy(g_query, nq, sizeof g_query); g_page_q = 0; atomic_store(&g_dirty, 1); LOG("编年史仓库：搜索「%s」", g_query); } }
     static int gen = -1; int g = dm_vault_gen(); if (g != gen) { gen = g; atomic_store(&g_dirty, 1); }
@@ -496,8 +497,8 @@ void dm_vault_ui_pump(void) {
     int grid = g_sub == 0 || g_query[0]; vu_move(vu_find(vt, "TouchV_Uniq", 0), grid ? 156 : 99999, VU_UNIQ_Y); vu_move(vu_find(vt, "TouchV_Sets", 0), grid ? 99999 : 156, 296);
     if (dirty && g_tip_on) { vu_tip(b, vt, NULL); g_tip_on = 0; }
     if (g_query[0]) vu_search(b, vt); else if (g_sub == 0) vu_uniques(b, vt); else vu_sets(b, vt);
-    { struct { const char *s; uint64_t n; } key = { "dmVaultPage", 11 };                                                                                                                                                                                                                                                                                                                                                        uint64_t fmt = ((uint64_t (*)(void *))(b + 0x7f5630))(&key); char pt[256]; memset(pt, 0, sizeof pt);
-      ((void (*)(void *, uint64_t, int64_t, int64_t))(b + 0x399130))(pt, fmt, g_pg_cur, g_pg_tot); vu_text(b, vu_find(vt, "TouchV_Page", 0), pt);
+    { struct { const char *s; uint64_t n; } key = { "dmVaultPage", 11 };                                                                                                                                                                                                                                                                                                                                                        uint64_t fmt = ((uint64_t (*)(void *))(b + GA_LOC_STRING_GET))(&key); char pt[256]; memset(pt, 0, sizeof pt);
+      ((void (*)(void *, uint64_t, int64_t, int64_t))(b + GA_TEXT_FORMAT))(pt, fmt, g_pg_cur, g_pg_tot); vu_text(b, vu_find(vt, "TouchV_Page", 0), pt);
       vu_frame(vu_find(vt, "TouchV_PgL", 0), g_pg_cur > 1 ? 0 : 3); vu_frame(vu_find(vt, "TouchV_PgR", 0), g_pg_cur < g_pg_tot ? 0 : 3); }
 }
 

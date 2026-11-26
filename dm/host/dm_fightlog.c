@@ -24,6 +24,7 @@
 
 
 #include "dm_fightlog.h"
+#include "game_addrs.h"
 #include "dm_feats.h"
 #include "dm_fightlog_text.h"
 #include "dm_fightlog_hist.h"
@@ -68,7 +69,7 @@ static uint64_t rd(uint64_t a) { return a ? *(volatile uint64_t *)(uintptr_t)a :
 static uint32_t rd32(uint64_t a) { return *(volatile uint32_t *)(uintptr_t)a; }
 static int owned(uint64_t u) { return rd32(u + 0x124) >> 31; }
 int dm_threat_tier(uint64_t unit);
-static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + 0x5b9290))(u, id, 0); }
+static int ustat(uint64_t u, int id) { return ((int (*)(uint64_t, int, int))(uintptr_t)(B + GA_STAT_GET))(u, id, 0); }
 
 #ifndef DM_PLAYER_BUILD
 
@@ -87,7 +88,7 @@ static int mercenary(uint64_t u) {
     unsigned v = *(volatile uint8_t *)(uintptr_t)(u + 0x1bd);
     if (v < 1 || v > 3 || !B) return 0;
     if (n[v - 1] < 0) {
-        uint64_t t = rd((uint64_t)(uintptr_t)(B + 0x2d64a18 + v * 16)), rows = t ? rd(t + 0x558) : 0, count = t ? rd(t + 0x560) : 0; n[v - 1] = 0;
+        uint64_t t = rd((uint64_t)(uintptr_t)(B + GA_DATA_TABLES + v * 16)), rows = t ? rd(t + 0x558) : 0, count = t ? rd(t + 0x560) : 0; n[v - 1] = 0;
         for (uint64_t k = 0; rows && count <= 4096 && k < count; k++) {
             uint32_t c = rd32(rows + k * 0x150 + 8); int have = 0;
             for (int i = 0; i < n[v - 1]; i++) have |= cls[v - 1][i] == c;
@@ -204,7 +205,7 @@ static struct { uint64_t actor; int skill, missile, proc; } g_scope[SCOPES];
 
 static int g_nscope, g_scope_over, g_scope_logged;
 uint64_t (*dm_fl_missile_owner)(uint64_t game, uint64_t missile);
-static uint64_t missile_owner(uint64_t game, uint64_t missile) { return B ? ((uint64_t (*)(uint64_t, uint64_t))(uintptr_t)(B + 0x7cd7b0))(game, missile) : 0; }
+static uint64_t missile_owner(uint64_t game, uint64_t missile) { return B ? ((uint64_t (*)(uint64_t, uint64_t))(uintptr_t)(B + GA_UNIT_OWNER_GET))(game, missile) : 0; }
 static void scope_open(uint64_t actor, int skill) { if (g_nscope < SCOPES) { g_scope[g_nscope].actor = actor; g_scope[g_nscope].skill = skill; g_scope[g_nscope].missile = g_scope[g_nscope].proc = 0; g_nscope++; } else g_scope_over++; }
 static void scope_proc(uint64_t actor, int skill) { int n = g_nscope; scope_open(actor, skill); if (g_nscope > n) g_scope[n].proc = 1; }
 static void scope_close(void) { if (g_scope_over) g_scope_over--; else if (g_nscope) g_nscope--; }
@@ -280,7 +281,7 @@ static int monster_attack(uint32_t mode) { return mode == 4 || mode == 5 || (mod
 static int potion_kind(uint64_t item) {
     static const char codes[12][4] = { "hp1", "hp2", "hp3", "hp4", "hp5", "mp1", "mp2", "mp3", "mp4", "mp5", "rvs", "rvl" };
     if (!item) return -1;
-    uint32_t code = ((uint32_t (*)(uint64_t))(uintptr_t)(B + 0x570260))(item); const char *c = (const char *)&code;
+    uint32_t code = ((uint32_t (*)(uint64_t))(uintptr_t)(B + GA_ITEM_CODE))(item); const char *c = (const char *)&code;
     for (int k = 0; k < 12; k++) if (!memcmp(c, codes[k], 3) && (c[3] == ' ' || !c[3])) return k;
     return -1;
 }
@@ -299,7 +300,7 @@ static int dot_owners(uint64_t G, uint64_t u, uint64_t player, dm_fl_dot *d) {
     for (int pass = 0; pass < 2; pass++) for (uint64_t n = rd(root + (pass ? 0xd8 : 0xd0)), k = 0; n && k < 64; n = rd(n + 0x68), k++) {
         uint32_t state = rd32(n + 0x20); if (state != 2 && state != 0x73) continue;
         if (rd32(n + 0x1c) & 0x2000) continue;
-        int rate = -((int (*)(int, uint64_t, int, int))(uintptr_t)(B + 0x5bc690))((int)ver, n, 0x4a, 0); if (rate <= 0) continue;
+        int rate = -((int (*)(int, uint64_t, int, int))(uintptr_t)(B + GA_STATLIST_GET_OWN))((int)ver, n, 0x4a, 0); if (rate <= 0) continue;
         uint32_t type = rd32(n + 8), id = rd32(n + 0xc); int kind; uint16_t cls = 0;
         if (type == 0) kind = id == rd32(player + 8) ? DM_FL_DOT_PLAYER : DM_FL_DOT_UNKNOWN;
         else if (type == 1) {

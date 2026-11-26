@@ -20,7 +20,7 @@ English: [ANDROID.md](ANDROID.md)
 
 ## 你需要准备的
 
-- 你自己购买的游戏的文件：Switch 版 1.0.34.0（对应 PC 版 3.3.94012）的 `ExeFS` 与 `RomFS`；准备方式见上游项目的说明
+- 你自己购买的游戏的文件：Switch 版 1.0.35（对应 PC 版 3.4.95035）的 `ExeFS` 与 `RomFS`；准备方式见上游项目的说明
 - 这个仓库的源码，**与 APK 是同一个发布版本**（App 会核对，不一致会直说）
 - Python 3.9 以上，以及这几个包：`python3 -m pip install pillow numpy lz4 capstone`
 - C/C++ 编译器：clang（敌人图片库用 gcc 也行；环境变量 `CC` / `CXX` 可以指定别的）。工具用它编两个本机小库：贴图解排布与敌人图片库（只编一次，缓存在 `DM_ROOT`）
@@ -38,7 +38,7 @@ English: [ANDROID.md](ANDROID.md)
 python3 dm/tools/d2rm_android.py <游戏文件目录> <输出目录>
 ```
 
-`<游戏文件目录>` 是 Switch 版 3.3.94012 的 `Update` 目录（里面有 `ExeFS` 和 `RomFS`）。它会改写游戏程序（安卓目标）、取出并翻译全部着色器、生成触屏覆盖层与几张数据表，最后写出 `<输出目录>/android/`：
+`<游戏文件目录>` 是 Switch 版 3.4.95035 的 `Update` 目录（里面有 `ExeFS` 和 `RomFS`）。它会改写游戏程序（安卓目标）、取出并翻译全部着色器、生成触屏覆盖层与几张数据表，最后写出 `<输出目录>/android/`：
 
 ```
 android/out/          改写后的游戏程序与配套表

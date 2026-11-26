@@ -16,6 +16,7 @@
 
 
 import ast, inspect, os, re, sys, json, struct, hashlib, shutil, subprocess, tempfile, collections, threading, concurrent.futures as cf
+GAME_VERSION = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../PRODUCT'), encoding='utf-8').readline().split('-')[0]
 DM_ROOT = os.environ.get('DM_ROOT') or os.path.expanduser('~/dm-work')
 HOME = os.path.expanduser('~')
 dm_dir, out = sys.argv[1:3]; want = set(sys.argv[3:]); cache_root = out
@@ -31,7 +32,7 @@ IOSOUT = os.environ.get('IOSOUT')
 if IOSOUT:
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../ios/tools')); import ios_metal
     IOSOUT = os.path.join(IOSOUT, 'b-' + CHAIN); os.makedirs(IOSOUT, exist_ok=True)
-MAIN = os.environ.get('MAIN', f'{DM_ROOT}/data/switch/3.3.94012/Update/ExeFS/main')
+MAIN = os.environ.get('MAIN', f'{DM_ROOT}/data/switch/{GAME_VERSION}/Update/ExeFS/main')
 MAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nvn/shader_map.tsv')
 BF_WANT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nvn/bf_want.tsv')
 BF_WANT = {line.strip() for line in open(BF_WANT_FILE) if line.strip() and not line.lstrip().startswith('#')} if os.path.exists(BF_WANT_FILE) else set()

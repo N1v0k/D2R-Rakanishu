@@ -29,6 +29,7 @@
 
 
 #include "dm_build.h"
+#include "game_addrs.h"
 #include "hle.h"
 #include <pthread.h>
 #include <stdatomic.h>
@@ -62,7 +63,7 @@ static int base_stat(uint64_t pl, int id) {
 
 int dm_skill_reason(uint8_t *b, uint64_t pl, int level, int skill, int base) {
     uint8_t ver = *(uint8_t *)(uintptr_t)(pl + 0x1bd); if (ver < 1 || ver > 3 || skill < 0) return 7;
-    uint64_t t = *(uint64_t *)(uintptr_t)(b + 0x2d64a18 + (uint64_t)ver * 16); if (!t || (uint64_t)skill >= *(uint64_t *)(uintptr_t)(t + 0x11f0)) return 7;
+    uint64_t t = *(uint64_t *)(uintptr_t)(b + GA_DATA_TABLES + (uint64_t)ver * 16); if (!t || (uint64_t)skill >= *(uint64_t *)(uintptr_t)(t + 0x11f0)) return 7;
     uint64_t rec = *(uint64_t *)(uintptr_t)(t + 0x11e8) + (uint64_t)skill * 0x2ec;
     int cap = *(int16_t *)(uintptr_t)(rec + 0x184); if (cap < 1) cap = 20;
     if (base >= cap) return cap == 20 && dm_skill_cap() > 20 && !dm_rift_cleared_any() && base < dm_skill_cap() ? 5 : 6;
@@ -81,11 +82,11 @@ void dm_build_pump(uint8_t *b, uint64_t pl) {
     char nm[DM_BUILD_NAME + 1]; memcpy(nm, (const char *)(uintptr_t)pd, DM_BUILD_NAME); nm[DM_BUILD_NAME] = 0;
     int changed = pl != last_pl || strcmp(nm, last_name);
     pthread_mutex_lock(&g_mu); int was = g_valid; pthread_mutex_unlock(&g_mu);
-    atomic_store(&g_free_stats, ((int (*)(uint64_t, int, int))(b + 0x5b9290))(pl, 4, 0));
+    atomic_store(&g_free_stats, ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(pl, 4, 0));
     if (was && !changed && tick++ % 6) return;
     int ids[DM_BUILD_MAX_SKILLS], n, gen;
     pthread_mutex_lock(&g_mu); n = g_nreq; gen = g_reqgen; memcpy(ids, g_req, sizeof ids); pthread_mutex_unlock(&g_mu);
-    int (*stat)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(b + 0x5b9290);
+    int (*stat)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(b + GA_STAT_GET);
     int s[DM_BUILD_INTS] = {0}, level = stat(pl, 12, 0);
     s[0] = 1; s[2] = (int)*(uint32_t *)(uintptr_t)(pl + 4); s[3] = level; s[4] = *(uint8_t *)(uintptr_t)(pl + 0x1bd);
     s[5] = stat(pl, 4, 0); s[6] = stat(pl, 5, 0);

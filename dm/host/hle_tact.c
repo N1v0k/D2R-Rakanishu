@@ -21,6 +21,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "../third_party/libdeflate/libdeflate.h"
 #include <CommonCrypto/CommonDigest.h>
 #include <fcntl.h>
@@ -197,7 +198,7 @@ void tact_prefetch_start(const char *outdir) {
     if (want[0] && strcmp(want, have)) { LOG("DM_TACT_PREFETCH：清单 %s 的 main 构建号「%s」与产物「%s」不符，不启用预取", e, have[0] ? have : "无", want); return; }
     FILE *f = fopen(e, "r"); if (!f) die("DM_TACT_PREFETCH 打不开 %s", e);
     char rom[1024]; const char *rs = getenv("DM_ROMFS");
-    if (rs) snprintf(rom, sizeof rom, "%s/data", rs); else snprintf(rom, sizeof rom, "%s%s/data/switch/3.3.94012/Update/RomFS/data", getenv("DM_ROOT") ?: getenv("HOME"), getenv("DM_ROOT") ? "" : "/dm-work");
+    if (rs) snprintf(rom, sizeof rom, "%s/data", rs); else snprintf(rom, sizeof rom, "%s%s/data/switch/%s/Update/RomFS/data", getenv("DM_ROOT") ?: getenv("HOME"), getenv("DM_ROOT") ? "" : "/dm-work", GAME_VERSION_main);
     char names[64][32]; uint32_t cap = 0; char line[256];
     while (fgets(line, sizeof line, f)) {
         char fn[32], kh[40]; unsigned long long off; unsigned n, dl, th = 0;

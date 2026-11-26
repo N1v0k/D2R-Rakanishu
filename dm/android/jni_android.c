@@ -18,6 +18,7 @@
 #include "../host/dm_res_scale.h"
 #include "../host/front.h"
 #include "../host/hle.h"
+#include "../host/data_build.h"
 #include <android/log.h>
 #include <android/native_window_jni.h>
 #include <dirent.h>
@@ -579,6 +580,10 @@ JNIEXPORT jint JNICALL Java_com_xiaoboluo_d2r_DmActivity_nativeStart(JNIEnv *env
     }
     snprintf(required, sizeof required, "%s/data/.build.config", romfs);
     if (access(required, R_OK)) { LOG("boot: missing build configuration"); return -5; }
+
+    char data_build[64], want_build[64];
+    if (!dm_data_build_ok(required, data_build, sizeof data_build, want_build, sizeof want_build)) {
+        LOG("boot: the data folder is game build %s, this app needs %s", *data_build ? data_build : "(none named)", want_build); return -12; }
     snprintf(required, sizeof required, "%s/shaders", g_runtime);
     DIR *shaders = opendir(required); int have_shader = 0;
     if (shaders) { struct dirent *entry; while ((entry = readdir(shaders))) {

@@ -5,11 +5,12 @@
 
 
 #include "../dm_freetp.c"
+#include "../game_addrs.h"
 static int g_wset;
 int dm_swapskill_wset(void) { return g_wset; }
 static int checks, fails;
 #define CHECK(c) do { checks++; if (!(c)) { fails++; printf("FAIL line %d: %s\n", __LINE__, #c); } } while (0)
-enum { MAP = 0x2d13cbc, BIND = 0x2d5f0c0, STRIDE = 28 };
+enum { MAP = GA_PAD_BUTTON_SLOTS, BIND = GA_SKILL_SLOT_BINDS, STRIDE = 28 };
 static uint8_t *mb; static _Alignas(8) uint8_t player[0x200];
 static void face(int i, uint32_t lg, uint32_t nm, uint32_t al) { uint32_t v[3] = { lg, nm, al }; memcpy(mb + MAP + 12 * i, v, 12); }
 static void bind(int slot, uint32_t id) { memcpy(mb + BIND + (uint64_t)slot * STRIDE, &id, 4); }

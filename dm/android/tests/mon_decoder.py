@@ -18,14 +18,17 @@ from unicorn.arm64_const import UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'verify'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools'))
 import nsoimg
 from gen_mon_pics import MAIN_SHA256
+from game_addrs import GA
 
-ENTRY = 0x11f4900
-CODE = (0x11f4000, 0x11f7000)
-TABLE = (0x1ddc000, 0x1ddd000)
-IMPORTS = (0x1b76000, 0x1b77000)
-MEMCPY, MEMMOVE = 0x1b76040, 0x1b760c0
+ENTRY = GA.GRANNY_DECOMPRESS
+PAGE = 0x1000
+CODE = (ENTRY & -PAGE, (ENTRY & -PAGE) + 3 * PAGE)
+TABLE = (GA.GRANNY_QUAT_RANGES & -PAGE, (GA.GRANNY_QUAT_RANGES & -PAGE) + 2 * PAGE)
+IMPORTS = (GA.IMPORT_MEMCPY & -PAGE, (GA.IMPORT_MEMCPY & -PAGE) + PAGE)
+MEMCPY, MEMMOVE = GA.IMPORT_MEMCPY, GA.IMPORT_MEMMOVE
 STACK = (0x40000000, 0x40010000)
 SRC, DST, RET = 0x50000000, 0x60000000, 0x70000000
 PAGE = 0x1000
@@ -51,7 +54,7 @@ class GameDecoder:
     def __init__(self, main_path):
         digest = fingerprint(main_path)
         if digest != MAIN_SHA256:
-            raise DecodeError('the game executable %s has SHA-256 %s, not the verified 3.3.94012 build' % (main_path, digest))
+            raise DecodeError('the game executable %s has SHA-256 %s, not the verified 3.4.95035 build' % (main_path, digest))
         img = nsoimg.load(main_path)
         u = self._u = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
         for (lo, hi), prot in ((CODE, UC_PROT_READ | UC_PROT_EXEC), (TABLE, UC_PROT_READ), (IMPORTS, UC_PROT_READ | UC_PROT_EXEC)):

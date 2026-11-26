@@ -26,6 +26,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm_rwlv_core.h"
 #include "dm_i18n.h"
 #include "dm_actions.h"
@@ -52,16 +53,16 @@ enum { PG_INV = 0, PG_CUBE = 3, PG_STASH = 4 };
 #define PAGE(d) (*(uint8_t *)((d) + 0x55))
 
 static uint8_t *rb(void) { static uint8_t *b; if (!b) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base; return b; }
-static uint64_t unit_item(uint8_t *b, uint32_t id) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), id & 0x7f, id, 4); }
-static uint64_t player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); }
-static uint64_t tables(uint8_t *b, uint64_t it) { uint8_t v = *(uint8_t *)(it + 0x1bd); return v >= 1 && v <= 3 ? *(uint64_t *)(b + 0x2d64a18 + v * 16) : 0; }
+static uint64_t unit_item(uint8_t *b, uint32_t id) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), id & 0x7f, id, 4); }
+static uint64_t player(uint8_t *b) { return ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); }
+static uint64_t tables(uint8_t *b, uint64_t it) { uint8_t v = *(uint8_t *)(it + 0x1bd); return v >= 1 && v <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + v * 16) : 0; }
 static int sockets(uint8_t *b, uint64_t it) {
     static int fake = -1; if (fake < 0) { const char *e = getenv("DM_TEST_RW_SOCKETS"); fake = e ? atoi(e) : 0; }
-    return fake > 0 ? fake : ((int (*)(uint64_t, int, int))(b + 0x5b9290))(it, 0xc2, 0); }
+    return fake > 0 ? fake : ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(it, 0xc2, 0); }
 static int filled(uint64_t it) { uint64_t c = *(uint64_t *)(it + 0x90); return c && *(uint64_t *)(c + 0x10); }
 static int nfilled(uint64_t it) { uint64_t c = *(uint64_t *)(it + 0x90); int n = 0; for (uint64_t s = c ? *(uint64_t *)(c + 0x10) : 0; s && n < 8; n++) { uint64_t d = *(uint64_t *)(s + 0x10); s = d ? *(uint64_t *)(d + 0xb0) : 0; } return n; }
-static int is_type(uint8_t *b, uint64_t it, int t) { return ((int (*)(uint64_t, int))(b + 0x574bc0))(it, t); }
-static const char *loc_str(uint8_t *b, const char *key) { struct { const char *p; uint64_t n; } k = { key, strlen(key) }; const char *s = ((const char *(*)(void *))(b + 0x7f5630))(&k); return s && *s ? s : key; }
+static int is_type(uint8_t *b, uint64_t it, int t) { return ((int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE))(it, t); }
+static const char *loc_str(uint8_t *b, const char *key) { struct { const char *p; uint64_t n; } k = { key, strlen(key) }; const char *s = ((const char *(*)(void *))(b + GA_LOC_STRING_GET))(&k); return s && *s ? s : key; }
 
 
 
@@ -75,7 +76,7 @@ static void loc_tb(uint8_t *b, const char *key, char *out, size_t n) {
     { const char *u = dm_untag(out); if (u != out) memmove(out, u, strlen(u) + 1); }
 }
 #define CC "\xee\x81\xbe"
-static void send_pkt(uint8_t *b, const uint8_t *p, int n) { ((void (*)(const uint8_t *, int))(b + 0x2ceab0))(p, n); }
+static void send_pkt(uint8_t *b, const uint8_t *p, int n) { ((void (*)(const uint8_t *, int))(b + GA_CLIENT_SEND))(p, n); }
 static int grid_xy(uint64_t it, int *x, int *y) { uint64_t pp = *(uint64_t *)(it + 0x38); if (!pp) return 0; *x = *(int32_t *)(pp + 0x10); *y = *(int32_t *)(pp + 0x14); return 1; }
 
 
@@ -96,7 +97,7 @@ static int grid_xy(uint64_t it, int *x, int *y) { uint64_t pp = *(uint64_t *)(it
 
 typedef struct { char *p; uint64_t len, cap; } gstr_t;
 typedef struct { uint64_t d[5]; uint64_t item; } preview_t;
-static void g_free(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + 0x3211700) & 1)) return; uint64_t a = *(uint64_t *)(b + 0x32116f8); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
+static void g_free(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + GA_GAME_ALLOC_READY) & 1)) return; uint64_t a = *(uint64_t *)(b + GA_GAME_ALLOC); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
 static void preview_drop(uint8_t *b, preview_t *h) {
     uint64_t *obj = (h->d[0] & 1) ? (uint64_t *)(h->d[0] & ~1ull) : (uint64_t *)h;
     if (h->item) { uint64_t it = h->item; ((void (*)(void *, uint64_t *))(*(uint64_t *)(*obj + 0x10)))(obj, &it); h->item = 0; }
@@ -135,13 +136,13 @@ static preview_t rw_preview(uint8_t *b, uint64_t t, const uint8_t *e, int force)
         for (int k = 1; k < 6 && !ty; k++) { int16_t c = *(const int16_t *)(e + 0x4a + 2 * k); if (c > 0 && base_grp(t, c) == force) ty = c; }
         if (!ty) LOG("【黄】构建指南预览：符文之语 %u 没有组 %d 的底材，照 itype1 的底材", (unsigned)*(const uint16_t *)(e + 0x46), force);
     }
-    if (!ty) return ((preview_t (*)(int, int, int, int))(b + 0x367890))(2, *(const uint16_t *)(e + 0x46), 1, 1);
+    if (!ty) return ((preview_t (*)(int, int, int, int))(b + GA_PREVIEW_ITEM_MAKE))(2, *(const uint16_t *)(e + 0x46), 1, 1);
     uint64_t rc[0xe8 / 8]; memcpy(rc, e, 0xe8); int16_t v = (int16_t)ty; memcpy((uint8_t *)rc + 0x4a, &v, 2);
-    return ((preview_t (*)(const void *))(b + 0x367af0))(rc);
+    return ((preview_t (*)(const void *))(b + GA_PREVIEW_RUNEWORD_MAKE))(rc);
 }
 static int rw_desc_g(uint8_t *b, int rec, int force, char *out, size_t n) {
-    out[0] = 0; uint8_t ver = *(uint8_t *)(b + 0x2127c48); if (ver < 1 || ver > 3) return 0;
-    uint64_t t = *(uint64_t *)(b + 0x2d64a18 + ver * 16), pl = player(b); if (!t || !pl) return 0;
+    out[0] = 0; uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); if (ver < 1 || ver > 3) return 0;
+    uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + ver * 16), pl = player(b); if (!t || !pl) return 0;
     uint64_t rr = *(uint64_t *)(t + 0x1880); uint32_t rn = *(uint32_t *)(t + 0x1888); if (!rr || rec < 0 || (uint32_t)rec >= rn) return 0;
     const uint8_t *e = (const uint8_t *)(rr + (uint64_t)rec * 0xe8);
     preview_t h = rw_preview(b, t, e, force);
@@ -149,12 +150,12 @@ static int rw_desc_g(uint8_t *b, int rec, int force, char *out, size_t n) {
     uint8_t props[16 * (7 + 18)]; uint64_t np = 0;
     for (int k = 0; k < 7 && *(int16_t *)(e + 0x74 + 16 * k) >= 0; k++) memcpy(props + 16 * np++, e + 0x74 + 16 * k, 16);
     uint64_t ir = *(uint64_t *)(t + 0x15c0), gt = *(uint64_t *)(t + 0x1678), gn = *(uint64_t *)(t + 0x1680); uint32_t in = *(uint32_t *)(t + 0x15c8);
-    int grp = force >= 0 && force < 3 ? force : ((int (*)(uint64_t))(b + 0x5757a0))(h.item);
+    int grp = force >= 0 && force < 3 ? force : ((int (*)(uint64_t))(b + GA_ITEM_GEM_GROUP))(h.item);
     for (int k = 0; k < 6 && grp >= 0 && grp < 3 && ir && gt; k++) { int32_t cls = *(int32_t *)(e + 0x5c + 4 * k); if (cls < 0 || (uint32_t)cls >= in) continue;
         int32_t gi = *(int32_t *)(ir + (uint64_t)cls * 0x1c0 + 0xf8); if (gi < 0 || (uint64_t)gi >= gn) continue;
         memcpy(props + 16 * np, (const void *)(gt + (uint64_t)gi * 0xc0 + 0x30 + 0x30 * grp), 0x30); np += 3; }
     struct { uint64_t n; uint8_t has; } cnt = { np, 1 };
-    gstr_t sres = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(pl, pl, h.item, 0, 1, 0, props, &cnt);
+    gstr_t sres = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(pl, pl, h.item, 0, 1, 0, props, &cnt);
     size_t k = sres.p && sres.len < n ? sres.len : (sres.p ? n - 1 : 0); if (k) memcpy(out, sres.p, k); out[k] = 0;
     if (sres.p && !(sres.cap >> 63)) g_free(b, sres.p);
     preview_drop(b, &h);
@@ -174,16 +175,16 @@ static int rw_desc(uint8_t *b, int rec, char *out, size_t n) { return rw_desc_g(
 
 
 static int item_desc(uint8_t *b, int kind, int row, char *out, size_t n) {
-    out[0] = 0; uint8_t ver = *(uint8_t *)(b + 0x2127c48); if (ver < 1 || ver > 3) return DM_ITEM_DESC_LATER;
-    uint64_t t = *(uint64_t *)(b + 0x2d64a18 + ver * 16), pl = player(b); if (!t || !pl) return DM_ITEM_DESC_LATER;
+    out[0] = 0; uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); if (ver < 1 || ver > 3) return DM_ITEM_DESC_LATER;
+    uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + ver * 16), pl = player(b); if (!t || !pl) return DM_ITEM_DESC_LATER;
     uint64_t rr = *(uint64_t *)(t + (kind ? 0x13e8 : 0x13c8)), rn = *(uint64_t *)(t + (kind ? 0x13f0 : 0x13d0)); if (!rr || row < 0 || (uint64_t)row >= rn) return 0;
     const uint8_t *rec = (const uint8_t *)(rr + (uint64_t)row * (kind ? 0x15c : 0x1cc));
-    preview_t h = ((preview_t (*)(int, int, int, int))(b + 0x367890))(kind ? 1 : 0, row, 1, 1);
+    preview_t h = ((preview_t (*)(int, int, int, int))(b + GA_PREVIEW_ITEM_MAKE))(kind ? 1 : 0, row, 1, 1);
     if (!h.item) { preview_drop(b, &h); return 0; }
     uint8_t props[16 * 12]; uint64_t np = 0;
     for (int k = 0; k < (kind ? 12 : 9); k++) if (*(int32_t *)(rec + 0x98 + 16 * k) >= 0) memcpy(props + 16 * np++, rec + 0x98 + 16 * k, 16);
     struct { uint64_t n; uint8_t has; } cnt = { np, 1 };
-    gstr_t sres = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(pl, pl, h.item, 0, 1, 0, props, &cnt);
+    gstr_t sres = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(pl, pl, h.item, 0, 1, 0, props, &cnt);
     size_t k = sres.p && sres.len < n ? sres.len : (sres.p ? n - 1 : 0); if (k) memcpy(out, sres.p, k); out[k] = 0;
     if (sres.p && !(sres.cap >> 63)) g_free(b, sres.p);
     preview_drop(b, &h);
@@ -201,7 +202,7 @@ int dm_item_desc(uint8_t *b, int kind, int row, int grp, char *out, size_t n) {
     if (kind == 0 || kind == 1) r = item_desc(b, kind, row, out, n);
     else if (kind != 2) return 0;
     else {
-        uint8_t ver = *(uint8_t *)(b + 0x2127c48); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + ver * 16) : 0;
+        uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + ver * 16) : 0;
         if (!t || !player(b)) return DM_ITEM_DESC_LATER;
         uint64_t rr = *(uint64_t *)(t + 0x1880); uint32_t rn = *(uint32_t *)(t + 0x1888);
         if (!rr || row < 0 || (uint32_t)row >= rn || !*(uint8_t *)(rr + (uint64_t)row * 0xe8 + 0x44)) return 0;
@@ -213,7 +214,7 @@ int dm_item_desc(uint8_t *b, int kind, int row, int grp, char *out, size_t n) {
 }
 
 int dm_rw_text(uint8_t *b, int rec, char *out, size_t n) {
-    uint8_t ver = *(uint8_t *)(b + 0x2127c48); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + ver * 16) : 0, rr = t ? *(uint64_t *)(t + 0x1880) : 0; uint32_t rn = t ? *(uint32_t *)(t + 0x1888) : 0;
+    uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + ver * 16) : 0, rr = t ? *(uint64_t *)(t + 0x1880) : 0; uint32_t rn = t ? *(uint32_t *)(t + 0x1888) : 0;
     if (!rr || rec < 0 || (uint32_t)rec >= rn || !*(uint8_t *)(rr + (uint64_t)rec * 0xe8 + 0x44)) return 0;
     return rw_desc(b, rec, out, n) ? 1 : -1;
 }
@@ -229,19 +230,19 @@ typedef struct { int inv, stash, shared, stack, cube; } have_t;
 static uint32_t shared_unit_id(uint8_t *b); static uint64_t unit_any(uint8_t *b, uint32_t id, int type);
 
 
-static int owners(uint8_t *b, uint64_t pl, uint64_t us[3]) { us[0] = pl; us[1] = ((uint64_t (*)(uint64_t))(b + 0x652650))(pl); uint32_t sid = shared_unit_id(b); us[2] = sid ? unit_any(b, sid, 0) : 0;
-    if (!us[2]) us[2] = ((uint64_t (*)(uint64_t))(b + 0x652780))(pl); if (us[2] == us[1] || us[2] == pl) us[2] = 0; return 3; }
+static int owners(uint8_t *b, uint64_t pl, uint64_t us[3]) { us[0] = pl; us[1] = ((uint64_t (*)(uint64_t))(b + GA_ASTASH_UNIT_GET))(pl); uint32_t sid = shared_unit_id(b); us[2] = sid ? unit_any(b, sid, 0) : 0;
+    if (!us[2]) us[2] = ((uint64_t (*)(uint64_t))(b + GA_SHARED_STASH_UNIT_GET))(pl); if (us[2] == us[1] || us[2] == pl) us[2] = 0; return 3; }
 
 
 
 
 static uint32_t shared_unit_id(uint8_t *b) {
-    uint64_t m = *(uint64_t *)(b + 0x2f05450), bk = m ? *(uint64_t *)(m + 8) : 0, n = m ? *(uint64_t *)m : 0; if (!bk || !n) return 0;
+    uint64_t m = *(uint64_t *)(b + GA_UI_STATE_TABLE), bk = m ? *(uint64_t *)(m + 8) : 0, n = m ? *(uint64_t *)m : 0; if (!bk || !n) return 0;
     const uint64_t key = 0x8d4d18a675312bd4ull; uint64_t node = *(uint64_t *)(bk + 8 * ((n - 1) & 0x1f864eb9001295cdull));
     for (int g = 0; node && g < 64; g++, node = *(uint64_t *)node) if (*(uint64_t *)(node + 8) == key) { uint64_t a1 = *(uint64_t *)(node + 0x10), a2 = a1 ? *(uint64_t *)(a1 + 0x10) : 0; return a2 ? *(uint32_t *)a2 : 0; }
     return 0;
 }
-static uint64_t unit_any(uint8_t *b, uint32_t id, int type) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + type * 0x400), id & 0x7f, id, (uint32_t)type); }
+static uint64_t unit_any(uint8_t *b, uint32_t id, int type) { return ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + type * 0x400), id & 0x7f, id, (uint32_t)type); }
 int dm_rw_owners(uint8_t *b, uint64_t pl, uint64_t us[3]) { return owners(b, pl, us); }
 uint32_t dm_rw_shared_unit(uint8_t *b) { return shared_unit_id(b); }
 static uint64_t first_item(uint64_t u) { uint64_t c = u ? *(uint64_t *)(u + 0x90) : 0; return c && *(uint32_t *)c == 0x01020304 ? *(uint64_t *)(c + 0x10) : 0; }
@@ -280,7 +281,7 @@ static int base_where(uint8_t *b, uint64_t pl, uint64_t it, int *page, int *x, i
 static int build_list(uint8_t *b, uint64_t it) {
     uint64_t t = tables(b, it), pl = player(b); if (!t || !pl || !base_ok(b, it, t)) return 0;
     if (g_lvoff == -1) { g_lvoff = find_lvoff(t); if (g_lvoff < 0) LOG("【红】符文之语：物品表里没找到「需求等级」那一列（锚点物品对不上），清单不显示等级"); else LOG("符文之语：物品表「需求等级」偏移 %#x", g_lvoff); if (g_lvoff < 0) g_lvoff = -2; }
-    int ns = sockets(b, it), stash_open = *(uint8_t *)(b + 0x2d5ff60) != 0, bp = 0, bx = 0, by = 0, bsl = 0, bw = base_where(b, pl, it, &bp, &bx, &by, &bsl);
+    int ns = sockets(b, it), stash_open = *(uint8_t *)(b + GA_STASH_OPEN) != 0, bp = 0, bx = 0, by = 0, bsl = 0, bw = base_where(b, pl, it, &bp, &bx, &by, &bsl);
     int can_put = bw && !(bw == 1 && bp == PG_STASH && !stash_open);
     uint64_t rr = *(uint64_t *)(t + 0x1880), rn = *(uint64_t *)(t + 0x1888); g_list.n = 0;
 
@@ -340,9 +341,9 @@ static uint64_t find_w(uint64_t w, const char *name, int dep) {
     return 0;
 }
 static void set_text(uint8_t *b, uint64_t w, const char *s) {
-    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != 0x20ba4c8) return;
+    if (!w || *(uint64_t *)w - (uint64_t)(uintptr_t)b != GA_VT_TEXTBOX) return;
     size_t n = strlen(s); if (*(uint64_t *)(w + 0x90) == n && !memcmp(*(const char **)(w + 0x88), s, n)) return;
-    ((void *(*)(uint64_t, const char *, uint64_t))(b + 0x136e5c))(w + 0x88, s, n); ((void (*)(uint64_t))(b + 0xadc434))(w);
+    ((void *(*)(uint64_t, const char *, uint64_t))(b + GA_TEXT_SET))(w + 0x88, s, n); ((void (*)(uint64_t))(b + GA_TEXT_LAYOUT))(w);
 }
 static void place(uint64_t w, int x, int y) { if (!w) return; int32_t *r = (int32_t *)(w + 0x70); if (r[0] == x && r[1] == y) return; r[0] = x; r[1] = y; ((void (*)(uint64_t))*(uint64_t *)(*(uint64_t *)w + 0x10))(w); }
 #define OFF 99999
@@ -354,7 +355,7 @@ static void place(uint64_t w, int x, int y) { if (!w) return; int32_t *r = (int3
 
 enum { RW_X = 262, RW_W = 1125, RW_Y0 = 60, RW_HEAD = 80, RW_L1 = 56, RW_LH = 48, RW_RGAP = 28, RW_PAD = 36, RW_GAP = 22, RW_NAV_H = 80, RW_PG_W = 230, RW_YMAX = 1470, RW_PER_PAGE = 8 };
 static int g_inv_open;
-static uint64_t inv_panel(uint8_t *b) { if (!g_inv_open) return 0; uint64_t root = *(uint64_t *)(b + 0x2f05458); return root ? find_w(root, "PlayerInventoryExpansionLayout", 0) : 0; }
+static uint64_t inv_panel(uint8_t *b) { if (!g_inv_open) return 0; uint64_t root = *(uint64_t *)(b + GA_UI_ROOT); return root ? find_w(root, "PlayerInventoryExpansionLayout", 0) : 0; }
 
 
 
@@ -522,7 +523,7 @@ static int det_check(int log) {
 static void det_text(uint8_t *b, int i, char *out, size_t n) {
     static char d[4096]; out[0] = 0; if (!rw_desc(b, g_list.c[i].rec, d, sizeof d)) return;
     uint64_t it = unit_item(b, g_list.base); char bn[96] = "", lv[64] = "", so[64] = "", ins[300];
-    if (it) { uint32_t code = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); char ck[5] = {0}; memcpy(ck, &code, 4); for (int k = 3; k >= 0 && ck[k] == ' '; k--) ck[k] = 0; loc_tb(b, ck, bn, sizeof bn); }
+    if (it) { uint32_t code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); char ck[5] = {0}; memcpy(ck, &code, 4); for (int k = 3; k >= 0 && ck[k] == ' '; k--) ck[k] = 0; loc_tb(b, ck, bn, sizeof bn); }
     char f[64]; loc_tb(b, "ItemStats1p", f, sizeof f); { char *q = strstr(f, "%d"); if (q && g_list.c[i].lv) { *q = 0; snprintf(lv, sizeof lv, "%s%d%s", f, g_list.c[i].lv, q + 2); } }
     loc_tb(b, "Socketable", f, sizeof f); { char *q = strstr(f, "%i"); if (q && it) { *q = 0; snprintf(so, sizeof so, "%s%d%s", f, sockets(b, it), q + 2); } }
     snprintf(ins, sizeof ins, "\n" CC "0%s%s%s%s%s", so, *lv ? "\n" CC "0" : "", lv, *bn ? "\n" CC "0" : "", bn);
@@ -537,7 +538,7 @@ static void det_open(uint8_t *b, int i) {
 }
 static void ui_fill(uint8_t *b, uint64_t it) {
     uint64_t t = tables(b, it), pl = player(b); if (!W.panel || !t || !pl) return; char s[256];
-    uint32_t code = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); char ck[5] = {0}; memcpy(ck, &code, 4); for (int k = 3; k >= 0 && ck[k] == ' '; k--) ck[k] = 0;
+    uint32_t code = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); char ck[5] = {0}; memcpy(ck, &code, 4); for (int k = 3; k >= 0 && ck[k] == ' '; k--) ck[k] = 0;
     char bn[96]; loc_tb(b, ck, bn, sizeof bn); snprintf(s, sizeof s, dm_str(b, "dmRwTitle"), bn, sockets(b, it)); set_text(b, W.title, s);
     W.b = b;
     for (int i = 0; i < g_list.n && i < NROW; i++) { cand_t *c = &g_list.c[i];
@@ -635,9 +636,9 @@ int dm_runeword_done_count(void) { return atomic_load(&g_job_done); }
 static void job_readback(uint8_t *b, const char *how) {
     uint64_t it = b ? unit_item(b, g_job.base) : 0, d = it ? *(uint64_t *)(it + 0x10) : 0; char rs[64] = ""; size_t o = 0; int n = 0;
     uint64_t c = it ? *(uint64_t *)(it + 0x90) : 0;
-    for (uint64_t x = c ? *(uint64_t *)(c + 0x10) : 0; x && n < 8; n++) { uint64_t xd = *(uint64_t *)(x + 0x10); uint32_t cd = ((uint32_t (*)(uint64_t))(b + 0x570260))(x);
+    for (uint64_t x = c ? *(uint64_t *)(c + 0x10) : 0; x && n < 8; n++) { uint64_t xd = *(uint64_t *)(x + 0x10); uint32_t cd = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(x);
         o += snprintf(rs + o, sizeof rs - o, "%s%.3s", n ? " " : "", (const char *)&cd); if (o >= sizeof rs) o = sizeof rs - 1; x = xd ? *(uint64_t *)(xd + 0xb0) : 0; }
-    uint32_t code = it ? ((uint32_t (*)(uint64_t))(b + 0x570260))(it) : 0;
+    uint32_t code = it ? ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it) : 0;
     LOG("符文之语：成型读回（%s）底材 id %u「%.3s」%d 孔、孔里 %d 颗（%s）标志 %#x", how, g_job.base, (const char *)&code, it ? sockets(b, it) : -1, n, rs, d ? *(uint32_t *)(d + 0x18) : 0);
     atomic_fetch_add(&g_job_done, 1);
 }
@@ -679,12 +680,12 @@ static void job_stop(const char *why, int red) {
     LOG("%s符文之语：一键合成停（%s；已镶 %d / %d；符文 id %u %s 模式 %d；底材孔里 %d 颗）", red ? "【红】" : "", why, g_job.k, g_job.nr, g_job.rune, r ? "在" : "不在", r ? (int)*(uint32_t *)(r + 0xc) : -1, bs ? nfilled(bs) : -1);
     g_job.st = 5; dm_itemjob_settle_begin(&g_job.settle, 600, 120); job_settle(b); }
 int dm_rw_panel_open(uint8_t *b);
-static int item_panel_open(uint8_t *b) { return inv_panel(b) || *(uint8_t *)(b + 0x2d5ff60); }
+static int item_panel_open(uint8_t *b) { return inv_panel(b) || *(uint8_t *)(b + GA_STASH_OPEN); }
 int dm_rw_panel_open(uint8_t *b) { return item_panel_open(b); }
 void dm_rw_send(uint8_t *b, const uint8_t *p, int n) { send_pkt(b, p, n); }
 uint64_t dm_rw_item(uint8_t *b, uint32_t id) { return unit_item(b, id); }
 uint64_t dm_rw_held(uint8_t *b, uint64_t pl) { return held_item(b, pl); }
-void dm_rw_take_stack(uint8_t *b, uint64_t it) { static uint64_t fake[0x620 / 8]; fake[0x608 / 8] = it; ((void (*)(void *))(b + 0x39d724))(fake); }
+void dm_rw_take_stack(uint8_t *b, uint64_t it) { static uint64_t fake[0x620 / 8]; fake[GF_STACK_CELL_ITEM / 8] = it; ((void (*)(void *))(b + GA_STACK_TAKE_ONE))(fake); }
 static void job_start(uint8_t *b, int row) {
     if (g_job.st || row < 0 || row >= g_list.n || !g_list.c[row].ok) return;
     uint64_t it = unit_item(b, g_list.base), pl = player(b), t = it ? tables(b, it) : 0; int hw, hh;
@@ -695,7 +696,7 @@ static void job_start(uint8_t *b, int row) {
     if (!still) { list_close(b, "预检：符文已不齐"); return; }
     memset(&g_job, 0, sizeof g_job); g_job.rec = c.rec; g_job.nr = c.nr; memcpy(g_job.cls, c.cls, sizeof c.cls); g_job.base = g_list.base;
     g_job.bkind = base_where(b, pl, it, &g_job.bpage, &g_job.bx, &g_job.by, &g_job.bslot);
-    int stash_open = *(uint8_t *)(b + 0x2d5ff60) != 0;
+    int stash_open = *(uint8_t *)(b + GA_STASH_OPEN) != 0;
     if (!g_job.bkind || (g_job.bkind == 1 && g_job.bpage == PG_STASH && !stash_open)) { list_close(b, "预检：底材位置不能镶"); LOG("符文之语：预检没过（底材位置不能镶），不动"); return; }
     for (int k = 0; k < c.nr; k++) if (!pick_src(b, pl, c.cls[k], stash_open, k, &g_job.src[k])) { list_close(b, "预检：符文来源不齐"); LOG("符文之语：预检没过（第 %d 颗没有可取的来源），不动", k + 1); memset(&g_job, 0, sizeof g_job); return; }
     if (!dm_itemjob_acquire(DM_ITEMJOB_RUNEWORD)) { int o = dm_itemjob_owner(); memset(&g_job, 0, sizeof g_job); list_close(b, "pre-check: another item job runs"); LOG("runeword: item job %d owns the cursor, the craft does not start, nothing moves", o); return; }
@@ -726,7 +727,7 @@ static void job_pump(uint8_t *b) {
         { uint64_t rd = *(uint64_t *)(r + 0x10); g_job.pend = 1; g_job.stack_before = rd ? *(uint8_t *)(rd + 0x9c) : 0; }
         if (sr->kind == SRC_GRID) { uint8_t p[17] = {0x19}; uint32_t v[4] = { sr->id, (uint32_t)sr->x, (uint32_t)sr->y, (uint32_t)sr->page }; memcpy(p + 1, v, 16); send_pkt(b, p, 17); }
         else if (sr->kind == SRC_SHARED) { uint8_t p[13] = {0x46}; uint32_t v[3] = { sr->id, sr->unit, (uint32_t)sr->x | (uint32_t)sr->y << 16 }; memcpy(p + 1, v, 12); send_pkt(b, p, 13); }
-        else { static uint64_t fake[0x620 / 8]; fake[0x608 / 8] = r; ((void (*)(void *))(b + 0x39d724))(fake); }
+        else { static uint64_t fake[0x620 / 8]; fake[GF_STACK_CELL_ITEM / 8] = r; ((void (*)(void *))(b + GA_STACK_TAKE_ONE))(fake); }
         g_job.rune = 0; g_job.st = 3; g_job.wait = 120;
         LOG("符文之语：第 %d 颗：从%s拿起（id %u%s）", g_job.k + 1, sr->kind == SRC_GRID ? (sr->page == PG_STASH ? "储藏箱格" : "背包格") : sr->kind == SRC_STACK ? "符文页成叠" : "共享仓库格", sr->id, sr->kind == SRC_STACK ? "，取 1 件" : ""); return; }
     case 3: {
@@ -760,7 +761,7 @@ int dm_runeword_long_press(const dm_cursor_item_info *ci) {
         for (int i = 0; i < g_list.n && o < sizeof all; i++) { int w = snprintf(all + o, sizeof all - o, "%s%s", i ? " / " : "", g_list.c[i].name); if (w < 0) break; o += (size_t)w; }
         LOG("符文之语：清单全部 %d 行：%s（局：读到 %d、离线 %d、天梯 %d）", g_list.n, all, kn, off, lad); }
     if (getenv("DM_TEST_RW_DESC") && !strcmp(getenv("DM_TEST_RW_DESC"), "all")) {
-        uint8_t ver = *(uint8_t *)(b + 0x2127c48); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + ver * 16) : 0, rr = t ? *(uint64_t *)(t + 0x1880) : 0; uint32_t rn = t ? *(uint32_t *)(t + 0x1888) : 0;
+        uint8_t ver = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + ver * 16) : 0, rr = t ? *(uint64_t *)(t + 0x1880) : 0; uint32_t rn = t ? *(uint32_t *)(t + 0x1888) : 0;
         int mx = 0, mxr = -1, cnt = 0, fail = 0; static char d[4096];
         for (uint32_t r = 0; rr && r < rn; r++) { if (!*(uint8_t *)(rr + (uint64_t)r * 0xe8 + 0x44)) continue; cnt++;
             if (!rw_desc(b, (int)r, d, sizeof d)) { fail++; continue; } int nl = 1; for (char *q = d; *q; q++) nl += *q == '\n';
@@ -826,14 +827,14 @@ static void pad_pump(uint8_t *b) {
 
     if (!g_list.open && !g_job.st && parked) { parked = 0; dm_ui_hover_now(px, py); }
     if (!g_list.open && !g_job.st) {
-        uint64_t root = *(uint64_t *)(b + 0x2f05458), fm = root ? *(uint64_t *)(root + 0xd0) : 0; int held = 0;
+        uint64_t root = *(uint64_t *)(b + GA_UI_ROOT), fm = root ? *(uint64_t *)(root + 0xd0) : 0; int held = 0;
 
 
         int dm_itemcmp_pad_held(void); int ph = dm_itemcmp_pad_held();
-        for (int i = 0; fm && i < 2 && !held; i++) { uint64_t w = *(uint64_t *)(fm + (i ? 0x178 : 0x190)); held = w && *(uint64_t *)w - (uint64_t)(uintptr_t)b == 0x2089ab8 && (ph >= 0 ? ph : *(uint8_t *)(w + 0x632)); }
+        for (int i = 0; fm && i < 2 && !held; i++) { uint64_t w = *(uint64_t *)(fm + (i ? 0x178 : 0x190)); held = w && *(uint64_t *)w - (uint64_t)(uintptr_t)b == GA_VT_ITEM_GRID && (ph >= 0 ? ph : *(uint8_t *)(w + 0x632)); }
         uint64_t f = dm_guest_frame(); if (!held || !g_inv_open) { t0 = 0; fired = 0; }
         else if (!fired) { if (!t0) t0 = f; else if (f - t0 >= PAD_HOLD) { fired = 1; dm_cursor_item_info ci; if (dm_cursor_item(&ci)) { if (dm_runeword_long_press(&ci)) { W.psel = W.first; ui_layout(); LOG("符文之语：手柄按住对比键 %d 帧 → 打开清单", PAD_HOLD);
-                px = *(int32_t *)(b + 0x2d128f8); py = *(int32_t *)(b + 0x2d128fc); parked = 1; dm_ui_hover_now(*(int32_t *)(b + 0x211da38) * 2 / 100, *(int32_t *)(b + 0x211da3c) / 2); } } } }
+                px = *(int32_t *)(b + GA_PAD_CURSOR_X); py = *(int32_t *)(b + GA_PAD_CURSOR_Y); parked = 1; dm_ui_hover_now(*(int32_t *)(b + GA_UI_WIDTH) * 2 / 100, *(int32_t *)(b + GA_UI_HEIGHT) / 2); } } } }
         atomic_store(&g_pad_ev, 0); return; }
     uint64_t ev = atomic_exchange(&g_pad_ev, 0); if (!ev || g_job.st) return;
     if (W.det >= 0) {
@@ -872,7 +873,7 @@ void dm_runeword_pump(void) {
     if (at > 0 && sec >= at && open_fr && fr - open_fr > 30) { at = -1; uint64_t pl = player(b), us[3] = {0}; int done = 0; if (pl) owners(b, pl, us);
         for (int o = 0; o < 3 && !done; o++) for (uint64_t it = first_item(us[o]); it && !done; ) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
             int pg = PAGE(d), here = !where[0] ? !o : !strcmp(where, "inv") ? !o && pg == PG_INV : !strcmp(where, "stash") ? !o && pg == PG_STASH : !strcmp(where, "shared") ? o > 0 : !strcmp(where, "equip") ? !o && *(uint32_t *)(it + 0xc) == 1 : 0;
-            uint32_t cd = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); if (here && *(uint32_t *)(it + 0xc) <= 1 && !memcmp(&cd, code, strlen(code) < 4 ? strlen(code) : 4)) {
+            uint32_t cd = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); if (here && *(uint32_t *)(it + 0xc) <= 1 && !memcmp(&cd, code, strlen(code) < 4 ? strlen(code) : 4)) {
                 dm_cursor_item_info ci; memset(&ci, 0, sizeof ci); ci.id = *(uint32_t *)(it + 8); memcpy(ci.code, code, 3); ci.container = *(uint32_t *)(it + 0xc) == 1 ? DM_ITEM_AT_EQUIP : o || pg == PG_STASH ? DM_ITEM_AT_STASH : DM_ITEM_AT_INVENTORY;
                 int ok = dm_runeword_long_press(&ci); LOG("测试 DM_TEST_RW_OPEN：第 %.1f 秒对 %s（id %u，单位 %d 页 %d，孔 %d）长按 → %s", sec, code, ci.id, o, pg, sockets(b, it), ok ? "开了清单" : "不是匹配底材"); done = ok; }
             it = *(uint64_t *)(d + 0xb0); }
@@ -880,7 +881,7 @@ void dm_runeword_pump(void) {
             { uint32_t sid = shared_unit_id(b); LOG("测试 DM_TEST_RW_OPEN：共享仓库单位 id %u；另两个单位 id %u / %u", sid, us[1] ? *(uint32_t *)(us[1] + 8) : 0, us[2] ? *(uint32_t *)(us[2] + 8) : 0);
               for (int ty = 0; ty < 6 && sid; ty++) { uint64_t u = unit_any(b, sid, ty); if (!u) continue; int ni = 0; for (uint64_t q = first_item(u); q && ni < 200; ni++) { uint64_t qd = *(uint64_t *)(q + 0x10); q = qd ? *(uint64_t *)(qd + 0xb0) : 0; }
                   LOG("测试 DM_TEST_RW_OPEN：  按类型 %d 找到单位 %p，物品 %d 件", ty, (void *)u, ni); } }
-            for (int o = 0; o < 3; o++) for (uint64_t it = first_item(us[o]); it; ) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t cd = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+            for (int o = 0; o < 3; o++) for (uint64_t it = first_item(us[o]); it; ) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break; uint32_t cd = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
                 if (!memcmp(&cd, code, strlen(code) < 4 ? strlen(code) : 4)) LOG("测试 DM_TEST_RW_OPEN：  id %u 单位 %d 页 %u 模式 %u 孔 %d", *(uint32_t *)(it + 8), o, PAGE(d), *(uint32_t *)(it + 0xc), sockets(b, it));
                 it = *(uint64_t *)(d + 0xb0); } } }
 
@@ -889,9 +890,9 @@ void dm_runeword_pump(void) {
     static double ls = -2; if (ls == -2) { const char *e = getenv("DM_TEST_RW_LIST"); ls = e ? atof(e) : -1; }
     if (ls > 0 && sec >= ls) { ls = -1; uint64_t pl = player(b), us[3]; int n = 0; if (pl) { owners(b, pl, us);
         for (int o = 0; o < 3; o++) for (uint64_t it = first_item(us[o]); it; ) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
-            if (*(uint32_t *)(d + 0x18) & 0x04000000) { uint32_t cd = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); LOG("测试 DM_TEST_RW_LIST：符文之语物品 id %u「%.4s」品质 %u 单位 %d 页 %u 模式 %u 孔里 %d 颗 标志 %#x", *(uint32_t *)(it + 8), (const char *)&cd, *(uint32_t *)d, o, PAGE(d), *(uint32_t *)(it + 0xc), nfilled(it), *(uint32_t *)(d + 0x18)); n++;
+            if (*(uint32_t *)(d + 0x18) & 0x04000000) { uint32_t cd = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); LOG("测试 DM_TEST_RW_LIST：符文之语物品 id %u「%.4s」品质 %u 单位 %d 页 %u 模式 %u 孔里 %d 颗 标志 %#x", *(uint32_t *)(it + 8), (const char *)&cd, *(uint32_t *)d, o, PAGE(d), *(uint32_t *)(it + 0xc), nfilled(it), *(uint32_t *)(d + 0x18)); n++;
                 struct { uint64_t n; uint8_t has; } c0 = { 0, 0 };
-                gstr_t tip = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(pl, pl, it, 0, 1, 0, NULL, &c0);
+                gstr_t tip = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(pl, pl, it, 0, 1, 0, NULL, &c0);
                 if (tip.p) { static char tb[4096]; size_t k = tip.len < sizeof tb - 1 ? tip.len : sizeof tb - 1; memcpy(tb, tip.p, k); tb[k] = 0; for (char *q = tb; *q; q++) if (*q == '\n') *q = '|';
                     LOG("测试 DM_TEST_RW_LIST：原版说明 %s", tb); if (!(tip.cap >> 63)) g_free(b, tip.p); } }
             it = *(uint64_t *)(d + 0xb0); } }

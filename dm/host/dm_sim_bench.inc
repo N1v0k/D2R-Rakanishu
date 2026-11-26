@@ -56,7 +56,7 @@ static int sim_bench_read_check(const dm_sim_data *d,void *ctx) {
         static char nodes[600];size_t n=0;nodes[0]=0;uint64_t l=*(uint64_t *)(q->pl+0x100),nd=l?*(uint64_t *)l:0;
         for(int i=0;nd && i<1024;i++,nd=*(uint64_t *)(nd+8)) {
             uint64_t r=*(uint64_t *)nd;if(!r || *(int32_t *)(nd+0x44)==-1)continue;
-            n+=(size_t)snprintf(nodes+n,n<sizeof nodes?sizeof nodes-n:0," %d:%d+%d(%d)",*(int16_t *)r,*(int32_t *)(nd+0x38),((int (*)(uint64_t,uint64_t,int))(q->b+0x5b1710))(q->pl,nd,0),*(int32_t *)(nd+0x44));
+            n+=(size_t)snprintf(nodes+n,n<sizeof nodes?sizeof nodes-n:0," %d:%d+%d(%d)",*(int16_t *)r,*(int32_t *)(nd+0x38),((int (*)(uint64_t,uint64_t,int))(q->b+GA_SKILL_BONUS_LEVEL))(q->pl,nd,0),*(int32_t *)(nd+0x44));
         }
         static char states[900];size_t m=0;states[0]=0;
         for(int i=0;i<q->now.c.ngrant;i++) {
@@ -86,18 +86,18 @@ static void sim_dual_probe(uint8_t *b,uint64_t pl) {
     seen[0]=key;seen[1]=mode;
     static const int st[]={17,18,19,20,21,22,23,24,25,48,49,60,68,93,119,136,141,0,2,7,31,39,342,343,348};
     char line[1500];size_t k=0;
-    uint64_t inv=*(uint64_t *)(pl+0x90),sel=inv?((uint64_t (*)(uint64_t))(b+0x560e70))(inv):0;
-    k+=(size_t)snprintf(line+k,sizeof line-k,"mode %u selected %u hand mode %d page path %d;",mode,sel?*(uint32_t *)(sel+8):0,inv?((int (*)(uint64_t,uint64_t,int))(b+0x560d20))(pl,inv,0):-1,((int (*)(uint64_t))(b+0x5cb9e0))(pl));
+    uint64_t inv=*(uint64_t *)(pl+0x90),sel=inv?((uint64_t (*)(uint64_t))(b+GA_INV_GET_WEAPON))(inv):0;
+    k+=(size_t)snprintf(line+k,sizeof line-k,"mode %u selected %u hand mode %d page path %d;",mode,sel?*(uint32_t *)(sel+8):0,inv?((int (*)(uint64_t,uint64_t,int))(b+GA_INV_HAND_MODE))(pl,inv,0):-1,((int (*)(uint64_t))(b+GA_CHAR_DMG_ALT_PATH))(pl));
     for(int h=0;h<2;h++){uint64_t it=hands[h],l=it?*(uint64_t *)(it+0x88):0;k+=(size_t)snprintf(line+k,k<sizeof line?sizeof line-k:0," slot %d id %u list flags %#x %#x;",4+h,it?*(uint32_t *)(it+8):0,l?*(uint32_t *)(l+0x18):0,l?*(uint32_t *)(l+0x1c):0);}
     for(size_t i=0;i<sizeof st/sizeof *st;i++)k+=(size_t)snprintf(line+k,k<sizeof line?sizeof line-k:0," %d=%d/%d/%d",st[i],gstat(b,pl,st[i],0),gstat(b,hands[0],st[i],0),gstat(b,hands[1],st[i],0));
     uint64_t nd=skill_node(pl,0);
-    if(nd)for(int h=0;h<2;h++)if(hands[h]){int v[IC_C_N+3]={0};int lvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,nd,0);cb_game(b,pl,nd,lvl,hands[h],v);
+    if(nd)for(int h=0;h<2;h++)if(hands[h]){int v[IC_C_N+3]={0};int lvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,nd,0);cb_game(b,pl,nd,lvl,hands[h],v);
         k+=(size_t)snprintf(line+k,k<sizeof line?sizeof line-k:0,"; game with slot %d: ar %d dmg %d-%d phys %d-%d block %d",4+h,v[IC_C_AR],v[IC_C_DMG],v[IC_C_N],v[IC_C_N+1],v[IC_C_N+2],v[IC_C_BLK]);}
 
 
     int cls=(int)*(uint32_t *)(pl+4);
     if(nd && sim_dual_class(b,cls,hands[0],hands[1])) {
-        sim_dual_base base;sim_dual_base_now(b,pl,hands,&base);int lvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+0x5b1710))(pl,nd,0);
+        sim_dual_base base;sim_dual_base_now(b,pl,hands,&base);int lvl=*(int32_t *)(nd+0x38)+((int (*)(uint64_t,uint64_t,int))(b+GA_SKILL_BONUS_LEVEL))(pl,nd,0);
         for(int h=0;h<2;h++){dm_ic_cb m;sim_dual_cb(b,pl,cls,&base,hands[h],1,nd,lvl,NULL,&m);int v[IC_C_N+1]={0};int ok=base.ok && dm_ic_cb_eval(&m,v);
             k+=(size_t)snprintf(line+k,k<sizeof line?sizeof line-k:0,"; model slot %d (%s, code %.3s, mastery %d/%d): ar %d dmg %d-%d%s",4+h,sim_list_idle(hands[h])?"idle":"swinging",(const char *)&(uint32_t){item_code(b,hands[h])},m.ar_mast,m.dmast,v[IC_C_AR],v[IC_C_DMG],v[IC_C_N],ok?"":" unreadable");}
     }

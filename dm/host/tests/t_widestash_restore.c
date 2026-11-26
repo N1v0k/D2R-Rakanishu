@@ -3,6 +3,7 @@
 
 
 #include "../dm_cursor.c"
+#include "../game_addrs.h"
 module_t g_mod[MAX_MOD]; int g_nmod;
 uint64_t dm_guest_frame(void) { return 100; }
 uint64_t now_ns(void) { return 0; }
@@ -20,9 +21,9 @@ static uint64_t ptr(void *p) { return (uint64_t)(uintptr_t)p; }
 static int32_t *x(void) { return (int32_t *)(inv+0x70); }
 enum { HOME = -8, SHIFT = 227, ALONE = -816 };
 int main(void) {
- unsigned char *base=calloc(1,0x2f05460); if(!base)return 2;
+ unsigned char *base=calloc(1, GA_UI_ROOT + 8); if(!base)return 2;
  g_nmod=1; strcpy(g_mod[0].name,"main"); g_mod[0].base=base;
- *(uint64_t *)(base+0x2f05458)=ptr(root); *(uint64_t *)(root+0x58)=ptr(children); *(uint64_t *)(root+0x60)=1;
+ *(uint64_t *)(base+GA_UI_ROOT)=ptr(root); *(uint64_t *)(root+0x58)=ptr(children); *(uint64_t *)(root+0x60)=1;
  *(const char **)(inv+8)="PlayerInventoryExpansionLayout"; *x()=HOME; inv[0x50]=1; children[0]=ptr(inv);
 
  mv_offset(MV_WIDE,ptr(inv),0,SHIFT,0); CHECK(*x()==HOME+SHIFT);

@@ -12,6 +12,7 @@
 
 #include "hle.h"
 #include "front.h"
+#include "game_addrs.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -88,6 +89,12 @@ static const char *envdir(const char *var, const char *rel, char *buf, size_t n)
     const char *v = getenv(var);
     if (v) return v;
     snprintf(buf, n, "%s%s/%s", getenv("DM_ROOT") ?: getenv("HOME"), getenv("DM_ROOT") ? "" : "/dm-work", rel); return buf;
+}
+
+static const char *romfs_rel(void) {
+    static char rel[64];
+    if (!rel[0]) snprintf(rel, sizeof rel, "data/switch/%s/Update/RomFS", GAME_VERSION_main);
+    return rel;
 }
 
 
@@ -296,7 +303,7 @@ static Result err_res(const char *op, const char *path) {
 HLE_FORCE("_ZN2nn2fs22QueryMountRomCacheSizeEPm", "fsp-srv；rom 直读宿主目录，缓存只给最小值", Result, h_fs_QueryRomCache, size_t *out) { *out = 0x1000; return RES_OK; }
 HLE_FORCE("_ZN2nn2fs8MountRomEPKcPvm", "fsp-srv；rom → 宿主 RomFS 目录", Result, h_fs_MountRom, const char *name, void *cache, size_t sz) {
     (void)cache; (void)sz; char b[1024];
-    Result r = mount(name, envdir("DM_ROMFS", "data/switch/3.3.94012/Update/RomFS", b, sizeof b), 1);
+    Result r = mount(name, envdir("DM_ROMFS", romfs_rel(), b, sizeof b), 1);
     if (r == RES_OK && getenv("DM_ROMFS_OVERLAY")) {
         PATH_LOCK();
         for (int i = 0; i < g_nmnt; i++) if (!strcmp(g_mnt[i].name, name)) {
@@ -372,7 +379,7 @@ static void low_vision_off(const char *save_dir) {
 
 
 static int voice_chunk_present(int chunk) {
-    char b[1024], p[1100]; snprintf(p, sizeof p, "%s/data/%02d-00000001.data", envdir("DM_ROMFS", "data/switch/3.3.94012/Update/RomFS", b, sizeof b), chunk);
+    char b[1024], p[1100]; snprintf(p, sizeof p, "%s/data/%02d-00000001.data", envdir("DM_ROMFS", romfs_rel(), b, sizeof b), chunk);
     return !access(p, F_OK);
 }
 

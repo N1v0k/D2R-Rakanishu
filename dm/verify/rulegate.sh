@@ -17,8 +17,8 @@ case "$OUT_ARG" in /*) OUT=$OUT_ARG;; *) OUT=$X/build/cache/dm/$OUT_ARG;; esac
 [ -d "$TR" ] || { echo "RULEGATE RED 真值目录不存在：$TR"; exit 2; }
 [ -f "$TR/meta.json" ] && [ -f "$TR/c2s.jsonl" ] && [ -f "$TR/ticks.jsonl" ] || { echo "RULEGATE RED 真值文件不全"; exit 2; }
 [ -f "$OUT/main.patched.bin" ] || { echo "RULEGATE RED 产物缺 main.patched.bin：$OUT"; exit 2; }
-PATCH_SHA=$(shasum -a 256 "$HERE/../tools/patch_nso.py" | awk '{print $1}')
-REC_SHA=$(sed -n '1s/^[[:space:]]*\([0-9a-fA-F]\{64\}\).*/\1/p' "$OUT/build_src.sha256" 2>/dev/null)
+PATCH_SHA=$(shasum -a 256 "$HERE/../tools/patch_nso.py" "$HERE/../host/game_addrs.def" | awk '{print $1}')
+REC_SHA=$(awk '{print $1}' "$OUT/build_src.sha256" 2>/dev/null)
 [ -n "$REC_SHA" ] && [ "$REC_SHA" = "$PATCH_SHA" ] || {
     echo "RULEGATE RED 产物过期，先重出当前代号的 rules 产物（dm/PRODUCT）"
     echo "重出命令：python3 $HERE/../tools/patch_nso.py <main.nso> $OUT main"

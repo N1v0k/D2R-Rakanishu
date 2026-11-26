@@ -37,7 +37,7 @@ The App gets the project's own icon (`dm/ios/Assets.xcassets/AppIcon.appiconset/
 
 ## First launch
 
-Double-click the App. The first launch asks you to choose the **game resource folder**: pick `~/dm-work/data/switch/3.3.94012/Update` (or the `RomFS` inside it); it must contain a `data` folder. Choosing the folder that directly holds the `.data` files and `build_manifest.psv` also works. A wrong choice is explained and you are asked again; a correct one is remembered.
+Double-click the App. The first launch asks you to choose the **game resource folder**: pick `~/dm-work/data/switch/3.4.95035/Update` (or the `RomFS` inside it); it must contain a `data` folder. Choosing the folder that directly holds the `.data` files and `build_manifest.psv` also works. A wrong choice is explained and you are asked again; a correct one is remembered.
 
 A key reference is then shown once; afterwards it is under Help in the menu bar.
 

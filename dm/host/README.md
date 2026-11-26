@@ -9,7 +9,7 @@ The file name prefix tells you which part a file belongs to:
 - No prefix (`main.c`, `loader.c`, `entry.S`, …) and `hle*.c`: loading, system calls, system services, front end and diagnostics. These are listed one by one under "Files in host/" in [dm/README.md](../README.md); this page does not repeat that and only adds what is missing there.
 - `dm_*.c`: features added on top of the original game, and the touch adaptation. That section gives only a few examples; this page lists them all by responsibility.
 
-Every file opens with a comment saying what it does and what that is based on. Addresses in the feature files are all offsets into the original 3.3.94012 image.
+Every file opens with a comment saying what it does and what that is based on. Addresses in the feature files are offsets into the original game image. Those written by name (`GA_…`) take their values from the address table [`game_addrs.def`](game_addrs.def), which holds the supported version 3.4.95035; numeric addresses left in comments document 3.3.94012, the version they were written for.
 
 ## Base files not listed in that section
 

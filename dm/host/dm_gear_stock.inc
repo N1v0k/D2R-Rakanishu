@@ -42,7 +42,7 @@ static void gt_nodes(uint64_t pl) {
 }
 
 static const int k_gt_slot[DM_GEAR_P_N] = { 4, 5, 3, 2, 6, 7, 1, 8, 9, 10 };
-static int gt_mastery(uint8_t *b, uint64_t pl, uint64_t w, uint64_t node, int which) { return ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + 0x5b2a30))(pl, w, node, which); }
+static int gt_mastery(uint8_t *b, uint64_t pl, uint64_t w, uint64_t node, int which) { return ((int (*)(uint64_t, uint64_t, uint64_t, int))(b + GA_SKILL_MASTERY))(pl, w, node, which); }
 
 static uint32_t gt_sig(uint64_t it, uint64_t d) {
     uint32_t h = sim_worn_stats(it) * 31u + *(uint32_t *)(d + 0x18) * 7u + *(uint32_t *)d;
@@ -54,7 +54,7 @@ static uint64_t gt_psig(uint8_t *b, uint64_t pl) {
     uint64_t h = (uint64_t)gstat(b, pl, 12, 0) * 1099511628211ull ^ *(uint32_t *)(pl + 4);
     uint64_t l = *(uint64_t *)(pl + 0x100), nd = l ? *(uint64_t *)l : 0;
     for (int k = 0; nd && k < 1024; k++, nd = *(uint64_t *)(nd + 8)) { uint64_t r = *(uint64_t *)nd; if (!r) continue;
-        int lv = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + 0x5b1710))(pl, nd, 0);
+        int lv = *(int32_t *)(nd + 0x38) + ((int (*)(uint64_t, uint64_t, int))(b + GA_SKILL_BONUS_LEVEL))(pl, nd, 0);
         h = (h ^ ((uint64_t)(uint16_t)*(int16_t *)r << 40 | (uint64_t)(uint32_t)lv << 8 | (uint8_t)*(int32_t *)(nd + 0x44))) * 1099511628211ull; }
     return h;
 }
@@ -112,7 +112,7 @@ static int gt_collect(uint8_t *b, uint64_t pl, gt_item *out, int max, int *skipp
     return n;
 }
 static int gt_bodyloc(uint8_t *b, uint64_t it) {
-    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
+    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0; uint32_t ci = *(uint32_t *)(it + 4);
     if (!t || ci >= *(uint32_t *)(t + 0x15c8)) return 0;
     int16_t ty = *(int16_t *)(*(uint64_t *)(t + 0x15c0) + (uint64_t)ci * 0x1c0 + 0x12e);
     return ty >= 0 && (uint64_t)ty < *(uint64_t *)(t + 0x1370) ? *(uint8_t *)(*(uint64_t *)(t + 0x1368) + (uint64_t)ty * 0xe8 + 0xa) : 0;
@@ -123,7 +123,7 @@ static const int *gt_class_rows(uint8_t *b, uint64_t it) {
     static const char code[8][5] = { "amaz", "sorc", "necr", "pala", "barb", "drui", "assn", "warl" };
     static int rows[4][8]; static uint64_t seen[4];
     static const int none[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
-    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16) : 0;
+    uint8_t ver = *(uint8_t *)(it + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16) : 0;
     if (!t) return none;
     if (seen[ver] != t) {
         uint64_t recs = *(uint64_t *)(t + 0x1368), n = *(uint64_t *)(t + 0x1370);
@@ -164,7 +164,7 @@ static int gt_cc(const char *s) { return ((uint8_t)s[0] == 0xc3 && (uint8_t)s[1]
 static void gt_name(uint8_t *b, uint64_t it, dm_gtab_show *w) {
     static char buf[1024];
     memset(buf, 0, sizeof buf);
-    ((void (*)(uint64_t, char *))(b + 0x41a330))(it, buf);
+    ((void (*)(uint64_t, char *))(b + GA_ITEM_NAME_BUILD))(it, buf);
     buf[sizeof buf - 1] = 0;
     const char *top = strrchr(buf, '\n'); top = top ? top + 1 : buf;
     char colour = 0; size_t n = 0;
@@ -411,7 +411,7 @@ static uint64_t gt_rev(uint8_t *b, uint64_t pl, const gt_item *items, int n, uin
         h = (h ^ (record ? (uint16_t)*(int16_t *)record : 65535)) * 1099511628211ull; } }
     for (int i = 0; i < sim_nbound; i++) h = (h ^ (unsigned)sim_bound[i]) * 1099511628211ull;
     dm_gear_goal g; dm_gear_goal_get(dm_build_session(), &g); h = (h ^ (uint64_t)lround(g.survival_hits * 1000 + g.boss_share * 100)) * 1099511628211ull;
-    h = (h ^ (uint64_t)(*(uint8_t *)(b + 0x2d20b88) | dm_unit_level(pl) << 4 | dm_lang_group() << 16 | (uint64_t)*(uint8_t *)(pl + 0x1bd) << 24)) * 1099511628211ull;
+    h = (h ^ (uint64_t)(*(uint8_t *)(b + GA_DIFFICULTY) | dm_unit_level(pl) << 4 | dm_lang_group() << 16 | (uint64_t)*(uint8_t *)(pl + 0x1bd) << 24)) * 1099511628211ull;
     return h ? h : 1;
 }
 
@@ -420,7 +420,7 @@ static void gt_offer(dm_gear_snap *s, int *soon) {
     if (dm_gear_tab_offer(s)) { g_gt_held = s; *soon = 1; return; }
     g_gt_held = NULL; g_gt_offered = rev;
 }
-static void gt_gfree(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + 0x3211700) & 1)) return; uint64_t a = *(uint64_t *)(b + 0x32116f8); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
+static void gt_gfree(uint8_t *b, void *p) { if (!(*(volatile uint8_t *)(b + GA_GAME_ALLOC_READY) & 1)) return; uint64_t a = *(uint64_t *)(b + GA_GAME_ALLOC); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, p); }
 
 
 
@@ -434,7 +434,7 @@ static void gt_tip_item(uint64_t it, void *arg) {
     if (!it || *(uint32_t *)it != 4 || !*(uint64_t *)(it + 0x10)) return;
     typedef struct { char *p; uint64_t len, cap; } gstr_t;
     struct { uint64_t n; uint8_t has; } c0 = { 0, 0 };
-    gstr_t g = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(pl, pl, it, 0, 1, 0, NULL, &c0);
+    gstr_t g = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(pl, pl, it, 0, 1, 0, NULL, &c0);
     static char desc[8192], out[24576];
     size_t k = g.p ? (g.len < sizeof desc - 1 ? g.len : sizeof desc - 1) : 0;
     if (g.p) memcpy(desc, g.p, k);

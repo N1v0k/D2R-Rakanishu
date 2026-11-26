@@ -27,6 +27,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +50,7 @@ uint32_t dm_cur_tick(void);
 
 
 static int pot_rank(uint8_t *b, uint64_t it) {
-    uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it); const char *k = (const char *)&c;
+    uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it); const char *k = (const char *)&c;
     if (k[0] == 'r' && k[1] == 'v') return k[2] == 'l' ? 20 : 19;
     return (k[0] == 'h' || k[0] == 'm') && k[1] == 'p' && k[2] >= '1' && k[2] <= '5' ? k[2] - '0' : 1;
 }
@@ -57,8 +58,8 @@ static void pick_send(uint8_t *b, uint64_t it, uint32_t id, int x, int y, int px
     int slot = 0; for (int i = 0; i < 8; i++) { if (g_tried[i] == id) { slot = i; break; } if (g_tried_fr[i] < g_tried_fr[slot]) slot = i; }
     g_tried[slot] = id; g_tried_fr[slot] = (uint32_t)fr; auto_note(id, fr);
     uint8_t pk[17] = { 0x16 }; uint32_t one = 1; memcpy(pk + 1, &id, 4); memcpy(pk + 5, &x, 4); memcpy(pk + 9, &y, 4); memcpy(pk + 13, &one, 4);
-    ((void (*)(const uint8_t *, int))(b + 0x2ceab0))(pk, 17);
-    uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+    ((void (*)(const uint8_t *, int))(b + GA_CLIENT_SEND))(pk, 17);
+    uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
     LOG("药水自动拾取：物品 id %u（%.3s）类号 %u 在 %d,%d（玩家 %d,%d）→ 发捡起包（帧 %llu 拍 %u）", id, (const char *)&c, *(uint32_t *)(it + 4), x, y, px, py, (unsigned long long)fr, dm_cur_tick());
 }
 
@@ -66,8 +67,8 @@ void dm_potpick_step(uint8_t *b) {
     { int dm_itemjob_owner(void); if (dm_itemjob_owner()) return; }
 
 
-    if (b) { void dm_lootfilter_pump(uint8_t *, uint64_t); void dm_lootfilter_test_dump(uint8_t *); dm_lootfilter_pump(b, ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c))); dm_lootfilter_test_dump(b); }
-    if (b) { void dm_autobuff_pump(uint8_t *, uint64_t); void dm_autobuff_test_drop(uint64_t); uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); dm_autobuff_test_drop(pl); dm_autobuff_pump(b, pl); }
+    if (b) { void dm_lootfilter_pump(uint8_t *, uint64_t); void dm_lootfilter_test_dump(uint8_t *); dm_lootfilter_pump(b, ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT))); dm_lootfilter_test_dump(b); }
+    if (b) { void dm_autobuff_pump(uint8_t *, uint64_t); void dm_autobuff_test_drop(uint64_t); uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); dm_autobuff_test_drop(pl); dm_autobuff_pump(b, pl); }
     static int env = -2; if (env == -2) { const char *e = getenv("DM_POT_PICK"); env = e ? e[0] != '0' : -1; }
     if (!b || !(env >= 0 ? env : dm_custom_get("pot_pick"))) return;
     static uint64_t next; uint64_t fr = dm_guest_frame(); if (fr < next) return;
@@ -77,18 +78,18 @@ void dm_potpick_step(uint8_t *b) {
 
     static long t_from = -1; static int t_burst; if (t_from < 0) { const char *e = getenv("DM_TEST_POTPICK_FROM"); t_from = e ? atol(e) : 0; t_burst = getenv("DM_TEST_POTPICK_BURST") != NULL; }
     if (fr < (uint64_t)t_from) return;
-    uint64_t pl = ((uint64_t (*)(uint32_t))(b + 0x45f9d0))(*(uint32_t *)(b + 0x2d20e4c)); if (!pl) return;
+    uint64_t pl = ((uint64_t (*)(uint32_t))(b + GA_CLIENT_PLAYER_GET))(*(uint32_t *)(b + GA_LOCAL_PLAYER_SLOT)); if (!pl) return;
     uint32_t pm = *(uint32_t *)(pl + 0xc); if (pm == 0 || pm == 17) return;
     uint64_t inv = *(uint64_t *)(pl + 0x90); if (!inv || *(uint32_t *)inv != 0x01020304 || *(uint64_t *)(inv + 0x40)) return;
     uint64_t pp = *(uint64_t *)(pl + 0x38); if (!pp) return; int px = *(uint16_t *)(pp + 2), py = *(uint16_t *)(pp + 6);
     uint64_t best = 0; uint32_t bid = 0; int brank = 0, bx = 0, by = 0;
-    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(b + 0x2d603a0 + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
+    for (int k = 0; k < 128; k++) for (uint64_t it = *(uint64_t *)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400 + k * 8); it; it = *(uint64_t *)(it + 0x158)) {
         if (*(uint32_t *)(it + 0xc) != 3) continue;
         uint64_t ip = *(uint64_t *)(it + 0x38); if (!ip) continue; int x = *(int32_t *)(ip + 0x10), y = *(int32_t *)(ip + 0x14);
         if (abs(x - px) > PICK_R || abs(y - py) > PICK_R) continue;
         { int dm_lootfilter_hidden(uint8_t *, uint64_t); if (dm_lootfilter_hidden(b, it)) continue; }
-        int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + 0x574bc0);
-        if (!(is(it, 77) || is(it, 78)) || !(((int (*)(uint64_t))(b + 0x3c1b28))(it) & 1)) continue;
+        int (*is)(uint64_t, int) = (int (*)(uint64_t, int))(b + GA_ITEM_IS_TYPE);
+        if (!(is(it, 77) || is(it, 78)) || !(((int (*)(uint64_t))(b + GA_ITEM_CAN_BELT))(it) & 1)) continue;
         uint32_t id = *(uint32_t *)(it + 8); int seen = 0;
         for (int i = 0; i < 8; i++) if (g_tried[i] == id && fr - g_tried_fr[i] < 120) seen = 1;
         if (seen) continue;

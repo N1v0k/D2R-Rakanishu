@@ -1,6 +1,7 @@
 
 
 #include "dm_prof.h"
+#include "game_addrs.h"
 #include "dm.h"
 #include "dm_uctx.h"
 #include "dm_hud.h"
@@ -378,7 +379,7 @@ static void monres_on_setinfo(const uint64_t *regs, uint64_t payload) {
     uint64_t unit = regs[19], name = 0; uint32_t type = 0; vm_size_t got = 0;
     if (!mm || !unit || vm_read_overwrite(mach_task_self(), unit, 4, (vm_address_t)&type, &got) || type != 1) return;
     if (vm_read_overwrite(mach_task_self(), payload, 8, (vm_address_t)&name, &got) || !name) return;
-    int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(mm->base + 0x5b9290);
+    int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(mm->base + GA_STAT_GET);
     static const int id[6] = {36, 37, 39, 41, 43, 45};
     static const char *lb[6] = {"物", "魔", "火", "电", "冰", "毒"}, *lbes[6] = {"Fís", "Mág", "Fue", "Ray", "Frí", "Ven"}, *cc[6] = {"\xee\x81\xbe" "4", "\xee\x81\xbe" "8", "\xee\x81\xbe" "1", "\xee\x81\xbe" "9", "\xee\x81\xbe" "3", "\xee\x81\xbe" "2"};
     char add[160] = ""; size_t n = 0;
@@ -473,7 +474,7 @@ static void setlang_obs(const uint64_t *regs) {
     module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
     uint32_t idx = 0; const char *nm = NULL; vm_size_t got = 0;
     if (regs[1] && !vm_read_overwrite(mach_task_self(), regs[1], 4, (vm_address_t)&idx, &got) && got == 4 && idx < 13) {
-        uint64_t p = 0; memcpy(&p, m->base + 0x20ae478 + 8ull * idx, 8); nm = (const char *)p; }
+        uint64_t p = 0; memcpy(&p, m->base + GA_LANG_NAMES + 8ull * idx, 8); nm = (const char *)p; }
     static uint32_t last = 0xffffffff; if (idx != last) { last = idx; LOG("SetLanguage：语言 %s（号 %u），重装字符串表", nm ? nm : "?", idx); }
     if (nm) atomic_store(&g_dm_lang, (int)idx);
 }
@@ -582,8 +583,8 @@ void inflate_bench_maybe(void) {
     FILE *f = fopen(path, "rb"); if (!f) die("打不开 %s", path);
     fseek(f, 0, SEEK_END); long sz = ftell(f); fseek(f, 0, SEEK_SET);
     uint8_t *buf = malloc(sz); if (fread(buf, 1, sz, f) != (size_t)sz) die("读样本失败"); fclose(f);
-    int (*init)(void *, const char *, int) = (void *)(g_mod[0].base + 0xf3a930);
-    int (*inflate)(void *, int) = (void *)(g_mod[0].base + 0xf3aa90);
+    int (*init)(void *, const char *, int) = (void *)(g_mod[0].base + GA_INFLATE_INIT);
+    int (*inflate)(void *, int) = (void *)(g_mod[0].base + GA_INFLATE);
     uint8_t *out = malloc(64 << 20); uint64_t now_ns(void);
     int rounds = getenv("DM_INFLATE_ROUNDS") ? atoi(getenv("DM_INFLATE_ROUNDS")) : 3;
     double best = 1e9; long nfile = 0, bad = 0; uint64_t zin = 0, zout = 0;
@@ -639,18 +640,18 @@ static FILE *g_spfp;
 
 static uint64_t g_players_seq, g_players_ack; static dm_hud_info g_hud;
 static module_t *main_mod(void) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) return &g_mod[i]; return NULL; }
-static void *players_obj(module_t *main) { return ((void *(*)(void))(main->base + 0x3102c0))(); }
+static void *players_obj(module_t *main) { return ((void *(*)(void))(main->base + GA_PLAYERS_CFG_GET))(); }
 
 static void players_set(int want) {
     module_t *main = main_mod();
     if (!main) { LOG("【红】DM_PLAYERS：没有 main 模块"); return; }
     uint32_t opmode = 0;
-    if (!tk_rd((uint64_t)main->base + 0x2d20b8c, &opmode, 4)) { LOG("【红】DM_PLAYERS：读 main+0x2d20b8c 失败"); return; }
+    if (!tk_rd((uint64_t)main->base + GA_GAME_TYPE, &opmode, 4)) { LOG("【红】DM_PLAYERS：读 main+GA_GAME_TYPE 失败"); return; }
     if (opmode != 0 && opmode != 5 && opmode != 7) { LOG("DM_PLAYERS：模式 %u 不在原版允许集合 {0,5,7}，不改档", opmode); return; }
     void *obj = players_obj(main);
-    if (!obj) { LOG("【红】DM_PLAYERS：0x3102c0 返回空对象"); return; }
-    ((void (*)(void *, uint32_t))(main->base + 0x1199c50))(obj, (uint32_t)want);
-    LOG("DM_PLAYERS：原版路径 main+0x3102c0() → main+0x1199c50(obj,%d)（模式值 %u）", want, opmode);
+    if (!obj) { LOG("【红】DM_PLAYERS：GA_PLAYERS_CFG_GET 返回空对象"); return; }
+    ((void (*)(void *, uint32_t))(main->base + GA_PLAYERS_CFG_SET))(obj, (uint32_t)want);
+    LOG("DM_PLAYERS：原版路径 main+GA_PLAYERS_CFG_GET() → main+GA_PLAYERS_CFG_SET(obj,%d)（模式值 %u）", want, opmode);
 }
 static void players_apply(void) {
 
@@ -743,7 +744,7 @@ _Atomic int g_dm_seek_tp; int g_dm_seek_tp_x, g_dm_seek_tp_y;
 static void seek_tp_step(uint64_t G, uint64_t pl, module_t *main) {
     static struct { uint64_t r; int x, y, w, h; uint8_t st, miss; } rm[400]; static int n, hops, bias_on = -1, bias_in, bx, by; static uint64_t lv0; static uint32_t next_tk;
     int mode = atomic_load(&g_dm_seek_tp); uint32_t tk = 0; if (!mode || mode == 2 || !tk_rd(G + 0x170, &tk, 4) || tk < next_tk) return; next_tk = tk + 6;
-    int (*tp)(uint64_t, uint64_t, uint64_t, int, int, int, int) = (int (*)(uint64_t, uint64_t, uint64_t, int, int, int, int))(main->base + 0x7cc530);
+    int (*tp)(uint64_t, uint64_t, uint64_t, int, int, int, int) = (int (*)(uint64_t, uint64_t, uint64_t, int, int, int, int))(main->base + GA_UNIT_TELEPORT);
     uint64_t pp = 0, ar = 0, dr = 0, lv = 0; uint16_t c[4] = {0}; if (!tk_rd(pl + 0x38, &pp, 8) || !pp || !tk_rd(pp, c, 8) || !tk_rd(pp + 0x20, &ar, 8) || !ar || !tk_rd(ar + 0x18, &dr, 8) || !dr || !tk_rd(dr + 0x90, &lv, 8) || !lv) return;
     int px = c[1], py = c[3];
     if (mode == 3) { int ok = tp(G, pl, 0, g_dm_seek_tp_x, g_dm_seek_tp_y, 0, 0); tk_rd(pp, c, 8); LOG("传送探路：拍 %u 传到目标 %d,%d 旁：%s，现在 %d,%d（共跳 %d 次）", tk, g_dm_seek_tp_x, g_dm_seek_tp_y, ok ? "成" : "不成（目标不在当前或相邻房间 / 旁边没空位）", c[1], c[3], hops); atomic_store(&g_dm_seek_tp, 2); return; }
@@ -784,9 +785,9 @@ static struct { uint64_t G; uint32_t at; int n0; char before[400]; } g_cube;
 static int cube_items(uint64_t player, char *o, int cap) {
     module_t *mm = main_mod(); uint64_t inv = 0, it = 0; int n = 0, k = 0; o[0] = 0; if (!mm || !tk_rd(player + 0x90, &inv, 8) || !inv || !tk_rd(inv + 0x10, &it, 8)) return -1;
     for (int c = 0; it && c < 400; c++) { uint64_t d = 0; if (!tk_rd(it + 0x10, &d, 8) || !d) break;
-        if (*(uint8_t *)(uintptr_t)(d + 0x55) == 3) { uint32_t code = ((uint32_t (*)(uint64_t))(mm->base + 0x570260))(it); char cs[5]; memcpy(cs, &code, 4); cs[4] = 0; for (int i = 3; i >= 0 && cs[i] == ' '; i--) cs[i] = 0;
+        if (*(uint8_t *)(uintptr_t)(d + 0x55) == 3) { uint32_t code = ((uint32_t (*)(uint64_t))(mm->base + GA_ITEM_CODE))(it); char cs[5]; memcpy(cs, &code, 4); cs[4] = 0; for (int i = 3; i >= 0 && cs[i] == ' '; i--) cs[i] = 0;
             uint64_t pp = 0; int32_t gx = -1, gy = -1; uint32_t id = 0, md = 0; tk_rd(it + 8, &id, 4); tk_rd(it + 0xc, &md, 4); if (tk_rd(it + 0x38, &pp, 8) && pp) { tk_rd(pp + 0x10, &gx, 4); tk_rd(pp + 0x14, &gy, 4); }
-            k += snprintf(o + k, cap - k, "%sid%u@%d,%d/%s/品质%u/来源难度%d/模式%u", n ? " " : "", id, gx, gy, cs, *(uint32_t *)(uintptr_t)d, ((int (*)(uint64_t, int, int))(mm->base + 0x5b9290))(it, 356, 0), md); if (k >= cap) k = cap - 1; n++; }
+            k += snprintf(o + k, cap - k, "%sid%u@%d,%d/%s/品质%u/来源难度%d/模式%u", n ? " " : "", id, gx, gy, cs, *(uint32_t *)(uintptr_t)d, ((int (*)(uint64_t, int, int))(mm->base + GA_STAT_GET))(it, 356, 0), md); if (k >= cap) k = cap - 1; n++; }
         if (!tk_rd(d + 0xb0, &it, 8)) break; }
     return n;
 }
@@ -805,7 +806,7 @@ static void cube_diag_req(uint64_t G, uint64_t player, const uint8_t *pkt, uint3
     k += snprintf(hx + k, sizeof hx - k, "魔盒 id%u 原料 %d 项：", bid, len >= 8 ? pkt[7] + 1 : -1);
     for (uint32_t i = 8; i + 5 <= len && k < (int)sizeof hx - 24; i += 5) { uint32_t id; memcpy(&id, pkt + i, 4); k += snprintf(hx + k, sizeof hx - k, " id%u@%d,%d", id, pkt[i + 4] & 15, pkt[i + 4] >> 4); }
     LOG("合成读数：拍 %u 服务端收到合成请求（%s；长 %u）｜关卡 %d 难度 %u 版本字节 %u 玩家模式 %u｜光标物品 %#llx%s｜魔盒 %d 件：%s｜任务字 4=%#06x 26=%#06x 40=%#06x｜本局已开门字节 %s%#x",
-        tq, hx, len, lv, diff, xp, pm, (unsigned long long)cur, cur ? "（非空：原版 0x6e8740 会丢掉这次合成）" : "（空）", n, items, w4, w26, w40, opened == 0xff ? "读不到 " : "", opened == 0xff ? 0 : opened);
+        tq, hx, len, lv, diff, xp, pm, (unsigned long long)cur, cur ? "（非空：原版 GA_CUBE_TRANSMUTE 会丢掉这次合成）" : "（空）", n, items, w4, w26, w40, opened == 0xff ? "读不到 " : "", opened == 0xff ? 0 : opened);
     g_cube.G = G; g_cube.at = tq + 50; g_cube.n0 = n; strlcpy(g_cube.before, items, sizeof g_cube.before);
 }
 static void cube_diag_tick(uint64_t G, uint64_t player) {
@@ -821,7 +822,7 @@ static void cube_diag_tick(uint64_t G, uint64_t player) {
 
 
 
-static uint32_t local_player_id(void) { uint32_t slot = 8, lid = 0xffffffffu; module_t *mm = main_mod(); if (mm && tk_rd((uint64_t)mm->base + 0x2d20e4c, &slot, 4) && slot < 8) tk_rd((uint64_t)mm->base + 0x2d60380 + 4 * slot, &lid, 4); return lid; }
+static uint32_t local_player_id(void) { uint32_t slot = 8, lid = 0xffffffffu; module_t *mm = main_mod(); if (mm && tk_rd((uint64_t)mm->base + GA_LOCAL_PLAYER_SLOT, &slot, 4) && slot < 8) tk_rd((uint64_t)mm->base + GA_PLAYER_SLOT_IDS + 4 * slot, &lid, 4); return lid; }
 #ifndef DM_PLAYER_BUILD
 
 
@@ -842,8 +843,8 @@ static int give_stats_parse(const char *list, struct give_stat *e) {
 }
 static void give_stats_apply(uint8_t *b, uint64_t unit, struct give_stat *e, int n, const char *side) {
     for (int i = 0; i < n; i++) {
-        ((void (*)(uint64_t, int, int, int))(b + 0x5bc1f0))(unit, e[i].st, e[i].v, e[i].ly);
-        e[i].read = ((int (*)(uint64_t, int, int))(b + 0x5b9290))(unit, e[i].st, e[i].ly);
+        ((void (*)(uint64_t, int, int, int))(b + GA_STAT_SET))(unit, e[i].st, e[i].v, e[i].ly);
+        e[i].read = ((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(unit, e[i].st, e[i].ly);
         LOG("DM_TEST_GIVE_STATS: %s item %u stat %d/%d = %d (reads %d)", side, *(uint32_t *)(unit + 8), e[i].st, e[i].ly, e[i].v, e[i].read); }
 }
 void dm_test_give_stats_server(uint8_t *b, uint64_t unit, const char *code) {
@@ -872,7 +873,7 @@ static uint64_t give_noeth(uint8_t *b, uint64_t G, uint64_t player, uint32_t c, 
         if (!d || !(*(uint32_t *)(d + 0x18) & 0x400000u)) break;
         if (r == 8) { LOG("DM_TEST_GIVE_NOETH: item %u of %s still ethereal after 8 rolls, kept", *(uint32_t *)(u + 8), code); break; }
         LOG("DM_TEST_GIVE_NOETH: item %u of %s rolled ethereal, left on the ground", *(uint32_t *)(u + 8), code);
-        u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(b + 0x7c0b20))(G, player, c, q); }
+        u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(b + GA_ITEM_DROP_BY_CODE))(G, player, c, q); }
     return u;
 }
 
@@ -882,11 +883,11 @@ void dm_test_give_stats_client(uint8_t *b) {
         if ((int32_t)(now - give_stats_next[k]) < 0) continue;
         give_stats_next[k] = now + 25;
         uint32_t id = give_stats[k].id;
-        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0 + 4 * 0x400), id & 0x7f, id, 4);
+        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE + 4 * 0x400), id & 0x7f, id, 4);
         if (!u || *(uint32_t *)(u + 0xc) != 0) continue;
         int drift = !give_stats[k].rec;
         for (int i = 0; !drift && i < give_stats[k].n; i++)
-            if (((int (*)(uint64_t, int, int))(b + 0x5b9290))(u, give_stats[k].e[i].st, give_stats[k].e[i].ly) != give_stats[k].e[i].read) drift = 1;
+            if (((int (*)(uint64_t, int, int))(b + GA_STAT_GET))(u, give_stats[k].e[i].st, give_stats[k].e[i].ly) != give_stats[k].e[i].read) drift = 1;
         if (drift) { give_stats_apply(b, u, give_stats[k].e, give_stats[k].n, "client"); give_stats[k].rec = 1; } }
 }
 #endif
@@ -925,7 +926,7 @@ static void hud_tick(uint64_t G) {
 
 
         module_t *mm = main_mod();
-        if (mm) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(mm->base + 0x5b9290);
+        if (mm) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(mm->base + GA_STAT_GET);
             h.hp = get(player, 6, 0) >> 8; h.hp_max = get(player, 7, 0) >> 8; h.mp = get(player, 8, 0) >> 8; h.mp_max = get(player, 9, 0) >> 8; }
         uint32_t sp = 0, kp = 0, pm = 0; stat_read(player, 4, &sp); stat_read(player, 5, &kp); h.points = (int)(sp + kp);
         if (tk_rd(player + 0xC, &pm, 4)) h.dead = dm_hud_player_mode_dead(pm);
@@ -964,7 +965,7 @@ static void hud_tick(uint64_t G) {
     static int logged;
     { static uint64_t eg; static uint32_t et; uint32_t t = 0; tk_rd(G + 0x170, &t, 4); if (G != eg || t < et) { void dm_diag_new_run(void); dm_diag_new_run(); } eg = G; et = t; }
     g_player_unit = player; { uint8_t gv; extern _Atomic int g_dm_game_ver; if (tk_rd(G + 0x106, &gv, 1)) atomic_store(&g_dm_game_ver, gv); }
-    { uint32_t tq = 0; static int once; const char *tg = getenv("DM_TEST_GOLD"); if (tg && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= 30 && !once++) ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(player, 14, atoi(tg), 0); }
+    { uint32_t tq = 0; static int once; const char *tg = getenv("DM_TEST_GOLD"); if (tg && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= 30 && !once++) ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(player, 14, atoi(tg), 0); }
 
 
 
@@ -973,7 +974,7 @@ static void hud_tick(uint64_t G) {
     { static char q[300]; static int init; uint32_t tq = 0; if (!init) { init = 1; const char *e = getenv("DM_TEST_GOTO_LEVEL"); if (e) strlcpy(q, e, sizeof q); }
       if (q[0] && main && player && tk_rd(G + 0x170, &tq, 4)) { unsigned at = 0, to = 0; int nn = 0;
           if (sscanf(q, "%u:%u%n", &at, &to, &nn) >= 2 && tq >= at) { const char *rest = q + nn + (q[nn] == ';'); memmove(q, rest, strlen(rest) + 1);
-              ((void (*)(uint64_t, uint64_t, int, int))(main->base + 0x634000))(G, player, (int)to, 11); LOG("DM_TEST_GOTO_LEVEL：拍 %u 换到关卡 %u", tq, to); } } }
+              ((void (*)(uint64_t, uint64_t, int, int))(main->base + GA_LEVEL_CHANGE))(G, player, (int)to, 11); LOG("DM_TEST_GOTO_LEVEL：拍 %u 换到关卡 %u", tq, to); } } }
 #endif
 
 
@@ -992,7 +993,7 @@ static void hud_tick(uint64_t G) {
     { static uint32_t at[8]; static int n = -1, used; uint32_t tq = 0, pid = 0, mode = 0; const char *tk = getenv("DM_TEST_KILL");
       if (n < 0) { n = 0; char buf[128]; if (tk) { strlcpy(buf, tk, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t && n < 8; t = strtok_r(NULL, ",", &sv)) { char *e; unsigned long v = strtoul(t, &e, 10); if (e != t && (!n || v >= at[n - 1])) at[n++] = (uint32_t)v; } } }
       if (used < n && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= at[used] && tk_rd(player + 0xc, &mode, 4) && !dm_hud_player_mode_dead(mode) && tk_rd(player + 8, &pid, 4)) { used++;
-          int r = ((int (*)(uint64_t, uint64_t, uint64_t, int, int, uint32_t, int, int))(main->base + 0x6cd2c0))(G, player, 0, 0, 0, pid, 0, 0); LOG("DM_TEST_KILL：拍 %u 对玩家 id %u 开始死亡模式 → %d（第 %d / %d 次）", tq, pid, r, used, n); } }
+          int r = ((int (*)(uint64_t, uint64_t, uint64_t, int, int, uint32_t, int, int))(main->base + GA_PLAYER_DEATH_START))(G, player, 0, 0, 0, pid, 0, 0); LOG("DM_TEST_KILL：拍 %u 对玩家 id %u 开始死亡模式 → %d（第 %d / %d 次）", tq, pid, r, used, n); } }
 #endif
 
 
@@ -1005,20 +1006,20 @@ static void hud_tick(uint64_t G) {
           if (e) { strlcpy(buf, e, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t && n < 8; t = strtok_r(NULL, ",", &sv)) { unsigned a = 0; int v = 0;
               if (sscanf(t, "%u:%d", &a, &v) == 2 && v > 0 && (!n || a > at[n - 1])) { at[n] = a; amount[n++] = v; } else LOG("ASSUME xp.fixture: invalid entry %s", t); } } }
       if ((used < n || follow) && main && player && tk_rd(G + 0x170, &tq, 4)) {
-          int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + 0x5b9290);
+          int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + GA_STAT_GET);
           if (used < n && tq >= at[used]) {
               int b[5] = { get(player, 12, 0), get(player, 13, 0), get(player, 4, 0), get(player, 5, 0), get(player, 7, 0) };
-              ((void (*)(uint64_t, uint64_t, int))(main->base + 0x7ddc40))(G, player, amount[used]);
+              ((void (*)(uint64_t, uint64_t, int))(main->base + GA_EXP_ADD))(G, player, amount[used]);
               int a[6] = { get(player, 12, 0), get(player, 13, 0), get(player, 4, 0), get(player, 5, 0), get(player, 7, 0), get(player, 29, 0) };
               LOG("[xp-grant] {\"tick\":%u,\"amount\":%d,\"level\":[%d,%d],\"exp\":[%u,%u],\"statpts\":[%d,%d],\"skillpts\":[%d,%d],\"maxlife\":[%d,%d],\"lastexp\":%u}",
                   tq, amount[used], b[0], a[0], (uint32_t)b[1], (uint32_t)a[1], b[2], a[2], b[3], a[3], b[4] >> 8, a[4] >> 8, (uint32_t)a[5]);
               used++; follow = tq + 25; }
           else if (follow && tq >= follow) { follow = 0; uint32_t lid = local_player_id(); uint64_t c = 0;
-              if (lid != 0xffffffffu) for (uint64_t v = *(volatile uint64_t *)(main->base + 0x2d603a0 + 8 * (lid & 0x7f)); v && !c; v = *(volatile uint64_t *)(v + 0x158)) if (*(volatile uint32_t *)(v + 8) == lid) c = v;
+              if (lid != 0xffffffffu) for (uint64_t v = *(volatile uint64_t *)(main->base + GA_CLIENT_UNIT_TABLE + 8 * (lid & 0x7f)); v && !c; v = *(volatile uint64_t *)(v + 0x158)) if (*(volatile uint32_t *)(v + 8) == lid) c = v;
               if (c) LOG("[xp-grant-client] {\"tick\":%u,\"level\":%d,\"exp\":%u}", tq, get(c, 12, 0), (uint32_t)get(c, 13, 0)); else LOG("[xp-grant-client] {\"tick\":%u,\"missing\":1}", tq); } } }
 #endif
     { uint32_t tq = 0; static int once2; const char *ts = getenv("DM_TEST_STAT");
-      if (ts && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= 30 && !once2++) { char buf[128]; strlcpy(buf, ts, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t; t = strtok_r(NULL, ",", &sv)) { int a = 0, v = 0; if (sscanf(t, "%d=%d", &a, &v) == 2) ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(player, a, v, 0); } } }
+      if (ts && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= 30 && !once2++) { char buf[128]; strlcpy(buf, ts, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t; t = strtok_r(NULL, ",", &sv)) { int a = 0, v = 0; if (sscanf(t, "%d=%d", &a, &v) == 2) ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(player, a, v, 0); } } }
 
 
 
@@ -1027,8 +1028,8 @@ static void hud_tick(uint64_t G) {
       if (e && main && player && tk_rd(G + 0x170, &tq, 4)) { int pct = 50, at = 60; sscanf(e, "%d@%d", &pct, &at); uint64_t merc = 0;
           for (int b = 0; b < 128 && !merc; b++) { uint64_t u = 0; if (!tk_rd(G + 0x2630 + 8 * b, &u, 8)) continue;
               for (int k = 0; u && k < 4096; k++) { uint32_t cls = 0, mode = 0; if (tk_rd(u + 4, &cls, 4) && tk_rd(u + 0xC, &mode, 4) && (cls == 271 || cls == 338 || cls == 359 || cls == 560 || cls == 561) && mode != 0 && mode != 12) { merc = u; break; } if (!tk_rd(u + 0x158, &u, 8)) break; } }
-          if (merc) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + 0x5b9290); int hp = get(merc, 6, 0), mx = get(merc, 7, 0);
-              if (!set_done && tq >= (uint32_t)at) { set_done = 1; ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(merc, 6, (int)((long long)mx * pct / 100), 0); hp = get(merc, 6, 0); LOG("DM_TEST_MERC_HP：拍 %u 把佣兵生命设成上限的 %d%% → %d/%d", tq, pct, hp >> 8, mx >> 8); lt = 0; }
+          if (merc) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + GA_STAT_GET); int hp = get(merc, 6, 0), mx = get(merc, 7, 0);
+              if (!set_done && tq >= (uint32_t)at) { set_done = 1; ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(merc, 6, (int)((long long)mx * pct / 100), 0); hp = get(merc, 6, 0); LOG("DM_TEST_MERC_HP：拍 %u 把佣兵生命设成上限的 %d%% → %d/%d", tq, pct, hp >> 8, mx >> 8); lt = 0; }
 
 
 
@@ -1041,13 +1042,13 @@ static void hud_tick(uint64_t G) {
     { static int done; static uint64_t km; static uint32_t kid; static int ls = -1, lc = -1; static const char *e; static int e_got; if (!e_got) { e_got = 1; e = getenv("DM_TEST_MERC_KILL"); }                                                                                           uint32_t tq = 0;
       if (done && main && tk_rd(G + 0x170, &tq, 4)) { uint32_t id = 0, sm = 99, cm = 99;
           if (tk_rd(km + 8, &id, 4) && id == kid) tk_rd(km + 0xC, &sm, 4); else sm = 99;
-          for (uint64_t u = *(uint64_t *)(main->base + 0x2d603a0 + 1 * 0x400 + (kid & 0x7f) * 8); u; u = *(uint64_t *)(u + 0x158)) if (*(uint32_t *)(u + 8) == kid) { cm = *(uint32_t *)(u + 0xC); break; }
+          for (uint64_t u = *(uint64_t *)(main->base + GA_CLIENT_UNIT_TABLE + 1 * 0x400 + (kid & 0x7f) * 8); u; u = *(uint64_t *)(u + 0x158)) if (*(uint32_t *)(u + 8) == kid) { cm = *(uint32_t *)(u + 0xC); break; }
           if ((int)sm != ls || (int)cm != lc) { LOG("DM_TEST_MERC_KILL：拍 %u 佣兵 id %u 模式 服务端 %u 客户端 %u", tq, kid, sm, cm); ls = (int)sm; lc = (int)cm; } }
       if (e && !done && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= (uint32_t)atoi(e)) { uint64_t merc = 0;
           for (int b = 0; b < 128 && !merc; b++) { uint64_t u = 0; if (!tk_rd(G + 0x2630 + 8 * b, &u, 8)) continue;
               for (int k = 0; u && k < 4096; k++) { uint32_t cls = 0, mode = 0; if (tk_rd(u + 4, &cls, 4) && tk_rd(u + 0xC, &mode, 4) && (cls == 271 || cls == 338 || cls == 359 || cls == 560 || cls == 561) && mode != 0 && mode != 12) { merc = u; break; } if (!tk_rd(u + 0x158, &u, 8)) break; } }
           if (merc) { done = 1; uint32_t cls = 0, id = 0, m0 = 0, m1 = 0; tk_rd(merc + 4, &cls, 4); tk_rd(merc + 8, &id, 4); km = merc; kid = id; tk_rd(merc + 0xC, &m0, 4);
-              ((void (*)(uint64_t, uint64_t, uint64_t, int))(main->base + 0x7d82b0))(G, merc, 0, 1); tk_rd(merc + 0xC, &m1, 4);
+              ((void (*)(uint64_t, uint64_t, uint64_t, int))(main->base + GA_UNIT_KILL))(G, merc, 0, 1); tk_rd(merc + 0xC, &m1, 4);
               LOG("DM_TEST_MERC_KILL：拍 %u 杀佣兵 类号 %u id %u，模式 %u → %u（0 = 死亡中，12 = 已死）", tq, cls, id, m0, m1); } } }
 #endif
 
@@ -1060,7 +1061,7 @@ static void hud_tick(uint64_t G) {
           for (int b = 0; b < 128; b++) { uint64_t u = 0; if (!tk_rd(G + 0x2630 + 8 * b, &u, 8)) continue;
               for (int k = 0; u && k < 4096; k++) { uint32_t c = 0, mode = 0, id = 0; uint64_t nx = 0; tk_rd(u + 0x158, &nx, 8); int hit = 0; if (tk_rd(u + 4, &c, 4) && tk_rd(u + 0xC, &mode, 4) && tk_rd(u + 8, &id, 4)) for (int i = 0; i < n; i++) hit |= cls[i] == c;
                   if (hit && mode != 0 && mode != 12) { int si = -1; for (int i = 0; i < ns; i++) if (seen[i].id == id) si = i; if (si < 0) { si = ns < 64 ? ns++ : rr++ % 64; seen[si].id = id; seen[si].t0 = tq; }
-                      if (si >= 0 && tq - seen[si].t0 >= (uint32_t)delay) { ((void (*)(uint64_t, uint64_t, uint64_t, int))(main->base + 0x7d82b0))(G, u, player, 1); uint32_t m1 = 99; tk_rd(u + 0xC, &m1, 4); LOG("DM_TEST_MON_KILL：拍 %u 杀怪 类号 %u id %u，模式 %u → %u", tq, c, id, mode, m1); seen[si].t0 = tq; } }
+                      if (si >= 0 && tq - seen[si].t0 >= (uint32_t)delay) { ((void (*)(uint64_t, uint64_t, uint64_t, int))(main->base + GA_UNIT_KILL))(G, u, player, 1); uint32_t m1 = 99; tk_rd(u + 0xC, &m1, 4); LOG("DM_TEST_MON_KILL：拍 %u 杀怪 类号 %u id %u，模式 %u → %u", tq, c, id, mode, m1); seen[si].t0 = tq; } }
                   u = nx; } } }
 
 
@@ -1069,10 +1070,10 @@ static void hud_tick(uint64_t G) {
 
     { static int cls_n = -1; static uint32_t cls[8], seen[32]; static uint8_t full[8]; static int ns; uint32_t tq = 0;
       if (cls_n < 0) { cls_n = 0; const char *e = getenv("DM_TEST_MON_HP"); char buf[96]; if (e) { strlcpy(buf, e, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t && cls_n < 8; t = strtok_r(NULL, ",", &sv)) { full[cls_n] = strchr(t, '+') != NULL; cls[cls_n++] = (uint32_t)atoi(t); } } }
-      if (cls_n > 0 && main && player && tk_rd(G + 0x170, &tq, 4) && tq % 5 == 0) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + 0x5b9290);
+      if (cls_n > 0 && main && player && tk_rd(G + 0x170, &tq, 4) && tq % 5 == 0) { int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + GA_STAT_GET);
           for (int b = 0; b < 128; b++) { uint64_t u = 0; if (!tk_rd(G + 0x2630 + 8 * b, &u, 8)) continue;
               for (int k = 0; u && k < 4096; k++) { uint32_t c = 0, mode = 0, id = 0; int hit = 0, top = 0; if (tk_rd(u + 4, &c, 4) && tk_rd(u + 0xC, &mode, 4) && tk_rd(u + 8, &id, 4)) { for (int i = 0; i < cls_n; i++) if (cls[i] == c) { hit = 1; top = full[i]; }
-                      if (hit && mode != 0 && mode != 12) { int hp = get(u, 6, 0), want = top ? 5000 << 8 : 256; if (top ? hp < want : hp > 256) { if (top && get(u, 7, 0) < want) ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(u, 7, want, 0); ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(u, 6, want, 0);
+                      if (hit && mode != 0 && mode != 12) { int hp = get(u, 6, 0), want = top ? 5000 << 8 : 256; if (top ? hp < want : hp > 256) { if (top && get(u, 7, 0) < want) ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(u, 7, want, 0); ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(u, 6, want, 0);
                               int old = 0; for (int i = 0; i < ns; i++) old |= seen[i] == id; if (!old) { if (ns < 32) seen[ns++] = id; LOG("DM_TEST_MON_HP：拍 %u 怪 类号 %u id %u 生命 %d/%d → %d", tq, c, id, hp >> 8, get(u, 7, 0) >> 8, want >> 8); } } } }
                   if (!tk_rd(u + 0x158, &u, 8)) break; } } } }
 
@@ -1081,9 +1082,9 @@ static void hud_tick(uint64_t G) {
 
     { static int set_done; static struct { uint32_t id; int dur; } last[16]; static int nl; static const char *e; static int e_got; if (!e_got) { e_got = 1; e = getenv("DM_TEST_DUR"); }                                                                                           uint32_t tq = 0; uint64_t iv = 0, u = 0, next = 0; uint32_t sg = 0;
       if (e && main && player && tk_rd(G + 0x170, &tq, 4) && tk_rd(player + 0x90, &iv, 8) && tk_rd(iv, &sg, 4) && sg == 0x01020304 && tk_rd(iv + 0x10, &u, 8)) { int v = 1, at = 60; sscanf(e, "%d@%d", &v, &at);
-          int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + 0x5b9290); int doset = !set_done && tq >= (uint32_t)at; extern _Atomic int g_dm_dur_sync_n; extern uint32_t g_dm_dur_sync[16][2]; int ns = 0; state_item it;
+          int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + GA_STAT_GET); int doset = !set_done && tq >= (uint32_t)at; extern _Atomic int g_dm_dur_sync_n; extern uint32_t g_dm_dur_sync[16][2]; int ns = 0; state_item it;
           for (unsigned k = 0; u && k < 1024 && state_read_item(u, &it, 0, &next); k++, u = next) { if (it.mode != 1) continue; int mx = get(u, 73, 0), dur = get(u, 72, 0); if (mx <= 0) continue;
-              if (doset) { int nv = v < mx ? v : mx; ((void (*)(uint64_t, int, int, int))(main->base + 0x5bc1f0))(u, 72, nv, 0); dur = get(u, 72, 0); if (ns < 16) { g_dm_dur_sync[ns][0] = it.id; g_dm_dur_sync[ns][1] = (uint32_t)nv; ns++; } }
+              if (doset) { int nv = v < mx ? v : mx; ((void (*)(uint64_t, int, int, int))(main->base + GA_STAT_SET))(u, 72, nv, 0); dur = get(u, 72, 0); if (ns < 16) { g_dm_dur_sync[ns][0] = it.id; g_dm_dur_sync[ns][1] = (uint32_t)nv; ns++; } }
               int li = -1; for (int i = 0; i < nl; i++) if (last[i].id == it.id) li = i; if (li < 0 && nl < 16) { li = nl++; last[li].id = it.id; last[li].dur = -1; }
               if (li >= 0 && last[li].dur != dur) { LOG("DM_TEST_DUR：拍 %u 物品 id %u 类号 %u 耐久 %d/%d%s", tq, it.id, it.cls, dur, mx, doset ? "（本拍设的）" : ""); last[li].dur = dur; } }
           if (doset) { set_done = 1; atomic_store(&g_dm_dur_sync_n, ns); } } }
@@ -1099,7 +1100,7 @@ static void hud_tick(uint64_t G) {
 
 
     { static int ids[8], n = -1; static int last[8]; if (n < 0) { n = 0; const char *e = getenv("DM_TEST_STAT_LOG"); char buf[64]; if (e) { strlcpy(buf, e, sizeof buf); for (char *sv, *t = strtok_r(buf, ",", &sv); t && n < 8; t = strtok_r(NULL, ",", &sv)) { ids[n] = atoi(t); last[n++] = -1; } } }
-      uint32_t tq = 0; if (n > 0 && main && player && tk_rd(G + 0x170, &tq, 4)) { int v[8], ch = 0; for (int i = 0; i < n; i++) { v[i] = ((int (*)(uint64_t, int, int))(main->base + 0x5b9290))(player, ids[i], 0); ch |= v[i] != last[i]; }
+      uint32_t tq = 0; if (n > 0 && main && player && tk_rd(G + 0x170, &tq, 4)) { int v[8], ch = 0; for (int i = 0; i < n; i++) { v[i] = ((int (*)(uint64_t, int, int))(main->base + GA_STAT_GET))(player, ids[i], 0); ch |= v[i] != last[i]; }
           if (ch) { char b[200]; int k = 0; for (int i = 0; i < n; i++) { k += snprintf(b + k, sizeof b - k, " %d=%d", ids[i], v[i]); if (k >= (int)sizeof b) k = (int)sizeof b - 1; last[i] = v[i]; } LOG("DM_TEST_STAT_LOG：拍 %u%s", tq, b); } } }
 
 
@@ -1120,7 +1121,7 @@ static void hud_tick(uint64_t G) {
       if (at < 0) { const char *e = getenv("DM_TEST_IDENT_FREE"), *c = e ? strchr(e, ':') : NULL; at = c ? atoi(e) : 0; for (char *q; c && ni < 8; c = *q == '+' ? q : NULL) { iids[ni++] = (uint32_t)strtoul(c + 1, &q, 10); } }
       if (at > 0 && ki < ni && main && player && tk_rd(G + 0x170, &tq, 4) && tq >= (uint32_t)at) { void dm_item_identify_free(uint32_t); dm_item_identify_free(iids[ki]); LOG("测试 DM_TEST_IDENT_FREE：拍 %u 鉴定物品 id %u", tq, iids[ki]); ki++; } }
     { uint32_t dm_item_identify_free_take(void); uint64_t dm_diag_srv_item(uint32_t); uint32_t fid = main && player ? dm_item_identify_free_take() : 0;
-      if (fid) { uint64_t si = dm_diag_srv_item(fid); int r = si ? ((int (*)(uint64_t, uint64_t, uint64_t))(main->base + 0x78acf0))(G, player, si) : -1;
+      if (fid) { uint64_t si = dm_diag_srv_item(fid); int r = si ? ((int (*)(uint64_t, uint64_t, uint64_t))(main->base + GA_ITEM_IDENTIFY))(G, player, si) : -1;
           LOG("免费鉴定：物品 id %u → %s", fid, r < 0 ? "服务端找不到这件，没调" : r ? "已调原版鉴定（服务端置已鉴定并广播更新）" : "原版判已鉴定，没变"); } }
 
 
@@ -1131,21 +1132,23 @@ static void hud_tick(uint64_t G) {
     { uint32_t tq = 0; static int given; const char *tg = getenv("DM_TEST_GIVE");
       if (tg && main && player && !given && tk_rd(G + 0x170, &tq, 4)) { char buf[256]; strlcpy(buf, tg, sizeof buf); int at = 40; char *ap = strrchr(buf, '@'); if (ap) { *ap = 0; at = atoi(ap + 1); }
           if (tq >= (uint32_t)at) { given = 1; for (char *sv, *t = strtok_r(buf, ",", &sv); t; t = strtok_r(NULL, ",", &sv)) { char code[8] = ""; int q = 2, n = 1; if (sscanf(t, "%4[^:]:%d:%d", code, &q, &n) < 1) continue; uint32_t c = 0x20202020; memcpy(&c, code, strlen(code) > 4 ? 4 : strlen(code)); int ok = 0, inv = 0;
-                  uint32_t cls = 0, id0 = 0; for (int i = 0; i < n && i < 64; i++) { uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(main->base + 0x7c0b20))(G, player, c, q);
+                  uint32_t cls = 0, id0 = 0; for (int i = 0; i < n && i < 64; i++) { uint64_t u = ((uint64_t (*)(uint64_t, uint64_t, uint32_t, int))(main->base + GA_ITEM_DROP_BY_CODE))(G, player, c, q);
 #ifndef DM_PLAYER_BUILD
                       u = give_noeth((uint8_t *)main->base, G, player, c, q, code, u);
 #endif
                       if (u) { ok++; tk_rd(u + 4, &cls, 4); if (!id0) tk_rd(u + 8, &id0, 4);
 #ifndef DM_PLAYER_BUILD
                           if (!i) dm_test_give_stats_server((uint8_t *)main->base, u, code);
+                          { uint64_t d = 0; tk_rd(u + 0x10, &d, 8); int32_t dq = -1, dr = -1, dl = -1; if (d) { tk_rd(d, &dq, 4); tk_rd(d + 0x34, &dr, 4); tk_rd(d + 0x38, &dl, 4); }
+                            LOG("DM_TEST_GIVE: %s asked quality %d -> item quality %d, unique row %d, item level %d", code, q, dq, dr, dl); }
                           if (getenv("DM_TEST_GIVE_IDENT")) {
-                              int result=((int (*)(uint64_t,uint64_t,uint64_t))(main->base+0x78acf0))(G,player,u);
+                              int result=((int (*)(uint64_t,uint64_t,uint64_t))(main->base+GA_ITEM_IDENTIFY))(G,player,u);
                               LOG("DM_TEST_GIVE_IDENT: item %u result %d", *(uint32_t *)(u+8), result);
                           }
 #endif
                           if (getenv("DM_TEST_GIVE_INV")) {
                               uint64_t ip = 0; uint8_t pk[17] = { 0x16 }; uint32_t one = 1; tk_rd(u + 0x38, &ip, 8); memcpy(pk + 1, (void *)(u + 8), 4); if (ip) { memcpy(pk + 5, (void *)(ip + 0x10), 4); memcpy(pk + 9, (void *)(ip + 0x14), 4); } memcpy(pk + 13, &one, 4);
-                              *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(main->base + 0x6e5b40))(G, player, pk, 17); *(uint32_t *)(G + 0x19050) = 0; inv += *(uint32_t *)(u + 0xc) != 3; } } }
+                              *(uint32_t *)(G + 0x19050) = 1; ((void (*)(uint64_t, uint64_t, uint8_t *, uint32_t))(main->base + GA_C2S_DISPATCH))(G, player, pk, 17); *(uint32_t *)(G + 0x19050) = 0; inv += *(uint32_t *)(u + 0xc) != 3; } } }
                   LOG("DM_TEST_GIVE：拍 %u 在玩家旁生成「%s」品质 %d：%d / %d 件成功（物品类号 %u，第一件单位 id %u）%s", tq, code, q, ok, n, cls, id0, !getenv("DM_TEST_GIVE_INV") ? "" : inv == ok ? "，已全部捡进背包" : "，【注意】有没捡进背包的（留在地上）"); } } } }
     if (main && player) DM_PROF(1, "s.elysium", dm_elysium_stash_step(G, player, (uint8_t *)main->base));
     { void dm_townwp_tick(uint64_t, uint64_t, uint8_t *); if (main && player) DM_PROF(1, "s.townwp", dm_townwp_tick(G, player, (uint8_t *)main->base)); }
@@ -1176,7 +1179,7 @@ static void hud_tick(uint64_t G) {
     cube_diag_tick(G, player);
     cam_threats_tick(G, player);
     if (main && player) seek_tp_step(G, player, main);
-    if (main && h.valid) h.quest_unread = *(volatile uint8_t *)(main->base + 0x2d5ff58) != 0;
+    if (main && h.valid) h.quest_unread = *(volatile uint8_t *)(main->base + GA_QUEST_LOG_UNREAD) != 0;
     dm_hud_info ha = h, hb = g_hud; ha.x = ha.y = hb.x = hb.y = 0;
     if (memcmp(&ha, &hb, sizeof ha) && logged < 200) { logged++;
         LOG("dm_hud：区域 %d (%d,%d) Lv %d 经验 %d‰ 生命 %d/%d 法力 %d/%d 腰带 %d/%d/%d/%d 回城 %d 人数档 %d 点数 %d 新任务 %d%s%s", h.area, h.x, h.y, h.level, h.exp_permille, h.hp, h.hp_max, h.mp, h.mp_max, h.belt[0], h.belt[1], h.belt[2], h.belt[3], h.portal, h.players, h.points, h.quest_unread, h.dead ? " 已死亡" : "", h.valid ? "" : "（未读到玩家）"); }
@@ -1390,7 +1393,7 @@ static void cam_threats_tick(uint64_t G, uint64_t pl) {
     uint64_t pp = 0; uint32_t pxy[2]; if (!tk_rd(pl + 0x38, &pp, 8) || !pp || !tk_rd(pp, pxy, 8)) return;
     float px = pxy[0] / 65536.0f, py = pxy[1] / 65536.0f, xy[64]; int tier[32], n = 0; uint64_t u = 0;
     uint32_t me = 0, pet[64]; int np = 0; module_t *m = main_mod(); uint64_t e = 0;
-    if (m && tk_rd(pl + 8, &me, 4) && tk_rd((uint64_t)m->base + 0x2d33528, &e, 8))
+    if (m && tk_rd(pl + 8, &me, 4) && tk_rd((uint64_t)m->base + GA_CLIENT_PET_LIST, &e, 8))
         for (int k = 0; e && k < 256 && np < 64; k++) { uint32_t id = 0, owner = 0; if (tk_rd(e + 8, &id, 4) && tk_rd(e + 0xc, &owner, 4) && owner == me) pet[np++] = id; if (!tk_rd(e + 0x30, &e, 8)) break; }
     for (int bk = 0; bk < 128 && n < 32; bk++) if (tk_rd(G + 0x2230 + 1 * 0x400 + 8 * bk, &u, 8)) for (int k = 0; u && k < 4096 && n < 32; k++) {
         uint32_t cls = 0, mode = 0, mxy[2]; uint64_t tp = 0;
@@ -1421,7 +1424,7 @@ static void c2s_obs(const uint64_t *regs) {
 
     if (n >= 5 && b[0] == 0x40 && regs[1] && getenv("DM_TEST_WARP_DIAG")) { module_t *mm = main_mod(); uint32_t id = b[1] | b[2] << 8 | b[3] << 16 | (uint32_t)b[4] << 24, pm = 99; uint64_t G = regs[0], pl = regs[1], tile = 0, u = 0; tk_rd(pl + 0xC, &pm, 4);
         for (int bk = 0; bk < 128 && !tile; bk++) if (tk_rd(G + 0x2230 + 5 * 0x400 + 8 * bk, &u, 8)) for (int k = 0; u && k < 4096; k++) { uint32_t i2 = 0; if (tk_rd(u + 8, &i2, 4) && i2 == id) { tile = u; break; } if (!tk_rd(u + 0x158, &u, 8)) break; }
-        int chk = mm ? ((int (*)(uint64_t, uint64_t, int, uint64_t, int))((uintptr_t)mm->base + 0x6c5730))(G, pl, 2, 0, 0) : -1, usable = mm && tile ? ((int (*)(uint64_t))((uintptr_t)mm->base + 0x5592f0))(tile) : -1, dist = mm && tile ? ((int (*)(uint64_t, uint64_t))((uintptr_t)mm->base + 0x5c7050))(pl, tile) : -1;
+        int chk = mm ? ((int (*)(uint64_t, uint64_t, int, uint64_t, int))((uintptr_t)mm->base + GA_UNIT_ACTION_BUSY))(G, pl, 2, 0, 0) : -1, usable = mm && tile ? ((int (*)(uint64_t))((uintptr_t)mm->base + GA_TILE_EXIT_USABLE))(tile) : -1, dist = mm && tile ? ((int (*)(uint64_t, uint64_t))((uintptr_t)mm->base + GA_UNIT_TILE_DIST))(pl, tile) : -1;
         LOG("DM_TEST_WARP_DIAG：拍 %u 收到 0x40 砖 id %u%s：玩家模式 %u，能否打断 %d（0 = 放行），出口可用 %d（非 0 = 放行），距离 %d（≤4 当场换）", tick, id, tile ? "" : "（服务端单位表里没有这块砖）", pm, chk, usable, dist); }
     fprintf(g_c2sfp, "{\"tick\":%u,\"unit\":", tick);
     if (hu) fprintf(g_c2sfp, "%u", uid); else fputs("null", g_c2sfp);
@@ -1435,7 +1438,7 @@ static void c2s_obs(const uint64_t *regs) {
 
 static int game_live(void) {
     static const uint64_t *slots;
-    if (!slots) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) slots = (const uint64_t *)(g_mod[i].base + 0x2d665d8); if (!slots) return 1; }
+    if (!slots) { for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) slots = (const uint64_t *)(g_mod[i].base + GA_GAME_SLOTS); if (!slots) return 1; }
     for (int i = 0; i < 0x400; i++) if (slots[i] + 1 >= 2) return 1;
     return 0;
 }
@@ -1462,7 +1465,7 @@ int dm_request_save(void) {
 }
 
 
-int dm_game_paused(void) { uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base; return b && in_game() && (*(volatile uint8_t *)(b + 0x2d5ff51) | *(volatile uint8_t *)(b + 0x2d5ff67)); }
+int dm_game_paused(void) { uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base; return b && in_game() && (*(volatile uint8_t *)(b + GA_PANEL_PAUSE_MENU) | *(volatile uint8_t *)(b + GA_PANEL_PAUSE_2)); }
 
 
 void dm_diag_new_run(void) { atomic_fetch_add(&g_run_epoch, 1); }
@@ -1481,7 +1484,7 @@ int dm_diag_srv_merc(uint32_t id, int *hp, int *mx, int *healing) {
     module_t *m = main_mod(); if (!in_game() || !m) return 0; uint64_t u = 0; tk_rd(g_lastG + 0x2630 + 8 * (id & 0x7f), &u, 8);
     for (int k = 0; u && k < 4096; k++) { uint32_t ty = 0, uid = 0, mode = 0; if (!tk_rd(u, &ty, 4) || !tk_rd(u + 8, &uid, 4) || !tk_rd(u + 0xc, &mode, 4)) return 0;
         if (ty == 1 && uid == id) { if (mode == 0 || mode == 12) return 0;
-            int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(m->base + 0x5b9290); *hp = get(u, 6, 0) >> 8; *mx = get(u, 7, 0) >> 8;
+            int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(m->base + GA_STAT_GET); *hp = get(u, 6, 0) >> 8; *mx = get(u, 7, 0) >> 8;
             uint64_t sl = 0; uint32_t fl = 0, w = 0; *healing = tk_rd(u + 0x88, &sl, 8) && sl && tk_rd(sl + 0x1c, &fl, 4) && fl >> 31 && tk_rd(sl + 0xb30 + 4 * (100 >> 5), &w, 4) && (w >> (100 & 31) & 1);
             return 1; }
         if (!tk_rd(u + 0x158, &u, 8)) return 0; }
@@ -1521,7 +1524,7 @@ void c2s_deliver_sys(uint64_t *regs) {
     if (rp_window() && !sys_clock_msg(id)) { if (!g_sysdrop++) LOG("DM_C2S_REPLAY：拍 %u 起丢弃客户端自发的系统类消息（首条）", cur_tick()); return; }
     static void (*sysm)(uint64_t, uint64_t);
     if (!sysm) { module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
-                 sysm = (void (*)(uint64_t, uint64_t))(m->base + 0x6310b0); }
+                 sysm = (void (*)(uint64_t, uint64_t))(m->base + GA_C2S_SYS_HANDLE); }
     sysm(regs[0], regs[1]);
 }
 
@@ -1548,17 +1551,17 @@ static int cube_pickup_rewrite(const uint64_t *regs, uint8_t out[4 + 25]) {
         if (!tk_rd(u + 0x158, &u, 8)) return 0;
     }
     uint32_t mode = 0; if (!u || !tk_rd(u + 0xC, &mode, 4) || mode != 3) return 0;
-    int (*is_type)(uint64_t, int) = (void *)(m->base + 0x574bc0); int (*stackable)(uint64_t) = (void *)(m->base + 0x5722f0);
+    int (*is_type)(uint64_t, int) = (void *)(m->base + GA_ITEM_IS_TYPE); int (*stackable)(uint64_t) = (void *)(m->base + GA_ITEM_IS_STACKABLE);
     if (is_type(u, 0x16) || is_type(u, 0x12) || stackable(u)) return 0;
     if (!tk_rd(p + 0xd8, &game, 8) || !game || !tk_rd(p + 0x90, &inv, 8) || !inv) return 0;
-    if (((autoplace_res (*)(uint64_t, uint64_t, uint64_t))(m->base + 0x646840))(game, p, u).ok) return 0;
-    uint64_t cube = ((uint64_t (*)(uint64_t))(m->base + 0x565e50))(p); if (!cube) return 0;
+    if (((autoplace_res (*)(uint64_t, uint64_t, uint64_t))(m->base + GA_ITEM_AUTOPLACE))(game, p, u).ok) return 0;
+    uint64_t cube = ((uint64_t (*)(uint64_t))(m->base + GA_INV_FIND_CUBE))(p); if (!cube) return 0;
     uint32_t tx = 0, ty = 0, cid = 0, cx = 0, cy = 0;
-    if (!((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(m->base + 0x55f620))(inv, u, 9, &tx, &ty, 3)) return 0;
+    if (!((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(m->base + GA_INV_FIND_FREE))(inv, u, 9, &tx, &ty, 3)) return 0;
     if (!tk_rd(cube + 8, &cid, 4) || !tk_rd(cube + 0x38, &pp, 8) || !pp || !tk_rd(pp + 0x10, &cx, 4) || !tk_rd(pp + 0x14, &cy, 4)) return 0;
     uint32_t cxy = (cx & 0xffff) | cy << 16, txy = (tx & 0xffff) | ty << 16;
     memcpy(out, in, 4); out[4] = 0x5f; memcpy(out + 5, &id, 4); memcpy(out + 9, &cid, 4); memcpy(out + 13, in + 9, 8); memcpy(out + 21, &cxy, 4); memcpy(out + 25, &txy, 4);
-    static int logged; if (logged++ < 40) { uint32_t code = ((uint32_t (*)(uint64_t))(m->base + 0x570260))(u); int dm_potpick_auto(uint32_t);
+    static int logged; if (logged++ < 40) { uint32_t code = ((uint32_t (*)(uint64_t))(m->base + GA_ITEM_CODE))(u); int dm_potpick_auto(uint32_t);
         LOG("规则：背包放不下，拾取物品 %u（%.4s，%s）改进方块 %u（方块格 %u,%u）", id, (const char *)&code, dm_potpick_auto(id) ? "药水自动拾取发的" : "玩家点的", cid, tx & 0xffff, ty); }
     return 1;
 }
@@ -1574,8 +1577,8 @@ static int potpick_gate(const uint64_t *regs) {
     if (!m || !in_game() || !p || !tk_rd(G + 0x2e30 + 8 * (id & 0x7f), &u, 8)) return 0;
     for (int k = 0; u && k < 4096; k++) { uint32_t t = 0, i = 0; if (!tk_rd(u, &t, 4) || !tk_rd(u + 8, &i, 4)) return 0; if (t == 4 && i == id) break; if (!tk_rd(u + 0x158, &u, 8)) return 0; }
     uint32_t mode = 0, slot = 0; if (!u || !tk_rd(u + 0xC, &mode, 4) || mode != 3 || !tk_rd(p + 0x90, &inv, 8) || !inv) return 0;
-    uint32_t code = ((uint32_t (*)(uint64_t))(m->base + 0x570260))(u);
-    if (((int (*)(uint64_t, uint64_t, uint32_t *, int))(m->base + 0x561de0))(inv, u, &slot, 1)) { static int ok; if (ok++ < 40) LOG("药水自动拾取：物品 %u（%.4s）到服务端时腰带放得进（槽 %u），放行", id, (const char *)&code, slot); return 0; }
+    uint32_t code = ((uint32_t (*)(uint64_t))(m->base + GA_ITEM_CODE))(u);
+    if (((int (*)(uint64_t, uint64_t, uint32_t *, int))(m->base + GA_BELT_FIND_SLOT))(inv, u, &slot, 1)) { static int ok; if (ok++ < 40) LOG("药水自动拾取：物品 %u（%.4s）到服务端时腰带放得进（槽 %u），放行", id, (const char *)&code, slot); return 0; }
     static int dr; if (dr++ < 40) LOG("药水自动拾取：物品 %u（%.4s）到服务端时腰带已放不下 → 不捡，留在地上（丢包第 %d 次）", id, (const char *)&code, dr);
     return 1;
 }
@@ -1601,7 +1604,7 @@ void c2s_deliver(uint64_t *regs) {
         static int dropped; if (dropped++ < 10) LOG("产品规则：丢弃非摇杆来源的点地移动包 0x%02x（第 %d 条）", op, dropped); return; } }
     static void (*recv)(uint64_t, uint64_t, uint64_t, uint64_t);
     if (!recv) { module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
-                 recv = (void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(m->base + 0x632510); }
+                 recv = (void (*)(uint64_t, uint64_t, uint64_t, uint64_t))(m->base + GA_C2S_RECV); }
     if (potpick_gate(regs)) return;
     uint8_t cube[4 + 25]; if (cube_pickup_rewrite(regs, cube)) { recv((uint64_t)(uintptr_t)cube, 25, regs[2], regs[3]); return; }
 
@@ -1615,7 +1618,7 @@ void c2s_deliver(uint64_t *regs) {
     uint32_t pk_id = 0, pk_code = 0; int pk_auto = 0;
     { uint8_t in[4 + 17]; int dm_potpick_auto(uint32_t); module_t *m = main_mod();
       if (m && in_game() && regs[1] == 17 && tk_rd(regs[0], in, sizeof in) && in[4] == 0x16) { memcpy(&pk_id, in + 5, 4); uint64_t u = dm_diag_srv_item(pk_id);
-          if (u) { pk_code = ((uint32_t (*)(uint64_t))(m->base + 0x570260))(u); pk_auto = dm_potpick_auto(pk_id); } else pk_id = 0; } }
+          if (u) { pk_code = ((uint32_t (*)(uint64_t))(m->base + GA_ITEM_CODE))(u); pk_auto = dm_potpick_auto(pk_id); } else pk_id = 0; } }
     recv(regs[0], regs[1], regs[2], regs[3]);
     if (pk_id) { static uint32_t win, used, skipped; uint32_t t = cur_tick(); if (t - win >= 25) { win = t; used = 0; }
         if (used >= 4) skipped++;
@@ -1644,10 +1647,10 @@ static void c2s_inject(uint64_t G) {
     while (g_irp < g_nrp && g_rp[g_irp].tick < tick) { LOG("【红】DM_C2S_REPLAY：第 %zu 条拍号 %u 已过（当前 %u），丢弃", g_irp + 1, g_rp[g_irp].tick, tick); g_irp++; }
     static void (*disp)(uint64_t, uint64_t, uint64_t, uint32_t);
     if (!disp) { module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
-                 disp = (void (*)(uint64_t, uint64_t, uint64_t, uint32_t))(m->base + 0x6e5b40); }
+                 disp = (void (*)(uint64_t, uint64_t, uint64_t, uint32_t))(m->base + GA_C2S_DISPATCH); }
     static void (*sysm)(uint64_t, uint64_t);
     if (!sysm) { module_t *m = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) m = &g_mod[i];
-                 sysm = (void (*)(uint64_t, uint64_t))(m->base + 0x6310b0); }
+                 sysm = (void (*)(uint64_t, uint64_t))(m->base + GA_C2S_SYS_HANDLE); }
     size_t end = g_irp; while (end < g_nrp && g_rp[end].tick == tick) end++;
     for (size_t k = g_irp; k < end; k++) if (g_rp[k].sys && g_rp[k].len && !sys_clock_msg(g_rp[k].pkt[0])) {
         struct c2s_ent *e = &g_rp[k]; uint8_t *buf = malloc(4 + e->len);
@@ -1713,7 +1716,7 @@ static uint32_t g_hold_tick; static char g_hold_ui[96] = "PausePanelMessage:Exit
 static volatile uint32_t *g_hold_dl; static uint32_t g_hold_dl0; static int32_t g_hold_org; static int g_hold_org_ok; static uint32_t g_hold_dl1;
 static uint32_t guest_ms(void) { return (uint32_t)(guest_ns() / 1000000); }
 static volatile uint32_t *hold_dl(void) {
-    if (!g_hold_dl) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) g_hold_dl = (volatile uint32_t *)(g_mod[i].base + 0x2d685d8);
+    if (!g_hold_dl) for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) g_hold_dl = (volatile uint32_t *)(g_mod[i].base + GA_TICK_DEADLINE);
     return g_hold_dl;
 }
 
@@ -1940,7 +1943,7 @@ _Atomic int g_dm_frozen;
 _Atomic int g_dm_frz_want;
 void mtl_world_frozen(int on) __attribute__((weak));
 static uint32_t frz_snapshot(uint64_t G, int *nmon, int *php) {
-    module_t *main = main_mod(); int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + 0x5b9290); uint32_t h = 2166136261u; int n = 0;
+    module_t *main = main_mod(); int (*get)(uint64_t, int, int) = (int (*)(uint64_t, int, int))(main->base + GA_STAT_GET); uint32_t h = 2166136261u; int n = 0;
     for (int b = 0; b < 128; b++) { uint64_t u = 0; if (!tk_rd(G + 0x2630 + 8 * b, &u, 8)) continue;
         for (int k = 0; u && k < 4096; k++) { uint32_t v[3] = {0}; uint64_t pp = 0; uint16_t c[4] = {0}; tk_rd(u + 8, &v[0], 4); tk_rd(u + 0xC, &v[1], 4); v[2] = (uint32_t)get(u, 6, 0); if (tk_rd(u + 0x38, &pp, 8) && pp) tk_rd(pp, c, 8);
             for (int i = 0; i < 3; i++) h = (h ^ v[i]) * 16777619u; h = (h ^ c[1]) * 16777619u; h = (h ^ c[3]) * 16777619u; n++; if (!tk_rd(u + 0x158, &u, 8)) break; } }
@@ -1949,7 +1952,7 @@ static uint32_t frz_snapshot(uint64_t G, int *nmon, int *php) {
 static void freeze_world_obs(const uint64_t *rc) { uint64_t *r = (uint64_t *)rc; static uint64_t fq[0x1500 / 8], fg[0x200 / 8]; if (atomic_load(&g_dm_frozen)) { fg[0x170 / 8] = 0; fg[0x188 / 8] = (uint64_t)(uintptr_t)fq; r[0] = (uint64_t)(uintptr_t)fg; } }
 static void freeze_client_obs(const uint64_t *rc) { uint64_t *r = (uint64_t *)rc; static uint32_t fu[0x200 / 4]; if (atomic_load(&g_dm_frozen) && r[0]) { fu[0x124 / 4] = 1u << 23; r[0] = (uint64_t)(uintptr_t)fu; } }
 static void freeze_anim_obs(const uint64_t *rc) { uint64_t *r = (uint64_t *)rc; static uint32_t fu[0x200 / 4]; if (atomic_load(&g_dm_frozen) && r[0]) { fu[0] = 9; r[0] = (uint64_t)(uintptr_t)fu; } }
-static void freeze_render_obs(const uint64_t *rc) { (void)rc; static uint64_t t0; static int was; module_t *m = main_mod(); if (!m) return; { void dm_itemcmp_render_probe(void); dm_itemcmp_render_probe(); }                                                                                                                                                         uint32_t *dt = (uint32_t *)((uintptr_t)m->base + 0x20cebb8); uint64_t *wt = (uint64_t *)((uintptr_t)m->base + 0x3114208);
+static void freeze_render_obs(const uint64_t *rc) { (void)rc; static uint64_t t0; static int was; module_t *m = main_mod(); if (!m) return; { void dm_itemcmp_render_probe(void); dm_itemcmp_render_probe(); }                                                                                                                                                         uint32_t *dt = (uint32_t *)((uintptr_t)m->base + GA_WORLD_FRAME_DT); uint64_t *wt = (uint64_t *)((uintptr_t)m->base + GA_WORLD_TIME);
     if (atomic_load(&g_dm_frozen)) { if (!was) { was = 1; t0 = *wt; } *dt = 0; *wt = t0; } else was = 0; }
 static _Atomic int g_frz_by_panel;
 
@@ -1977,7 +1980,7 @@ int dm_freeze_attach_probe(void) { return freeze_attach(); }
 static uint8_t g_bg_pause[2];
 static int save_unpause_begin(void) {
     uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base;
-    if (!b || !in_game()) return 0; volatile uint8_t *f = b + 0x2d5ff51, *g = b + 0x2d5ff67; if (!*f && !*g) return 0;
+    if (!b || !in_game()) return 0; volatile uint8_t *f = b + GA_PANEL_PAUSE_MENU, *g = b + GA_PANEL_PAUSE_2; if (!*f && !*g) return 0;
     if (!freeze_attach()) { LOG("【红】停着存盘：游戏停着，但产物里没有冻结门 10–13，不放开暂停（这次存不了）"); return -1; }
     atomic_store(&g_frz_by_panel, 0); atomic_store(&g_bgsave, 1); atomic_store(&g_dm_frozen, 1);
     int nm = 0, hp = 0; uint32_t h = g_lastG ? frz_snapshot(g_lastG, &nm, &hp) : 0;
@@ -1988,7 +1991,7 @@ static int save_unpause_begin(void) {
 static void save_unpause_end(void) {
     if (!atomic_load(&g_bgsave)) return;
     uint8_t *b = NULL; for (int i = 0; i < g_nmod; i++) if (!strcmp(g_mod[i].name, "main")) b = (uint8_t *)g_mod[i].base;
-    if (b) { *(volatile uint8_t *)(b + 0x2d5ff51) = g_bg_pause[0]; *(volatile uint8_t *)(b + 0x2d5ff67) = g_bg_pause[1]; }
+    if (b) { *(volatile uint8_t *)(b + GA_PANEL_PAUSE_MENU) = g_bg_pause[0]; *(volatile uint8_t *)(b + GA_PANEL_PAUSE_2) = g_bg_pause[1]; }
     int nm = 0, hp = 0; uint32_t h = g_lastG ? frz_snapshot(g_lastG, &nm, &hp) : 0;
     atomic_store(&g_bgsave, 0); atomic_store(&g_dm_frozen, 0);
     LOG("停着存盘：恢复原版暂停、解冻（怪 / 佣兵 %d 个，快照 %08x，玩家生命 %d）", nm, h, hp);
@@ -2156,7 +2159,7 @@ static void loadscreen_on_uimsg(const char *cat, const char *act, const char *ar
 
 
 
-    if (!strcmp(cat, "PanelManager") && !strcmp(arg, "QuestLogPanelExpansion") && (!strcmp(act, "OpenPanel") || !strcmp(act, "OpenExclusivePanel"))) { module_t *qm = main_mod(); if (qm) *(volatile uint8_t *)(qm->base + 0x2d5ff58) = 0; }
+    if (!strcmp(cat, "PanelManager") && !strcmp(arg, "QuestLogPanelExpansion") && (!strcmp(act, "OpenPanel") || !strcmp(act, "OpenExclusivePanel"))) { module_t *qm = main_mod(); if (qm) *(volatile uint8_t *)(qm->base + GA_QUEST_LOG_UNREAD) = 0; }
     { void dm_textinput_on_uimsg(const char *, const char *, const char *); dm_textinput_on_uimsg(cat, act, arg); }
     { void dm_update_on_uimsg(const char *, const char *, const char *); dm_update_on_uimsg(cat, act, arg); }
     { void dm_kills_on_uimsg(const char *, const char *, const char *); dm_kills_on_uimsg(cat, act, arg); } { void dm_rift_ui_on_uimsg(const char *, const char *, const char *); dm_rift_ui_on_uimsg(cat, act, arg); }
@@ -2216,7 +2219,7 @@ static void *shotui_wait_loadscreen(void *arg) {
         pthread_mutex_lock(&g_shotgate_mu); int closed = !g_loadscreen_open && !g_loadscreen_unload_pending; pthread_mutex_unlock(&g_shotgate_mu);
         if (closed && now_ns() >= not_before) {
             LOG("SHOT 前置：读取画面已撤 拍 %s 等待 %llu ms", a->label, (unsigned long long)((now_ns() - start) / 1000000));
-            { module_t *mm = main_mod(); if (mm) LOG("SHOT 时原版手柄光标 (%d,%d)（0,0 = 该界面没有自由光标，走焦点导航）", *(int32_t *)(mm->base + 0x2d128f8), *(int32_t *)(mm->base + 0x2d128fc)); }
+            { module_t *mm = main_mod(); if (mm) LOG("SHOT 时原版手柄光标 (%d,%d)（0,0 = 该界面没有自由光标，走焦点导航）", *(int32_t *)(mm->base + GA_PAD_CURSOR_X), *(int32_t *)(mm->base + GA_PAD_CURSOR_Y)); }
             dm_gfx_shot_at(g_shotui[a->index].off, g_shotui[a->index].path); free(a); return NULL;
         }
         if (now_ns() - start >= 15ull * 1000000000ull) { LOG("读取画面未撤（等待 15 秒）"); free(a); return NULL; }

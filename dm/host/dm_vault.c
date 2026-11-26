@@ -33,6 +33,7 @@
 
 
 #include <time.h>
+#include "game_addrs.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -79,7 +80,7 @@ int dm_item_write(uint8_t *b, uint64_t it, uint8_t *buf); uint64_t dm_item_make(
 void *dm_memfind(const uint8_t *h, size_t hn, const uint8_t *n, size_t nn);
 
 static const char *vault_name(uint8_t *b) {
-    uint8_t mode = *(uint8_t *)(b + 0x2127c48); int hc = (*(uint16_t *)(b + 0x21278d5) >> 2) & 1;
+    uint8_t mode = *(uint8_t *)(b + GA_CHAR_DATA_VERSION); int hc = (*(uint16_t *)(b + GA_CHAR_STATUS) >> 2) & 1;
     if (mode == 3) return hc ? "ModernSharedStashHardCoreV2" : "ModernSharedStashSoftCoreV2";
     if (mode == 2) return hc ? "SharedStashHardCoreV2" : "SharedStashSoftCoreV2";
     return NULL;
@@ -135,10 +136,10 @@ static void vault_desc(uint8_t *b, uint64_t G, uint64_t player, uint32_t req) {
     int k = vfind((int)(req >> 16 & 0xff), (int)(req & 0xffff)); if (k < 0) return;
     uint64_t nu = dm_item_make(b, G, 0, g_v[k].data, g_v[k].len, NULL); if (!nu) { LOG("【红】编年史仓库：说明——位流建不出物品"); return; }
     typedef struct { char *p; uint64_t len, cap; } gstr_t; struct { uint64_t n; uint8_t has; } cnt = { 0, 0 };
-    gstr_t r = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + 0x374f00))(player, player, nu, 0, 1, 0, NULL, &cnt);
+    gstr_t r = ((gstr_t (*)(uint64_t, uint64_t, uint64_t, int, int, int, void *, void *))(b + GA_ITEM_DESCRIBE))(player, player, nu, 0, 1, 0, NULL, &cnt);
     size_t n = r.p && r.len < sizeof g_desc ? r.len : (r.p ? sizeof g_desc - 1 : 0); if (n) memcpy(g_desc, r.p, n); g_desc[n] = 0;
-    if (r.p && !(r.cap >> 63) && (*(volatile uint8_t *)(b + 0x3211700) & 1)) { uint64_t a = *(uint64_t *)(b + 0x32116f8); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, r.p); }
-    ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu);
+    if (r.p && !(r.cap >> 63) && (*(volatile uint8_t *)(b + GA_GAME_ALLOC_READY) & 1)) { uint64_t a = *(uint64_t *)(b + GA_GAME_ALLOC); ((void (*)(uint64_t, void *))(*(uint64_t *)(*(uint64_t *)a + 0x28)))(a, r.p); }
+    ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu);
     if (n) atomic_store(&g_desc_ready, 1);
 }
 int dm_vault_each(void (*cb)(int kind, int idx, void *arg), void *arg) { if (pthread_mutex_trylock(&g_vmu)) return -1; int on = g_loaded, r = on || g_vnone ? 0 : -1; if (on) for (int i = 0; i < g_nv; i++) cb(g_v[i].kind, g_v[i].idx, arg); pthread_mutex_unlock(&g_vmu); return r; }
@@ -152,7 +153,7 @@ int dm_vault_has(int kind, int idx) { pthread_mutex_lock(&g_vmu); int r = g_load
 
 int dm_item_quest(uint8_t *b, uint64_t it) {
     uint8_t ver = *(uint8_t *)(it + 0x1bd); if (ver < 1 || ver > 3) return 0;
-    uint64_t t = *(uint64_t *)(b + 0x2d64a18 + (uint64_t)ver * 16); uint64_t recs = t ? *(uint64_t *)(t + 0x15c0) : 0; uint32_t cls = *(uint32_t *)(it + 4);
+    uint64_t t = *(uint64_t *)(b + GA_DATA_TABLES + (uint64_t)ver * 16); uint64_t recs = t ? *(uint64_t *)(t + 0x15c0) : 0; uint32_t cls = *(uint32_t *)(it + 4);
     return recs && cls < *(uint32_t *)(t + 0x15c8) && *(uint8_t *)(recs + (uint64_t)cls * 0x1c0 + 0x13a) != 0;
 }
 static int item_key(uint8_t *b, uint64_t it, int *kind, int *idx) {
@@ -170,9 +171,9 @@ static int deposit(uint8_t *b, uint64_t G, uint64_t player, uint32_t id, const c
     static uint8_t buf[VBYTES]; int len = dm_item_write(b, it, buf); if (!len) return -3;
     int old = vfind(kind, idx); uint8_t *keep = malloc((size_t)len); if (!keep) return -3; memcpy(keep, buf, (size_t)len);
     int page = *(uint8_t *)(d + 0x55), x = pp ? *(int32_t *)(pp + 0x10) : 0, y = pp ? *(int32_t *)(pp + 0x14) : 0;
-    ((void (*)(uint64_t))(b + 0x55e430))(it);
-    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + 0x642f70))(G, player, it, 0x20, 4, 0, page, y, x);
-    ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, it);
+    ((void (*)(uint64_t))(b + GA_INV_UNLINK_ITEM))(it);
+    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, int))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, it, 0x20, 4, 0, page, y, x);
+    ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, it);
     pend_add(1, kind, idx, keep, len);
     if (old >= 0) { free(g_v[old].data); g_v[old].data = keep; g_v[old].len = (uint16_t)len; }
     else { if (g_nv >= VMAX) { free(keep); return -4; } g_v[g_nv++] = (ventry){ (uint8_t)kind, (uint16_t)idx, (uint16_t)len, keep }; }
@@ -186,7 +187,7 @@ static int deposit(uint8_t *b, uint64_t G, uint64_t player, uint32_t id, const c
 
 
 static int bag_fits(uint8_t *b, uint64_t player, uint64_t nu, uint64_t at, uint32_t *ox, uint32_t *oy) {
-    uint8_t ver = *(uint8_t *)(nu + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + 0x2d64a18 + ver * 16) : 0; if (!t) return 0;
+    uint8_t ver = *(uint8_t *)(nu + 0x1bd); uint64_t t = ver >= 1 && ver <= 3 ? *(uint64_t *)(b + GA_DATA_TABLES + ver * 16) : 0; if (!t) return 0;
     uint64_t ir = *(uint64_t *)(t + 0x15c0); uint32_t in = *(uint32_t *)(t + 0x15c8);
 #define ISZ(it, o) (*(uint32_t *)((it) + 4) < in ? *(uint8_t *)(ir + (uint64_t)*(uint32_t *)((it) + 4) * 0x1c0 + (o)) : 1)
     int w = ISZ(nu, 0x11e), h = ISZ(nu, 0x11f), cols = (int)(at >> 8 & 0xff), rows = (int)(at & 0xff);
@@ -211,13 +212,13 @@ static int withdraw(uint8_t *b, uint64_t G, uint64_t player, int kind, int idx) 
 
     { uint64_t inv = *(uint64_t *)(player + 0x90); uint32_t cls = *(uint32_t *)(player + 4), fx = 0, fy = 0;
       uint64_t at = atomic_exchange(&g_take_at, 0);
-      if (at ? !bag_fits(b, player, nu, at, &fx, &fy) : (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(b + 0x55f620))(inv, nu, *(int32_t *)(b + 0x1dae684 + cls * 8 + 4), &fx, &fy, 0))) {
-          ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); atomic_store(&g_full_snd, 1); LOG("编年史仓库：取出 %s %d —— 背包放不下，不取（仓库不动）", kind ? "暗金" : "套装件", idx); return -8; }
-      uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); return -9; }
+      if (at ? !bag_fits(b, player, nu, at, &fx, &fy) : (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(b + GA_INV_FIND_FREE))(inv, nu, *(int32_t *)(b + GA_CLASS_INV_GRID + cls * 8 + 4), &fx, &fy, 0))) {
+          ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); atomic_store(&g_full_snd, 1); LOG("编年史仓库：取出 %s %d —— 背包放不下，不取（仓库不动）", kind ? "暗金" : "套装件", idx); return -8; }
+      uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); return -9; }
       *(uint8_t *)(nd + 0x55) = 0; *(int32_t *)(ip + 0x10) = (int32_t)fx; *(int32_t *)(ip + 0x14) = (int32_t)fy;
-      uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + 0x6f1940))(G, player, &one, &ox);
-      if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(b + 0x658be0))(G, nu); LOG("【红】编年史仓库：取出 %s %d —— 放进背包没成（格 %u,%u），仓库不动", kind ? "暗金" : "套装件", idx, fx, fy); return -10; }
-      ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + 0x642f70))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
+      uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(b + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox);
+      if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(b + GA_ITEM_FREE))(G, nu); LOG("ERROR vault.to_inventory: taking out %s %d failed, it could not be placed in the inventory (cell %u,%u); the vault is unchanged", kind ? "unique" : "set item", idx, fx, fy); return -10; }
+      ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(b + GA_ITEM_NOTIFY_CLIENT))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
     }
     uint64_t ip = *(uint64_t *)(nu + 0x38);
     pend_add(0, kind, idx, g_v[k].data, g_v[k].len);
@@ -231,7 +232,7 @@ static int withdraw(uint8_t *b, uint64_t G, uint64_t player, int kind, int idx) 
 
 static void item_dump_list(uint8_t *b, uint64_t owner, const char *who) {
     uint64_t inv = owner ? *(uint64_t *)(owner + 0x90) : 0, it = inv && *(uint32_t *)inv == 0x01020304 ? *(uint64_t *)(inv + 0x10) : 0; int n = 0;
-    for (int k = 0; it && k < 4096; k++) { uint64_t d = *(uint64_t *)(it + 0x10), pp = *(uint64_t *)(it + 0x38); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + 0x570260))(it);
+    for (int k = 0; it && k < 4096; k++) { uint64_t d = *(uint64_t *)(it + 0x10), pp = *(uint64_t *)(it + 0x38); if (!d) break; uint32_t c = ((uint32_t (*)(uint64_t))(b + GA_ITEM_CODE))(it);
         LOG("物品清点 %s：%.4s 品质 %u 方式 %u 页 %u 格 %d,%d", who, (const char *)&c, *(uint32_t *)d, *(uint32_t *)(it + 0xc), *(uint8_t *)(d + 0x55), pp ? *(int32_t *)(pp + 0x10) : -1, pp ? *(int32_t *)(pp + 0x14) : -1); n++; it = *(uint64_t *)(d + 0xb0); }
     LOG("物品清点 %s：共 %d 件", who, n);
 }
@@ -239,7 +240,7 @@ static void item_dump(uint8_t *b, uint64_t player) {
     item_dump_list(b, player, "角色");
     uint64_t inv = *(uint64_t *)(player + 0x90); int k = 0;
     for (uint64_t en = inv ? *(uint64_t *)(inv + 0x68) : 0; en && k < 32; en = *(uint64_t *)(en + 0x10), k++) { uint32_t uid = *(uint32_t *)en; char who[48];
-        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + 0x45f5f0))((uint64_t)(uintptr_t)(b + 0x2d603a0), uid & 0x7f, uid, 0);
+        uint64_t u = ((uint64_t (*)(uint64_t, uint32_t, uint32_t, uint32_t))(b + GA_UNIT_FIND))((uint64_t)(uintptr_t)(b + GA_CLIENT_UNIT_TABLE), uid & 0x7f, uid, 0);
         snprintf(who, sizeof who, "附属单位 %u（类 %u）", uid, *(uint8_t *)(en + 0xa)); item_dump_list(b, u, who); }
 }
 void dm_vault_tick(uint64_t G, uint64_t player, uint8_t *b) {

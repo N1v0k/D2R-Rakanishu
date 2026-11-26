@@ -22,7 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 final class BuildData {
-    static final String VERSION = "3.3.94012";
+    static final String VERSION = "3.4.95035";
     static final int DATA_VERSION = 3, NAMES_SCHEMA = 1, GUIDE_SCHEMA = 1;
     private static final int MAX_GUIDE_BYTES = 256 << 10, MAX_GUIDES = 64, MAX_NAMES_BYTES = 2 << 20;
     private static final int MAX_TEXT = 400, MAX_LIST = 120, MAX_KEY = 60;

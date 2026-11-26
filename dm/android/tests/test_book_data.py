@@ -126,8 +126,8 @@ def main():
     check(flags['axe'] == g.QUALITY and flags['9ax'] == g.QUALITY | g.UBER and flags['wnd'] == g.QUALITY | g.CLASS and flags['r01'] == 0
           and flags['cm1'] == g.QUALITY and flags['gld'] == 0, 'item flags %s' % flags)
     check({it[0]: it[3] for it in out['item']}['r01'] == 'r' and {it[0]: it[3] for it in out['item']}['wnd'] == 'w', 'categories')
-    check([u[0] for u in out['unique']] == [1, 2, 3] and [u[3] for u in out['unique']] == [0, 5, 0] and out['unique'][1][5] == 4,
-          'uniques: only spawnable, non-ladder ones roll, with their difficulties: %s' % out['unique'])
+    check([u[0] for u in out['unique']] == [1, 2, 3] and [u[3] for u in out['unique']] == [0, 5, 5] and out['unique'][1][5] == 4 and out['unique'][2][5] == 7,
+          'uniques: only spawnable ones roll, a ladder season one too, with their difficulties: %s' % out['unique'])
     check([s[0] for s in out['set']] == [4, 6] and [s[5] for s in out['set']] == [0, 1], 'set items the game can roll; the bovine set (record 29)')
     check(len(out['ratio']) == 4 and all(len(r) == 14 for r in out['ratio']), 'the expansion\'s quality rows')
     check(sorted(out['extra']) == ['2', '3', '4'] and out['extra']['4'][3] == [3] and out['extra']['2'][3] == [1] and out['extra']['2'][1] == 'helper',

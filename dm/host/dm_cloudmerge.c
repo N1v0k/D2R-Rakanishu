@@ -33,6 +33,7 @@
 
 
 #include "hle.h"
+#include "game_addrs.h"
 #include "dm_i18n.h"
 #include <dirent.h>
 #include <stdatomic.h>
@@ -84,8 +85,8 @@ static d2i_sum d2i_split(uint64_t G, const uint8_t *d, uint32_t n, cm_list *out)
         memcpy(&g, d + o + 12, 4);
         if (!memcmp(d + o + 64, "JM", 2)) { uint16_t c; memcpy(&c, d + o + 66, 2); s.gold += g; uint32_t p = o + 68;
             for (int i = 0; i < c; i++) { int used = 0, socks = 0; uint64_t it = out && p < o + ln ? dm_item_make_n(B, G, 0, d + p, (int)(o + ln - p), &socks, &used) : 0;
-                if (!it || used <= 0 || used > VB) { if (out) s.bad++; if (it) ((void (*)(uint64_t, uint64_t))(B + 0x658be0))(G, it); break; }
-                uint8_t buf[VB]; int len = dm_item_write(B, it, buf); ((void (*)(uint64_t, uint64_t))(B + 0x658be0))(G, it);
+                if (!it || used <= 0 || used > VB) { if (out) s.bad++; if (it) ((void (*)(uint64_t, uint64_t))(B + GA_ITEM_FREE))(G, it); break; }
+                uint8_t buf[VB]; int len = dm_item_write(B, it, buf); ((void (*)(uint64_t, uint64_t))(B + GA_ITEM_FREE))(G, it);
                 if (len > 0) { cl_add(out, buf, len); s.items++; } else s.bad++;
                 p += (uint32_t)used; } }
         else s.chron += (int)ln;
@@ -99,7 +100,7 @@ static long long live_items(uint64_t G, uint64_t player, cm_list *out) {
     uint64_t pi = dm_unit_inv(player); int m = n;
     for (uint64_t e = pi ? *(uint64_t *)(pi + 0x68) : 0, k = 0; e && k < 16 && m < 8; e = *(uint64_t *)(e + 0x10), k++) if (*(uint8_t *)(e + 0xa) == 1) {
         uint32_t i = *(uint32_t *)e; uint64_t u = *(uint64_t *)(G + 0x2230 + 8 * (i & 0x7f)); while (u && *(uint32_t *)(u + 8) != i) u = *(uint64_t *)(u + 0x158); if (u) pg[m++] = u; }
-    for (int k = 0; k < m; k++) { if (k < n) gold += ((int (*)(uint64_t, int, int))(B + 0x5b9290))(pg[k], 15, 0);
+    for (int k = 0; k < m; k++) { if (k < n) gold += ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(pg[k], 15, 0);
         uint64_t iv = dm_unit_inv(pg[k]); int c = 0;
         for (uint64_t it = iv ? *(uint64_t *)(iv + 0x10) : 0; it && c < 2048; c++) { uint64_t d = *(uint64_t *)(it + 0x10); if (!d) break;
             if (*(uint32_t *)(it + 0xc) == 0) { uint8_t buf[VB]; int len = dm_item_write(B, it, buf); if (len > 0) cl_add(out, buf, len); }
@@ -228,13 +229,13 @@ static int take_one(uint64_t G, uint64_t player, int idx) {
     int used = 0; uint64_t nu = dm_item_make_n(B, G, room, u->bits, u->len, NULL, &used);
     if (!nu) { static int said; if (!said++) LOG("【红】iCloud 并回：清单第 %d 件建不出物品，留在清单里不放", idx + 1); return -1; }
     uint64_t inv = *(uint64_t *)(player + 0x90); uint32_t cls = *(uint32_t *)(player + 4), fx = 0, fy = 0;
-    if (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(B + 0x55f620))(inv, nu, *(int32_t *)(B + 0x1dae684 + cls * 8 + 4), &fx, &fy, 0)) {
-        ((void (*)(uint64_t, uint64_t))(B + 0x658be0))(G, nu); return 0; }
-    uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(B + 0x658be0))(G, nu); return 0; }
+    if (!inv || cls > 7 || !((int (*)(uint64_t, uint64_t, int, uint32_t *, uint32_t *, int))(B + GA_INV_FIND_FREE))(inv, nu, *(int32_t *)(B + GA_CLASS_INV_GRID + cls * 8 + 4), &fx, &fy, 0)) {
+        ((void (*)(uint64_t, uint64_t))(B + GA_ITEM_FREE))(G, nu); return 0; }
+    uint64_t nd = *(uint64_t *)(nu + 0x10), ip = *(uint64_t *)(nu + 0x38); if (!nd || !ip) { ((void (*)(uint64_t, uint64_t))(B + GA_ITEM_FREE))(G, nu); return 0; }
     *(uint8_t *)(nd + 0x55) = 0; *(int32_t *)(ip + 0x10) = (int32_t)fx; *(int32_t *)(ip + 0x14) = (int32_t)fy;
-    uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(B + 0x6f1940))(G, player, &one, &ox);
-    if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(B + 0x658be0))(G, nu); LOG("【红】iCloud 并回：清单第 %d 件放进背包没成（格 %u,%u）", idx + 1, fx, fy); return 0; }
-    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(B + 0x642f70))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
+    uint64_t one = nu, ox = 0; ((int (*)(uint64_t, uint64_t, uint64_t *, uint64_t *))(B + GA_ITEM_PLACE_ON_LOAD))(G, player, &one, &ox);
+    if (!*(uint64_t *)(nd + 0xa0)) { ((void (*)(uint64_t, uint64_t))(B + GA_ITEM_FREE))(G, nu); LOG("【红】iCloud 并回：清单第 %d 件放进背包没成（格 %u,%u）", idx + 1, fx, fy); return 0; }
+    ((void (*)(uint64_t, uint64_t, uint64_t, int, int, int, int, int, uint64_t))(B + GA_ITEM_NOTIFY_CLIENT))(G, player, nu, 1, 2, 0, 0, 0, (uint64_t)(fx & 0xffff) | (uint64_t)fy << 16);
     cm_pend *p = &g_pend[g_npend++]; memset(p, 0, sizeof *p); p->idx = idx; p->nid = *(uint32_t *)(nu + 8); { const char *wd = dm_save_workdir(); p->h0 = wd && dm_ser_state() == 0 ? char_h(wd) : 0; }
     int len = dm_item_write(B, nu, p->pb); if (len > 0) p->plen = (uint16_t)len; else { p->plen = u->len; memcpy(p->pb, u->bits, u->len); LOG("【红】iCloud 并回：放好后的位流写不出，用清单那串作证据"); }
     LOG("iCloud 并回：清单第 %d 件（%d 字节）放到背包格 %u,%u（新 id %u），等落盘证明", idx + 1, u->len, fx, fy, p->nid);
@@ -245,8 +246,8 @@ static int take_one(uint64_t G, uint64_t player, int idx) {
 static int pend_has(int idx) { for (int i = 0; i < g_npend; i++) if (g_pend[i].idx == idx) return 1; return 0; }
 static void add_gold(uint64_t G, uint64_t player) {
     uint64_t pg[8]; uint32_t id[8]; int n = dm_stash_pages(G, player, pg, id); long long left = g_gold, put = 0;
-    for (int k = 0; k < n && left > 0; k++) { int g = ((int (*)(uint64_t, int, int))(B + 0x5b9290))(pg[k], 15, 0), room = PAGE_GOLD - g; if (room <= 0) continue; int add = left < room ? (int)left : room;
-        ((void (*)(uint64_t, int, int, int))(B + 0x5bc1f0))(pg[k], 15, g + add, 0); dm_stash_gold_notify(B, G, player, id[k], g + add); left -= add; put += add;
+    for (int k = 0; k < n && left > 0; k++) { int g = ((int (*)(uint64_t, int, int))(B + GA_STAT_GET))(pg[k], 15, 0), room = PAGE_GOLD - g; if (room <= 0) continue; int add = left < room ? (int)left : room;
+        ((void (*)(uint64_t, int, int, int))(B + GA_STAT_SET))(pg[k], 15, g + add, 0); dm_stash_gold_notify(B, G, player, id[k], g + add); left -= add; put += add;
         LOG("iCloud 并回：共享页 %d（单位 id %u）金币 %d → %d", k + 1, id[k], g, g + add); }
     if (put) { g_gold_sent = put; clock_gettime(CLOCK_REALTIME, &g_gold_at); g_gold_cno = dm_fs_commit_count(); }
     if (left) LOG("iCloud 并回：共享页金币都满了，还有 %lld 金币留到下次", left);
@@ -341,7 +342,7 @@ void dm_cloudmerge_srv_tick(uint8_t *b, uint64_t G, uint64_t player) {
         else LOG("iCloud 并回：进局 —— 收件箱条目 %s 有 %s 要并（清单%s）", g_entry, g_stash, g_have ? "已有" : "开箱时算");
         pthread_mutex_unlock(&g_mu); }
     { int dm_itemjob_owner(void); if (dm_itemjob_owner()) return; }
-    int open = (dm_ui_panel_state() & 1) != 0, near = ((int (*)(uint64_t, uint64_t, int, int))(b + 0x650d10))(G, player, 0x10b, 0x32) & 1;
+    int open = (dm_ui_panel_state() & 1) != 0, near = ((int (*)(uint64_t, uint64_t, int, int))(b + GA_OBJECT_NEAR))(G, player, 0x10b, 0x32) & 1;
 
 
     { static int t = -1; if (t < 0) t = getenv("DM_TEST_CM_KEYS") != NULL; const char *sn = dm_stash_name(b);

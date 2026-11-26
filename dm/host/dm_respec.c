@@ -15,6 +15,7 @@
 
 
 #include "dm.h"
+#include "game_addrs.h"
 #include <stdint.h>
 enum { RESPEC_BYTE = 0x52, RESPEC_USED = 1, RESPEC_CAN = 2 };
 static uint8_t *quest_flags(uint64_t player, unsigned diff) {
@@ -32,5 +33,5 @@ void dm_respec_server_step(uint8_t *b, uint64_t G, uint64_t player) {
     if (!b || !G) return;
     unsigned diff = *(uint8_t *)(G + 0x104); uint8_t *f = quest_flags(player, diff); if (!f) return;
     keep(f, 0, diff);
-    uint64_t c = *(uint64_t *)(b + 0x2d5ec18); uint8_t *cf = c ? *(uint8_t **)c : NULL; if (cf) keep(cf, 1, diff);
+    uint64_t c = *(uint64_t *)(b + GA_CLIENT_QUEST_FLAGS); uint8_t *cf = c ? *(uint8_t **)c : NULL; if (cf) keep(cf, 1, diff);
 }
